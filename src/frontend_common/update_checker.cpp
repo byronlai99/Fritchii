@@ -156,12 +156,12 @@ std::optional<FritchiiVersion> ParseFritchiiVersion(std::string_view text) {
     if (dot == std::string_view::npos) {
         return FritchiiVersion{.major = *major};
     }
-    // One decimal, and N.0 is spelled N, so each version has one tag and one package name.
-    const auto decimal = text.substr(dot + 1);
-    if (decimal.size() != 1 || decimal[0] < '1' || decimal[0] > '9') {
+    // N.0 is spelled N, so each version has one tag and one package name.
+    const auto minor = ParseNumber(text.substr(dot + 1));
+    if (!minor || *minor == 0) {
         return std::nullopt;
     }
-    return FritchiiVersion{.major = *major, .minor = static_cast<u32>(decimal[0] - '0')};
+    return FritchiiVersion{.major = *major, .minor = *minor};
 }
 
 std::optional<FritchiiVersion> ParseBuildVersion(std::string_view build_version) {
