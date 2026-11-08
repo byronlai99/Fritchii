@@ -44,7 +44,7 @@ std::optional<Common::Net::Release> SelectUpdate(
     std::span<const Common::Net::Release> releases, std::string_view build_tag,
     std::string_view platform, Common::Net::LinuxPackage package = Common::Net::LinuxPackage::Any);
 
-// Fritchii (formerly Frizti) releases are numbered N or N.M with one decimal: 4 < 4.1 < 4.9 < 5.
+// Fritchii-HDrum releases are numbered N or N.M with a numeric minor component: 4.9 < 4.10 < 4.11 < 5.
 struct FritchiiVersion {
     u32 major{};
     u32 minor{};
