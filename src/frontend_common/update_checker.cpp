@@ -33,9 +33,7 @@ std::optional<u64> ParseBuildNumber(std::string_view tag) {
     return number;
 }
 
-constexpr std::string_view ReleaseRepo = "Frizti/Lichii";
-// Download URLs name the repository by its current name; GitHub redirects the old one.
-constexpr std::array RepoNames{std::string_view{"Lichii"}, std::string_view{"Fritchii"}};
+constexpr std::string_view ReleaseRepo = "byronlai99/Fritchii";
 
 std::optional<u32> ParseNumber(std::string_view text) {
     if (text.empty() || (text.size() > 1 && text.front() == '0') ||
@@ -234,36 +232,52 @@ std::optional<Source> ParseSourceOverride(std::string_view url) {
                   .test = true};
 }
 
-std::optional<Common::Net::Asset> SelectFritchiiAsset(const Common::Net::Release& release,
-                                                      const Source& source) {
-    const auto version = ParseFritchiiTag(release.tag);
-    if (!version) {
+namespace {
+
+std::optional<FritchiiVersion> ParseFritchiiAssetVersion(std::string_view filename) {
+    constexpr std::string_view prefix = "Fritchii-v";
+    constexpr std::string_view suffix = "-Windows-x64.zip";
+    if (!filename.starts_with(prefix) || !filename.ends_with(suffix)) {
         return std::nullopt;
     }
-    const auto filename = FritchiiAssetName(*version);
+    return ParseFritchiiVersion(
+        filename.substr(prefix.size(), filename.size() - prefix.size() - suffix.size()));
+}
+
+} // namespace
+
+std::optional<Common::Net::Asset> SelectFritchiiAsset(const Common::Net::Release& release,
+                                                      const Source& source) {
+    const auto tag_version = ParseFritchiiTag(release.tag);
     for (const auto& url : release.assets) {
+        const auto slash = url.rfind('/');
+        if (slash == std::string::npos) {
+            continue;
+        }
+        const auto filename = std::string_view{url}.substr(slash + 1);
+        const auto version = ParseFritchiiAssetVersion(filename);
+        if (!version || (tag_version && *tag_version != *version)) {
+            continue;
+        }
+
         std::string origin;
         if (source.test) {
-            if (url.starts_with(source.origin + "/") && url.ends_with("/" + filename) &&
-                url.find("..") == std::string::npos &&
+            if (url.starts_with(source.origin + "/") && url.find("..") == std::string::npos &&
                 url.find_first_of("?#\\") == std::string::npos) {
                 origin = source.origin;
             }
-        } else {
-            for (const auto repo : RepoNames) {
-                if (url == fmt::format("https://github.com/Frizti/{}/releases/download/{}/{}", repo,
-                                       release.tag, filename)) {
-                    origin = "https://github.com";
-                }
-            }
+        } else if (url == fmt::format("https://github.com/{}/releases/download/{}/{}",
+                                      ReleaseRepo, release.tag, filename)) {
+            origin = "https://github.com";
         }
         if (origin.empty()) {
             continue;
         }
-        Common::Net::Asset asset{.name = "Fritchii",
+
+        Common::Net::Asset asset{.name = "Fritchii-HDrum",
                                  .url = origin,
                                  .path = url.substr(origin.size()),
-                                 .filename = filename};
+                                 .filename = std::string{filename}};
         if (const auto info = release.asset_info.find(url); info != release.asset_info.end()) {
             asset.sha256 = info->second.sha256;
             asset.size = info->second.size;
@@ -279,8 +293,12 @@ std::optional<Common::Net::Release> SelectFritchiiUpdate(
     const Common::Net::Release* selected = nullptr;
     FritchiiVersion newest = current;
     for (const auto& release : releases) {
-        const auto version = ParseFritchiiTag(release.tag);
-        if (version && *version > newest && SelectFritchiiAsset(release, source)) {
+        const auto asset = SelectFritchiiAsset(release, source);
+        if (!asset) {
+            continue;
+        }
+        const auto version = ParseFritchiiAssetVersion(asset->filename);
+        if (version && *version > newest) {
             newest = *version;
             selected = &release;
         }
