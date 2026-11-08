@@ -80,9 +80,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: windows-x86_64
-            runner: windows-2022
-          # LLVM PGO profiles are supported by MinGW clang, not MSVC.
+          # Build only the Windows MinGW Clang PGO variant.
           - platform: windows-x86_64-pgo
             runner: windows-2022
             pgo: true
@@ -675,10 +673,7 @@ jobs:
 
           | Build | Package | Notes |
           | --- | --- | --- |
-          | x64 MSVC | [Standard](${base}/lichii-windows-x86_64.zip) | Use this build if the MinGW build has graphics issues |
-          | x64 MinGW Clang | [PGO](${base}/lichii-windows-x86_64-pgo.zip) | Profile-guided optimization; includes required runtime DLLs |
-
-          Both builds include RenHDrum HD Rumble support.
+          | x64 MinGW Clang PGO | [Download](${base}/lichii-windows-x86_64-pgo.zip) | Profile-guided optimization; includes required runtime DLLs and RenHDrum HD Rumble support |
           EOF
 
           gh release create "${tag}" dist/* \
