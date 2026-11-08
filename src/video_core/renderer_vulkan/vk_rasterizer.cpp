@@ -1662,8 +1662,8 @@ void RasterizerVulkan::DispatchCompute() {
             }
         }
         if (const auto indirect = kepler_compute->GetIndirectComputeAddress()) {
-            if (const auto device = gpu_memory->GpuToCpuAddress(*indirect)) {
-                split.RecordDispatchWrite(*device, 12);
+            if (const auto cpu_address = gpu_memory->GpuToCpuAddress(*indirect)) {
+                split.RecordDispatchWrite(*cpu_address, 12);
             }
         }
         split.ConfirmDispatch();
