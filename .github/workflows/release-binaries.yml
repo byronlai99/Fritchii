@@ -632,6 +632,8 @@ jobs:
     steps:
       - name: Check out release version
         uses: actions/checkout@v5
+        with:
+          path: source
 
       - name: Download binaries
         uses: actions/download-artifact@v7
@@ -644,7 +646,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir dist
-          version="$(tr -d '[:space:]' < dist/frizti_version.txt)"
+          version="$(tr -d '[:space:]' < source/dist/frizti_version.txt)"
           if [[ ! "$version" =~ ^[1-9][0-9]*(\.[1-9])?$ ]]; then
             echo "Invalid Fritchii version in dist/frizti_version.txt: $version"
             exit 1
@@ -700,7 +702,7 @@ jobs:
             exit 1
           fi
           tag="build-${GITHUB_RUN_NUMBER}"
-          version="$(tr -d '[:space:]' < dist/frizti_version.txt)"
+          version="$(tr -d '[:space:]' < source/dist/frizti_version.txt)"
           windows_package="Fritchii-v${version}-Windows-x64.zip"
           base="https://github.com/${GITHUB_REPOSITORY}/releases/download/${tag}"
 
@@ -739,7 +741,7 @@ jobs:
             echo "Release is tagged '$published_tag' and titled '$published_title', expected tag $expected and a title naming build ${GITHUB_RUN_NUMBER}"
             exit 1
           fi
-          version="$(tr -d '[:space:]' < dist/frizti_version.txt)"
+          version="$(tr -d '[:space:]' < source/dist/frizti_version.txt)"
           windows_package="Fritchii-v${version}-Windows-x64.zip"
           if ! gh release view "$expected" --repo "${GITHUB_REPOSITORY}" --json assets --jq '.assets[].name' | grep -Fxq "$windows_package"; then
             echo "Release $expected is missing $windows_package"
