@@ -647,7 +647,7 @@ jobs:
           set -euo pipefail
           mkdir dist
           version="$(tr -d '[:space:]' < source/dist/frizti_version.txt)"
-          if [[ ! "$version" =~ ^[1-9][0-9]*(\.[1-9])?$ ]]; then
+          if [[ ! "$version" =~ ^[1-9][0-9]*(\.[1-9][0-9]*)?$ ]]; then
             echo "Invalid Fritchii version in dist/frizti_version.txt: $version"
             exit 1
           fi
