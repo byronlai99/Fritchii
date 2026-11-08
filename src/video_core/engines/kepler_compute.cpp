@@ -1038,7 +1038,7 @@ bool KeplerCompute::BypassOotNetwork(u64 program_id, u64 native_key) {
         return false;
     }
     auto* const bypass_state = rasterizer->OotNetworkBypass();
-    if (!state) {
+    if (!bypass_state) {
         return false;
     }
     // The tonemap pass draws before the network every frame; until it has been seen (menus, the
