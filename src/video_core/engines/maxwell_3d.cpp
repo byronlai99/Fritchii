@@ -2132,12 +2132,12 @@ void Maxwell3D::FrontDmaRead(VideoCommon::GpuSplit& split, FrontState& fs, u32 m
                             return dispatches.unbounded[static_cast<size_t>(reason)];
                         };
                         u64 dispatch_drains = 0;
-                        for (const u64 count : dispatch_checks) {
-                            dispatch_drains += count;
+                        for (const u64 dispatch_count : dispatch_checks) {
+                            dispatch_drains += dispatch_count;
                         }
                         u64 dispatches_unbounded = 0;
-                        for (const u64 count : dispatches.unbounded) {
-                            dispatches_unbounded += count;
+                        for (const u64 dispatch_count : dispatches.unbounded) {
+                            dispatches_unbounded += dispatch_count;
                         }
                         using Release = VideoCommon::GpuSplit::ReleaseNote;
                         const auto& releases = split.ReleaseNotes();
