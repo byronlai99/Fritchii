@@ -631,26 +631,36 @@ jobs:
           # Asset names drop the commit sha: the release tag already identifies the build, and
           # stable names let the notes table link to them.
           strip_sha() { sed "s/-${GITHUB_SHA}//" <<< "$1"; }
-          for artifact in artifacts/*/; do
-            name=$(basename "$artifact")
-            if [[ "$name" == lichii-windows-x86_64-* ]]; then
-              # Windows: zip the complete deployed application directory. It contains Qt plugin
-              # ZIPs too, so checking for "*.zip" first would publish only those plugins.
-              (cd "$artifact" && zip -qr "${GITHUB_WORKSPACE}/dist/lichii-windows-x86_64.zip" .)
-            elif compgen -G "$artifact*.AppImage" > /dev/null; then
-              # Linux: ship the AppImage and the tar.gz as they are.
-              for file in "$artifact"*.AppImage "$artifact"*.tar.gz; do
-                cp "$file" "dist/$(strip_sha "$(basename "$file")")"
-              done
-            elif compgen -G "$artifact*.zip" > /dev/null; then
-              for file in "$artifact"*.zip "$artifact"*.dmg; do
-                [[ -e "$file" ]] && cp "$file" "dist/$(strip_sha "$(basename "$file")")"
-              done
-            else
-              (cd "$artifact" && zip -qr "${GITHUB_WORKSPACE}/dist/$(strip_sha "$name").zip" .)
-            fi
-          done
-          ls -la dist
+          # download-artifact extracts a single matching artifact directly into artifacts/,
+          # but uses a named subdirectory when multiple artifacts are downloaded. Find the
+          # Windows executable so both layouts package the same complete application directory.
+          windows_exe="$(find artifacts -type f -name lichii.exe -print -quit)"
+          if [[ -n "$windows_exe" ]]; then
+            windows_dir="$(dirname "$windows_exe")"
+            test -f "$windows_dir/eden-cli.exe"
+            (cd "$windows_dir" && zip -qr "${GITHUB_WORKSPACE}/dist/lichii-windows-x86_64.zip" .)
+          else
+            for artifact in artifacts/*/; do
+              name=$(basename "$artifact")
+              if compgen -G "$artifact*.AppImage" > /dev/null; then
+                # Linux: ship the AppImage and the tar.gz as they are.
+                for file in "$artifact"*.AppImage "$artifact"*.tar.gz; do
+                  cp "$file" "dist/$(strip_sha "$(basename "$file")")"
+                done
+              elif compgen -G "$artifact*.zip" > /dev/null; then
+                for file in "$artifact"*.zip "$artifact"*.dmg; do
+                  [[ -e "$file" ]] && cp "$file" "dist/$(strip_sha "$(basename "$file")")"
+                done
+              else
+                (cd "$artifact" && zip -qr "${GITHUB_WORKSPACE}/dist/$(strip_sha "$name").zip" .)
+              fi
+            done
+          fi
+          # Never publish a green release without the actual Windows application package.
+          test -s dist/lichii-windows-x86_64.zip
+          unzip -Z1 dist/lichii-windows-x86_64.zip | grep -Fxq lichii.exe
+          unzip -Z1 dist/lichii-windows-x86_64.zip | grep -Fxq eden-cli.exe
+          ls -lh dist
 
       - name: Create release
         shell: bash
@@ -699,5 +709,9 @@ jobs:
           published_title=$(gh release view "$expected" --repo "${GITHUB_REPOSITORY}" --json name --jq '.name')
           if [ "$published_tag" != "$expected" ] || [[ "$published_title" != *" build ${GITHUB_RUN_NUMBER} ("* ]]; then
             echo "Release is tagged '$published_tag' and titled '$published_title', expected tag $expected and a title naming build ${GITHUB_RUN_NUMBER}"
+            exit 1
+          fi
+          if ! gh release view "$expected" --repo "${GITHUB_REPOSITORY}" --json assets --jq '.assets[].name' | grep -Fxq lichii-windows-x86_64.zip; then
+            echo "Release $expected is missing lichii-windows-x86_64.zip"
             exit 1
           fi
