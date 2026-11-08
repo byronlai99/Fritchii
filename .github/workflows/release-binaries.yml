@@ -630,6 +630,9 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: Check out release version
+        uses: actions/checkout@v5
+
       - name: Download binaries
         uses: actions/download-artifact@v7
         with:
@@ -641,8 +644,14 @@ jobs:
         run: |
           set -euo pipefail
           mkdir dist
-          # Asset names drop the commit sha: the release tag already identifies the build, and
-          # stable names let the notes table link to them.
+          version="$(tr -d '[:space:]' < dist/frizti_version.txt)"
+          if [[ ! "$version" =~ ^[1-9][0-9]*(\.[1-9])?$ ]]; then
+            echo "Invalid Fritchii version in dist/frizti_version.txt: $version"
+            exit 1
+          fi
+          windows_package="Fritchii-v${version}-Windows-x64.zip"
+          # Other platform assets drop the commit sha; Windows uses the versioned name expected
+          # by Fritchii-HDrum's update checker.
           strip_sha() { sed "s/-${GITHUB_SHA}//" <<< "$1"; }
           # download-artifact extracts a single matching artifact directly into artifacts/,
           # but uses a named subdirectory when multiple artifacts are downloaded. Find the
@@ -650,7 +659,7 @@ jobs:
           windows_exe="$(find artifacts -type f -name lichii.exe -print -quit)"
           if [[ -n "$windows_exe" ]]; then
             windows_dir="$(dirname "$windows_exe")"
-            (cd "$windows_dir" && zip -qr "${GITHUB_WORKSPACE}/dist/lichii-windows-x86_64.zip" .)
+            (cd "$windows_dir" && zip -qr "${GITHUB_WORKSPACE}/dist/${windows_package}" .)
           else
             for artifact in artifacts/*/; do
               name=$(basename "$artifact")
@@ -669,8 +678,14 @@ jobs:
             done
           fi
           # Never publish a green release without the actual Windows application package.
-          test -s dist/lichii-windows-x86_64.zip
-          unzip -Z1 dist/lichii-windows-x86_64.zip | grep -Fxq lichii.exe
+          test -s "dist/${windows_package}"
+          archive_files="$(unzip -Z1 "dist/${windows_package}")"
+          grep -Fxq lichii.exe <<< "$archive_files"
+          if grep -Eq '(^|/)(eden-cli\.exe|vc_redist\.x64\.exe|eden-cli\.pdb|lichii\.pdb)$' <<< "$archive_files"; then
+            echo "The Windows package contains a file that must be excluded:"
+            grep -E '(^|/)(eden-cli\.exe|vc_redist\.x64\.exe|eden-cli\.pdb|lichii\.pdb)$' <<< "$archive_files"
+            exit 1
+          fi
           ls -lh dist
 
       - name: Create release
@@ -685,6 +700,8 @@ jobs:
             exit 1
           fi
           tag="build-${GITHUB_RUN_NUMBER}"
+          version="$(tr -d '[:space:]' < dist/frizti_version.txt)"
+          windows_package="Fritchii-v${version}-Windows-x64.zip"
           base="https://github.com/${GITHUB_REPOSITORY}/releases/download/${tag}"
 
           cat > notes.md <<EOF
@@ -696,7 +713,7 @@ jobs:
 
           | Build | Package | Notes |
           | --- | --- | --- |
-          | x64 MSVC | [Download](${base}/lichii-windows-x86_64.zip) | Standard MSVC build; includes RenHDrum HD Rumble support |
+          | x64 MSVC | [Download](${base}/${windows_package}) | Standard MSVC build; includes RenHDrum HD Rumble support |
           EOF
 
           gh release create "${tag}" dist/* \
@@ -722,7 +739,9 @@ jobs:
             echo "Release is tagged '$published_tag' and titled '$published_title', expected tag $expected and a title naming build ${GITHUB_RUN_NUMBER}"
             exit 1
           fi
-          if ! gh release view "$expected" --repo "${GITHUB_REPOSITORY}" --json assets --jq '.assets[].name' | grep -Fxq lichii-windows-x86_64.zip; then
-            echo "Release $expected is missing lichii-windows-x86_64.zip"
+          version="$(tr -d '[:space:]' < dist/frizti_version.txt)"
+          windows_package="Fritchii-v${version}-Windows-x64.zip"
+          if ! gh release view "$expected" --repo "${GITHUB_REPOSITORY}" --json assets --jq '.assets[].name' | grep -Fxq "$windows_package"; then
+            echo "Release $expected is missing $windows_package"
             exit 1
           fi
