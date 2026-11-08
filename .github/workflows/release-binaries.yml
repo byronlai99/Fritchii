@@ -633,7 +633,11 @@ jobs:
           strip_sha() { sed "s/-${GITHUB_SHA}//" <<< "$1"; }
           for artifact in artifacts/*/; do
             name=$(basename "$artifact")
-            if compgen -G "$artifact*.AppImage" > /dev/null; then
+            if [[ "$name" == lichii-windows-x86_64-* ]]; then
+              # Windows: zip the complete deployed application directory. It contains Qt plugin
+              # ZIPs too, so checking for "*.zip" first would publish only those plugins.
+              (cd "$artifact" && zip -qr "${GITHUB_WORKSPACE}/dist/lichii-windows-x86_64.zip" .)
+            elif compgen -G "$artifact*.AppImage" > /dev/null; then
               # Linux: ship the AppImage and the tar.gz as they are.
               for file in "$artifact"*.AppImage "$artifact"*.tar.gz; do
                 cp "$file" "dist/$(strip_sha "$(basename "$file")")"
@@ -663,11 +667,11 @@ jobs:
           base="https://github.com/${GITHUB_REPOSITORY}/releases/download/${tag}"
 
           cat > notes.md <<EOF
-          Automatic Windows builds of `${GITHUB_REF_NAME}` at `${GITHUB_SHA}`.
+          Automatic Windows builds of \`${GITHUB_REF_NAME}\` at \`${GITHUB_SHA}\`.
 
           ## Windows
 
-          Extract the archive and run `lichii.exe`, or run `eden-cli.exe` from a terminal.
+          Extract the archive and run \`lichii.exe\`, or run \`eden-cli.exe\` from a terminal.
 
           | Build | Package | Notes |
           | --- | --- | --- |
