@@ -464,6 +464,19 @@ jobs:
             }
           }
           windeployqt --release --no-translations build/release/bin/lichii.exe
+          $filesToRemove = @(
+            'eden-cli.exe',
+            'vc_redist.x64.exe',
+            'eden-cli.pdb',
+            'lichii.pdb'
+          )
+          foreach ($file in $filesToRemove) {
+            $path = Join-Path 'build/release/bin' $file
+            if (Test-Path $path) {
+              Remove-Item $path -Force
+              Write-Host "Removed $file"
+            }
+          }
 
       # A dynamic MinGW build is not portable on its own: windeployqt6 brings the Qt libraries and
       # plugins, then every non-system DLL the binaries and those plugins pull in gets copied next to
@@ -637,7 +650,6 @@ jobs:
           windows_exe="$(find artifacts -type f -name lichii.exe -print -quit)"
           if [[ -n "$windows_exe" ]]; then
             windows_dir="$(dirname "$windows_exe")"
-            test -f "$windows_dir/eden-cli.exe"
             (cd "$windows_dir" && zip -qr "${GITHUB_WORKSPACE}/dist/lichii-windows-x86_64.zip" .)
           else
             for artifact in artifacts/*/; do
@@ -659,7 +671,6 @@ jobs:
           # Never publish a green release without the actual Windows application package.
           test -s dist/lichii-windows-x86_64.zip
           unzip -Z1 dist/lichii-windows-x86_64.zip | grep -Fxq lichii.exe
-          unzip -Z1 dist/lichii-windows-x86_64.zip | grep -Fxq eden-cli.exe
           ls -lh dist
 
       - name: Create release
@@ -681,7 +692,7 @@ jobs:
 
           ## Windows
 
-          Extract the archive and run \`lichii.exe\`, or run \`eden-cli.exe\` from a terminal.
+          Extract the archive and run \`lichii.exe\`.
 
           | Build | Package | Notes |
           | --- | --- | --- |
