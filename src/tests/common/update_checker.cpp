@@ -264,18 +264,22 @@ std::string GitHubUrl(std::string_view repo, std::string_view tag, std::string_v
 
 } // namespace
 
-TEST_CASE("Fritchii versions compare numerically with one decimal", "[updater]") {
+TEST_CASE("Fritchii versions compare numerically with multi-digit minor versions", "[updater]") {
     CHECK(UpdateChecker::ParseFritchiiVersion("4") == FritchiiVersion{4, 0});
     CHECK(UpdateChecker::ParseFritchiiVersion("3.5") == FritchiiVersion{3, 5});
     CHECK(UpdateChecker::ParseFritchiiVersion("12") == FritchiiVersion{12, 0});
+    CHECK(UpdateChecker::ParseFritchiiVersion("4.11") == FritchiiVersion{4, 11});
     CHECK(FritchiiVersion{3, 5} < FritchiiVersion{4, 0});
     CHECK(FritchiiVersion{4, 0} < FritchiiVersion{4, 1});
-    CHECK(FritchiiVersion{4, 9} < FritchiiVersion{5, 0});
+    CHECK(FritchiiVersion{4, 9} < FritchiiVersion{4, 10});
+    CHECK(FritchiiVersion{4, 10} < FritchiiVersion{4, 11});
+    CHECK(FritchiiVersion{4, 11} < FritchiiVersion{5, 0});
     CHECK(FritchiiVersion{9, 0} < FritchiiVersion{10, 0});
     CHECK(FritchiiVersion{4, 1}.ToString() == "4.1");
+    CHECK(FritchiiVersion{4, 11}.ToString() == "4.11");
     CHECK(FritchiiVersion{4, 0}.ToString() == "4");
 
-    const std::string invalid = GENERATE("", "0", "04", "4.", "4.0", "4.10", "4.a", "v4", " 4",
+    const std::string invalid = GENERATE("", "0", "04", "4.", "4.0", "4.01", "4.a", "v4", " 4",
                                          "4 ", "-1", "+4", "4.1.2", ".5", "99999999999");
     CHECK_FALSE(UpdateChecker::ParseFritchiiVersion(invalid));
 }
@@ -283,6 +287,7 @@ TEST_CASE("Fritchii versions compare numerically with one decimal", "[updater]")
 TEST_CASE("Fritchii tags and build versions accept the old Frizti names", "[updater]") {
     CHECK(UpdateChecker::ParseFritchiiTag("fritchii-v4") == FritchiiVersion{4, 0});
     CHECK(UpdateChecker::ParseFritchiiTag("fritchii-v4.1") == FritchiiVersion{4, 1});
+    CHECK(UpdateChecker::ParseFritchiiTag("fritchii-v4.11") == FritchiiVersion{4, 11});
     CHECK(UpdateChecker::ParseFritchiiTag("frizti-v3") == FritchiiVersion{3, 0});
     CHECK(UpdateChecker::ParseFritchiiTag("frizti-v3.5") == FritchiiVersion{3, 5});
     CHECK(UpdateChecker::ParseBuildVersion("Fritchii v4") == FritchiiVersion{4, 0});
