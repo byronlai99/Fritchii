@@ -255,11 +255,11 @@ Common::Net::Release MakeFritchiiRelease(const std::string& tag,
     }
     const nlohmann::json json{
         {"tag_name", tag}, {"name", "Fritchii " + tag}, {"prerelease", true}, {"assets", assets}};
-    return Common::Net::Release::FromJson(json, "https://api.github.com", "Frizti/Lichii").value();
+    return Common::Net::Release::FromJson(json, "https://api.github.com", "byronlai99/Fritchii").value();
 }
 
 std::string GitHubUrl(std::string_view repo, std::string_view tag, std::string_view name) {
-    return fmt::format("https://github.com/Frizti/{}/releases/download/{}/{}", repo, tag, name);
+    return fmt::format("https://github.com/byronlai99/{}/releases/download/{}/{}", repo, tag, name);
 }
 
 } // namespace
@@ -308,14 +308,14 @@ TEST_CASE("GitHub digests are parsed only when they are SHA-256", "[updater]") {
     CHECK_FALSE(Common::Net::ParseSha256Digest(digest));
 }
 
-TEST_CASE("Fritchii selects only the Windows package from the Frizti repository", "[updater]") {
+TEST_CASE("Fritchii selects only the Windows package from the project repository", "[updater]") {
     const auto source = UpdateChecker::DefaultSource();
     CHECK(source.origin == "https://api.github.com");
-    CHECK(source.api_path == "/repos/Frizti/Lichii/releases?per_page=100");
+    CHECK(source.api_path == "/repos/byronlai99/Fritchii/releases?per_page=100");
     CHECK_FALSE(source.test);
 
     const std::string tag = "fritchii-v5";
-    const std::string repo = GENERATE("Lichii", "Fritchii");
+    const std::string repo = "Fritchii";
     const auto release = MakeFritchiiRelease(
         tag, {GitHubUrl(repo, tag, "Fritchii-v5-debug-symbols-not-needed-to-play.zip"),
               GitHubUrl(repo, tag, "Fritchii-v5-Windows-x64.zip")});
@@ -323,7 +323,7 @@ TEST_CASE("Fritchii selects only the Windows package from the Frizti repository"
     REQUIRE(asset);
     CHECK(asset->filename == "Fritchii-v5-Windows-x64.zip");
     CHECK(asset->url == "https://github.com");
-    CHECK(asset->path == "/Frizti/" + repo + "/releases/download/fritchii-v5/" + asset->filename);
+    CHECK(asset->path == "/byronlai99/" + repo + "/releases/download/fritchii-v5/" + asset->filename);
     CHECK(asset->sha256 == "597200a1bffa3d2ecfb2f3f2a464515d57d7f6dc674060f16719830c790bada7");
     CHECK(asset->size == 68126892);
 
@@ -356,7 +356,7 @@ TEST_CASE("Fritchii ignores debug zips, old asset names and lookalike URLs", "[u
 
 TEST_CASE("Fritchii picks the newest newer release that has a package", "[updater]") {
     const auto make = [](const std::string& tag, const std::string& name) {
-        return MakeFritchiiRelease(tag, {GitHubUrl("Lichii", tag, name)});
+        return MakeFritchiiRelease(tag, {GitHubUrl("Fritchii", tag, name)});
     };
     const auto releases = std::array{
         make("frizti-v3", "Lichii-Frizti-v3-Windows-x64.zip"),
@@ -375,6 +375,17 @@ TEST_CASE("Fritchii picks the newest newer release that has a package", "[update
     CHECK(select({4, 1}).empty());
     CHECK(select({6, 0}).empty());
     CHECK_FALSE(UpdateChecker::SelectFritchiiUpdate({}, {4, 0}, source));
+}
+
+TEST_CASE("Fritchii reads the update version from build release package names", "[updater]") {
+    const auto source = UpdateChecker::DefaultSource();
+    const auto release =
+        MakeFritchiiRelease("build-100",
+                            {GitHubUrl("Fritchii", "build-100", "Fritchii-v4.12-Windows-x64.zip")});
+    const auto releases = std::array{release};
+    const auto update = UpdateChecker::SelectFritchiiUpdate(releases, {4, 11}, source);
+    REQUIRE(update);
+    CHECK(update->tag == "build-100");
 }
 
 TEST_CASE("EDEN_UPDATE_URL takes https anywhere and plain http only on loopback", "[updater]") {
