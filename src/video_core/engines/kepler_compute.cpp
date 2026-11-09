@@ -1052,8 +1052,14 @@ bool KeplerCompute::BypassOotNetwork(u64 program_id, u64 native_key) {
     if (tonemapped.Address() == 0) {
         return false;
     }
+    const bool output_replaced = bypass_state->output_replaced.load(std::memory_order_relaxed);
+    // This dispatch feeds only the AA network. Skip it only after the previous frame's output
+    // was successfully replaced; on the first frame or after a failed copy, keep it native.
+    if (ShouldSkipUnusedDispatch(native_key, output_replaced)) {
+        return true;
+    }
     if (native_key == PrepassProgramKey || native_key == NetworkProgramKey) {
-        return bypass_state->output_replaced.load(std::memory_order_relaxed);
+        return output_replaced;
     }
     if (native_key != OutputProgramKey) {
         return false;
