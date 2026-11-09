@@ -139,20 +139,20 @@ std::vector<Change> FixDockedController(Values& settings) {
 }
 
 std::map<std::string, std::string> GlobalValues(std::span<BasicSetting* const> settings) {
-    std::map<std::string, std::string> values;
+    std::map<std::string, std::string> result;
     for (const BasicSetting* const setting : settings) {
-        values.emplace(setting->GetLabel(), setting->ToStringGlobal());
+        result.emplace(setting->GetLabel(), setting->ToStringGlobal());
     }
-    return values;
+    return result;
 }
 
 std::map<std::string, std::string> PerGameValues(std::span<BasicSetting* const> settings) {
-    std::map<std::string, std::string> values;
+    std::map<std::string, std::string> result;
     for (const BasicSetting* const setting : settings) {
-        values.emplace(setting->GetLabel(),
+        result.emplace(setting->GetLabel(),
                        setting->UsingGlobal() ? std::string{UseGlobal} : setting->ToString());
     }
-    return values;
+    return result;
 }
 
 std::string FormatChanges(std::span<const Change> changes) {
