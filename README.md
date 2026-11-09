@@ -1,89 +1,73 @@
 <!--
-# SPDX-FileCopyrightText: Copyright 2025 Eden Emulator Project
+# SPDX-FileCopyrightText: Copyright 2026 Fritchii-HDrum contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # SPDX-FileCopyrightText: 2018 yuzu Emulator Project
 # SPDX-License-Identifier: GPL-2.0-or-later
 -->
 
-<p align="center">
-  <img src="dist/branding/lichii_icon_with_logo.png" alt="Lichii" width="600">
-</p>
+# Fritchii-HDrum
 
-# Lichii
+**Fritchii-HDrum** is an independent Windows x64 build of [Fritchii](https://github.com/Frizti/Fritchii) with [RenHDrum](https://github.com/trzz1214/RenHDrum) integration for enhanced controller rumble and haptics.
 
-Lichii is an experimental, open-source Nintendo Switch and Switch 2 emulator written in C++. It builds on Eglantine, Eden, yuzu and Sudachi, preserving their contributions while developing this fork's game compatibility and renderer fixes.
+This is a personal, experimental fork. It is not an official release of Frizti's Fritchii project and is not affiliated with Nintendo, Sony or Microsoft.
 
-This is an independent fork, not an official release of those upstream projects. Lichii is not affiliated with Nintendo.
+## Downloads
 
-## Downloads and setup
+Download the latest Windows x64 build from the [Fritchii-HDrum Releases](https://github.com/byronlai99/Fritchii-HDrum/releases) page.
 
-Published builds belong on this fork's [releases page](https://github.com/zortos293/Eglantine/releases). The repository still uses its historical Eglantine name; the desktop application is now Lichii.
+1. Download and extract the complete ZIP archive.
+2. Keep the included DLL files in the same folder as the emulator.
+3. Run `lichii.exe`.
 
-On Windows, extract the entire build archive and run **lichii.exe**. Only use games and system files you have legally obtained. Games, keys and firmware are not included.
+The Windows release workflow enables RenHDrum and packages its runtime with the application. If RenHDrum cannot be loaded or a controller-specific haptics path is unavailable, the emulator can fall back to standard rumble.
 
-### Existing saves and settings
+Games, keys and firmware are not included. Only use games and system files you have legally obtained.
 
-The rebrand intentionally retains the existing Eden/Eglantine data directories and configuration keys. It does not move or delete saves, settings or shader caches. Back up your saves before testing experimental builds.
+## HD Rumble settings
 
-## Compatibility and issue reports
+To open the HD Rumble settings:
 
-Compatibility and performance vary by game, hardware and driver. Rendering errors, stutters and crashes remain possible. Passing automated tests does not establish that a game renders correctly, and this project makes no universal frame-rate guarantee.
+**Configure (Ctrl + ,) → Controls → Configure (under Vibration) → HD Rumble**
 
-When [reporting an issue](https://github.com/zortos293/Eglantine/issues), include:
+The HD Rumble page provides controller-specific options. Available controls depend on the connected controller and its connection type.
 
-- The exact build, game version, CPU, GPU and driver version.
-- Relevant settings and steps to reproduce the problem.
-- A screenshot and the log from the affected session, after checking it for personal information.
+## Controller rumble and haptics support
 
-Do not upload game files, keys, firmware or private account information.
+Fritchii-HDrum combines the emulator's built-in controller drivers with RenHDrum for enhanced vibration.
 
-## Building and contributing
+| Controller | Rumble / haptics support | Notes |
+|---|---|---|
+| Nintendo Switch Pro Controller | HD Rumble through RenHDrum | Preserves high- and low-frequency vibration data. |
+| Nintendo Joy-Con (L/R) | HD Rumble through the built-in Joy-Con driver | The built-in Joy-Con driver handles these controllers by default. |
+| Sony DualSense | Advanced haptics | USB uses the haptic actuators through multi-channel audio; Bluetooth uses HID haptics when supported by the RenHDrum runtime. |
+| Sony DualSense Edge | Advanced haptics | USB and Bluetooth haptics paths are implemented, subject to runtime and device availability. |
+| Xbox One controllers | Enhanced rumble | RenHDrum processing; trigger rumble is available only where the controller and connection expose trigger motors. |
+| Xbox Series X\|S controllers | Enhanced rumble | RenHDrum processing; trigger rumble is available only where the controller and connection expose trigger motors. |
+| Xbox 360-compatible controllers | Enhanced rumble | Supported when SDL identifies the controller as an Xbox 360-style gamepad. |
+| Compatible third-party XInput controllers | Enhanced rumble | Includes supported Xbox-style devices from brands such as GameSir, 8BitDo and PowerA. Actual features vary by model and connection. |
 
-See the [build guide](docs/Build.md), [user documentation](docs/user/README.md) and [coding guidelines](docs/Coding.md). Some inherited documentation and internal build target names still use upstream names. The GUI build target remains `yuzu`; its output is `lichii.exe` on Windows and `lichii` on other desktop platforms.
+### Controller notes
 
-Keep changes focused and distinguish code-level checks from actual gameplay testing.
+- **Joy-Con:** The built-in Joy-Con driver is enabled by default and takes priority for Joy-Con devices. Their rumble is handled by that native driver rather than the RenHDrum path.
+- **DualSense over Bluetooth:** Advanced haptics require a compatible RenHDrum runtime with the Bluetooth HID report function and a usable HID device path. If unavailable, the emulator falls back to standard rumble.
+- **Xbox trigger rumble:** Trigger motors work only on controllers and connection modes that expose them to SDL. Many wireless receivers expose only the main grip motors.
+- **Nintendo Switch 2 Pro Controller:** Native Switch 2 HD Rumble support is not implemented in the current build. It may still be detected by Windows or SDL, but this build does not include the dedicated Switch 2 HD Rumble driver.
 
-## Artwork
-Art created by YOB (yobslab)
-The supplied Lichii logo, icon and library artwork are in [dist/branding](dist/branding). Windows, Linux and macOS icon resources are generated from that artwork by [Generate-LichiiIcons.ps1](tools/Generate-LichiiIcons.ps1).
+Controller behavior depends on the game, controller firmware, operating system, SDL device detection and whether the controller is connected over USB or Bluetooth. Not every game uses HD Rumble or advanced haptics.
 
-## Support Lichii
+## Saves and configuration
 
-Lichii is free and stays free. If you want to help, you can donate in crypto. Donations help pay for the AI tools and build machines used to develop this open-source project faster.
+Fritchii-HDrum uses separate save-data and configuration locations from Lichii and other emulator forks. Existing saves and settings from those installations remain separate and are not automatically shared.
 
-**Solana (SOL)**
-```text
-JepEjfyWjGjhJvHSrqj52KtLjcbbbmUh1iGqerYBF4w
-```
+Keep backups of important save data before testing experimental builds. Do not copy configuration files between emulator forks without checking their compatibility.
 
-**Ethereum (ETH)**
-```text
-0x055ABa1b80Bc35C836Ce7E9F47c2b3d6C75b5534
-```
+## Project and credits
 
-**Bitcoin (BTC)**
-```text
-bc1qcvxdpf4qvdhqp8ee4s355cjmxrzsphsdwpl8w4
-```
+- **Fritchii:** Based on [Frizti/Fritchii](https://github.com/Frizti/Fritchii) and its contributors.
+- **RenHDrum:** Enhanced controller rumble and haptics by [Three-Dola](https://github.com/trzz1214/RenHDrum).
+- **Upstream foundations:** This project inherits code and contributions from the emulator projects in its development history. Original copyright notices and third-party licenses are retained.
 
-**BNB Smart Chain (BNB)**
-```text
-0x055ABa1b80Bc35C836Ce7E9F47c2b3d6C75b5534
-```
-
-**Polygon**
-```text
-0x055ABa1b80Bc35C836Ce7E9F47c2b3d6C75b5534
-```
-
-Send each coin on its matching network. Coins sent on the wrong network can't be recovered.
-
-> [!NOTE]
-> Donations are voluntary gifts and are non-refundable. A donation does not buy any product, service, perk, early access, exclusive build, priority support or say in the project. Every release stays free and public for everyone.
-
-## Credits and license
-
-Lichii inherits the work of the Eglantine, Eden, yuzu and Sudachi projects and their contributors, including Eglantine's original developer Camille LaVey. Original copyright notices and third-party licenses are retained.
+Fritchii-HDrum is experimental software. Compatibility, performance and controller behavior may vary. When reporting an issue, include the exact build, controller model, connection type, relevant settings and a log from the affected session. Check logs for personal information before sharing them.
 
 See [LICENSE.txt](LICENSE.txt) and the source files for applicable license terms.
