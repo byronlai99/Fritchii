@@ -171,6 +171,16 @@ jobs:
           }
           windeployqt --release --no-translations build/release/bin/lichii.exe
 
+          # Keep the release focused on the main app and its runtime dependencies.
+          $bin = (Resolve-Path 'build/release/bin').Path
+          Remove-Item (Join-Path $bin 'eden-cli.exe') -Force -ErrorAction SilentlyContinue
+          Get-ChildItem -Path $bin -Filter '*.pdb' -File -ErrorAction SilentlyContinue |
+            Remove-Item -Force
+          Get-ChildItem -Path $bin -Force |
+            Where-Object { $_.Name -like 'vc_redist*' } |
+            Remove-Item -Recurse -Force
+          Get-ChildItem $bin | Select-Object Name, Length
+
       - name: Upload Windows binary
         uses: actions/upload-artifact@v7
         with:
