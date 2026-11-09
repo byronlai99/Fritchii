@@ -277,6 +277,15 @@ jobs:
             objects-${{ matrix.platform }}-v2-${{ github.sha }}-
             objects-${{ matrix.platform }}-v2-
 
+      # Reuse the exact deployed Windows runtime files when dependency inputs have not changed.
+      - name: Restore Windows runtime files
+        if: matrix.platform == 'windows-x86_64'
+        id: windows-runtime-cache
+        uses: actions/cache/restore@v5
+        with:
+          path: .windows-runtime-cache
+          key: windows-runtime-v1-qt6.8.3-${{ hashFiles('cpmfile.json', 'CMakeLists.txt', 'CMakeModules/**', 'externals/**/CMakeLists.txt', 'src/**/CMakeLists.txt') }}
+
       - name: Configure Linux
         if: startsWith(matrix.platform, 'linux')
         shell: bash
@@ -493,12 +502,53 @@ jobs:
         if: matrix.platform == 'windows-x86_64'
         shell: pwsh
         run: |
+          $bin = (Resolve-Path 'build/release/bin').Path
           foreach ($exe in 'lichii.exe', 'eden-cli.exe') {
-            if (-not (Test-Path "build/release/bin/$exe")) {
-              throw "build/release/bin/$exe was not produced"
+            if (-not (Test-Path (Join-Path $bin $exe))) {
+              throw "$exe was not produced"
             }
           }
-          windeployqt --release --no-translations build/release/bin/lichii.exe
+
+          # Restore the last deployed Qt/runtime files without restoring an old lichii.exe.
+          if (Test-Path '.windows-runtime-cache') {
+            robocopy '.windows-runtime-cache' $bin /E /COPY:DAT /DCOPY:DAT /R:2 /W:1
+            if ($LASTEXITCODE -ge 8) { throw "Failed to restore cached runtime files (robocopy $LASTEXITCODE)" }
+          }
+
+          # Deploy into a staging directory, then replace only files whose contents changed.
+          $stage = Join-Path $env:RUNNER_TEMP 'windows-runtime-stage'
+          if (Test-Path $stage) { Remove-Item $stage -Recurse -Force }
+          New-Item -ItemType Directory -Path $stage | Out-Null
+          Copy-Item (Join-Path $bin 'lichii.exe') $stage
+          windeployqt --release --no-translations (Join-Path $stage 'lichii.exe')
+          if ($LASTEXITCODE -ne 0) { throw "windeployqt failed with exit code $LASTEXITCODE" }
+
+          Get-ChildItem $stage -Recurse -File | Where-Object { $_.Name -ne 'lichii.exe' } | ForEach-Object {
+            $relative = $_.FullName.Substring($stage.Length).TrimStart('\')
+            $destination = Join-Path $bin $relative
+            $destinationDir = Split-Path $destination -Parent
+            if (-not (Test-Path $destinationDir)) {
+              New-Item -ItemType Directory -Path $destinationDir -Force | Out-Null
+            }
+            $same = $false
+            if (Test-Path $destination) {
+              $same = (Get-FileHash $_.FullName -Algorithm SHA256).Hash -eq (Get-FileHash $destination -Algorithm SHA256).Hash
+            }
+            if ($same) {
+              Write-Host "Unchanged, keeping original file and timestamp: $relative"
+            } else {
+              Copy-Item $_.FullName $destination -Force
+              Write-Host "Updated runtime file: $relative"
+            }
+          }
+
+          # Save the deployed runtime tree separately; never cache the application executable.
+          if (Test-Path '.windows-runtime-cache') { Remove-Item '.windows-runtime-cache' -Recurse -Force }
+          New-Item -ItemType Directory -Path '.windows-runtime-cache' | Out-Null
+          Get-ChildItem $stage -Force | Where-Object { $_.Name -ne 'lichii.exe' } | ForEach-Object {
+            Copy-Item $_.FullName '.windows-runtime-cache' -Recurse -Force
+          }
+
           $filesToRemove = @(
             'eden-cli.exe',
             'vc_redist.x64.exe',
@@ -506,12 +556,19 @@ jobs:
             'lichii.pdb'
           )
           foreach ($file in $filesToRemove) {
-            $path = Join-Path 'build/release/bin' $file
+            $path = Join-Path $bin $file
             if (Test-Path $path) {
               Remove-Item $path -Force
               Write-Host "Removed $file"
             }
           }
+
+      - name: Save Windows runtime files
+        if: matrix.platform == 'windows-x86_64' && steps.windows-runtime-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v5
+        with:
+          path: .windows-runtime-cache
+          key: ${{ steps.windows-runtime-cache.outputs.cache-primary-key }}
 
       # A dynamic MinGW build is not portable on its own: windeployqt6 brings the Qt libraries and
       # plugins, then every non-system DLL the binaries and those plugins pull in gets copied next to
