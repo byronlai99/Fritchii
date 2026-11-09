@@ -10,6 +10,7 @@ on:
   push:
     branches:
       - nx2-experimental
+      - oot-gather-fix
     # A binary only changes when build inputs change; docs-only pushes skip the build.
     paths:
       - "src/**"
