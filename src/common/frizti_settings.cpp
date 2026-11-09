@@ -22,24 +22,24 @@ std::string_view Trim(std::string_view text) {
 }
 } // namespace
 
-std::vector<BasicSetting*> TunedSettings(Values& values) {
+std::vector<BasicSetting*> TunedSettings(Values& settings) {
     // One line per setting; bump Revision when this list or a default here changes.
     return {
-        &values.gpu_accuracy,             // Low
-        &values.dma_accuracy,             // Default
-        &values.gpu_fence_behavior,       // Default
-        &values.vsync_mode,               // Mailbox: the host frame pacer times presents
-        &values.async_presentation,       // On: the host frame pacer runs on the present thread
-        &values.use_asynchronous_shaders, // On: unbuilt pipelines skip draws, no freeze
-        &values.use_docked_mode,          // Docked
-        &values.memory_layout_mode,       // 8 GB: Ocarina's own memory size
-        &values.nvdec_emulation,          // GPU: Ocarina's cutscene videos
-        &values.scaling_filter,           // ScaleForce (newer Lichii builds seed FSR)
-        &values.resolution_setup,         // 1x: a higher scale left over from other games costs fps
-        &values.anti_aliasing,            // FXAA
-        &values.cpu_accuracy,             // Auto
-        &values.use_disk_shader_cache,    // On: no shader rebuild every boot
-        &values.use_vulkan_driver_pipeline_cache, // On
+        &settings.gpu_accuracy,             // Low
+        &settings.dma_accuracy,             // Default
+        &settings.gpu_fence_behavior,       // Default
+        &settings.vsync_mode,               // Mailbox: the host frame pacer times presents
+        &settings.async_presentation,       // On: the host frame pacer runs on the present thread
+        &settings.use_asynchronous_shaders, // On: unbuilt pipelines skip draws, no freeze
+        &settings.use_docked_mode,          // Docked
+        &settings.memory_layout_mode,       // 8 GB: Ocarina's own memory size
+        &settings.nvdec_emulation,          // GPU: Ocarina's cutscene videos
+        &settings.scaling_filter,           // ScaleForce (newer Lichii builds seed FSR)
+        &settings.resolution_setup,         // 1x: a higher scale left over from other games costs fps
+        &settings.anti_aliasing,            // FXAA
+        &settings.cpu_accuracy,             // Auto
+        &settings.use_disk_shader_cache,    // On: no shader rebuild every boot
+        &settings.use_vulkan_driver_pipeline_cache, // On
     };
 }
 
@@ -128,9 +128,9 @@ std::vector<Change> ReconcilePerGame(std::span<BasicSetting* const> settings, co
     return changes;
 }
 
-std::vector<Change> FixDockedController(Values& values) {
-    auto& player = values.players.GetValue(true)[0];
-    if (values.use_docked_mode.GetValue(true) != ConsoleMode::Docked ||
+std::vector<Change> FixDockedController(Values& settings) {
+    auto& player = settings.players.GetValue(true)[0];
+    if (settings.use_docked_mode.GetValue(true) != ConsoleMode::Docked ||
         player.controller_type != ControllerType::Handheld) {
         return {};
     }
