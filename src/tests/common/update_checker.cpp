@@ -255,7 +255,7 @@ Common::Net::Release MakeFritchiiRelease(const std::string& tag,
     }
     const nlohmann::json json{
         {"tag_name", tag}, {"name", "Fritchii " + tag}, {"prerelease", true}, {"assets", assets}};
-    return Common::Net::Release::FromJson(json, "https://api.github.com", "byronlai99/Fritchii").value();
+    return Common::Net::Release::FromJson(json, "https://api.github.com", "byronlai99/Fritchii-HDrum").value();
 }
 
 std::string GitHubUrl(std::string_view repo, std::string_view tag, std::string_view name) {
@@ -318,11 +318,11 @@ TEST_CASE("GitHub digests are parsed only when they are SHA-256", "[updater]") {
 TEST_CASE("Fritchii selects only the Windows package from the project repository", "[updater]") {
     const auto source = UpdateChecker::DefaultSource();
     CHECK(source.origin == "https://api.github.com");
-    CHECK(source.api_path == "/repos/byronlai99/Fritchii/releases?per_page=100");
+    CHECK(source.api_path == "/repos/byronlai99/Fritchii-HDrum/releases?per_page=100");
     CHECK_FALSE(source.test);
 
     const std::string tag = "fritchii-v5";
-    const std::string repo = "Fritchii";
+    const std::string repo = "Fritchii-HDrum";
     const auto release = MakeFritchiiRelease(
         tag, {GitHubUrl(repo, tag, "Fritchii-v5-debug-symbols-not-needed-to-play.zip"),
               GitHubUrl(repo, tag, "Fritchii-v5-Windows-x64.zip")});
@@ -363,7 +363,7 @@ TEST_CASE("Fritchii ignores debug zips, old asset names and lookalike URLs", "[u
 
 TEST_CASE("Fritchii picks the newest newer release that has a package", "[updater]") {
     const auto make = [](const std::string& tag, const std::string& name) {
-        return MakeFritchiiRelease(tag, {GitHubUrl("Fritchii", tag, name)});
+        return MakeFritchiiRelease(tag, {GitHubUrl("Fritchii-HDrum", tag, name)});
     };
     const auto releases = std::array{
         make("frizti-v3", "Lichii-Frizti-v3-Windows-x64.zip"),
@@ -388,7 +388,7 @@ TEST_CASE("Fritchii reads the update version from build release package names", 
     const auto source = UpdateChecker::DefaultSource();
     const auto release =
         MakeFritchiiRelease("build-100",
-                            {GitHubUrl("Fritchii", "build-100", "Fritchii-v4.12-Windows-x64.zip")});
+                            {GitHubUrl("Fritchii-HDrum", "build-100", "Fritchii-v4.12-Windows-x64.zip")});
     const auto releases = std::array{release};
     const auto update = UpdateChecker::SelectFritchiiUpdate(releases, {4, 11}, source);
     REQUIRE(update);

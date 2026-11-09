@@ -33,7 +33,7 @@ std::optional<u64> ParseBuildNumber(std::string_view tag) {
     return number;
 }
 
-constexpr std::string_view ReleaseRepo = "byronlai99/Fritchii";
+constexpr std::string_view ReleaseRepo = "byronlai99/Fritchii-HDrum";
 
 std::optional<u32> ParseNumber(std::string_view text) {
     if (text.empty() || (text.size() > 1 && text.front() == '0') ||
