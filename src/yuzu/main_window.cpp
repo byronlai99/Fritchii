@@ -1823,10 +1823,6 @@ void MainWindow::ConnectMenuEvents() {
     connect_menu(ui->action_Data_Manager, &MainWindow::OnDataDialog);
 
 #ifdef ENABLE_UPDATE_CHECKER
-    auto* check_action = new QAction(tr("Check for Updates..."), this);
-    ui->menu_Help->insertAction(ui->action_About, check_action);
-    connect(check_action, &QAction::triggered, this, &MainWindow::OnCheckForUpdates);
-
     auto* rollback_action = new QAction(tr("Roll Back to the Previous Version..."), this);
     rollback_action->setVisible(false);
     ui->menu_Help->insertAction(ui->action_About, rollback_action);
