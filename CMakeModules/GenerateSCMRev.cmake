@@ -17,7 +17,12 @@ get_timestamp(BUILD_DATE)
 # Fritchii (the Frizti fork, named Frizti v1..v3.5 before v4) releases are numbered v1, v2, v3.5, v4...:
 # dist/frizti_version.txt holds the number.
 set(FRIZTI_VERSION_FILE "${CMAKE_SOURCE_DIR}/dist/frizti_version.txt")
-if (EXISTS "${FRIZTI_VERSION_FILE}")
+if (DEFINED FRIZTI_BUILD_VERSION AND NOT "${FRIZTI_BUILD_VERSION}" STREQUAL "")
+    if (NOT FRIZTI_BUILD_VERSION MATCHES "^[1-9][0-9]*([.][0-9]+)?$")
+        message(FATAL_ERROR "Invalid FRIZTI_BUILD_VERSION: ${FRIZTI_BUILD_VERSION}")
+    endif()
+    set(FRIZTI_VERSION "${FRIZTI_BUILD_VERSION}")
+elseif (EXISTS "${FRIZTI_VERSION_FILE}")
     file(STRINGS "${FRIZTI_VERSION_FILE}" FRIZTI_VERSION LIMIT_COUNT 1 REGEX "^[0-9]+([.][0-9]+)?$")
     set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${FRIZTI_VERSION_FILE}")
     # The log names the commit: reconfigure when HEAD moves (commit, checkout, merge, revert).
