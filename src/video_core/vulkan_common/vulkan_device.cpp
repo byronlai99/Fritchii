@@ -870,7 +870,9 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
         const auto ci = std::ranges::find(queue_cis, graphics_family,
                                           &VkDeviceQueueCreateInfo::queueFamilyIndex);
         if (ci != queue_cis.end() && ci->queueCount > index) {
-            const VkQueue queue = Streamline::FrameGenDeviceQueue(dld.vkGetDeviceQueue, *logical, graphics_family, index);
+            const VkQueue queue =
+                Streamline::FrameGenDeviceQueue(dld.vkGetDeviceQueue, *logical, graphics_family,
+                                                index);
             if (queue) {
                 swapchain_queue = vk::Queue(queue, dld);
                 has_swapchain_queue = true;
