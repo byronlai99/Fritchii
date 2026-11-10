@@ -50,11 +50,12 @@ using namespace Common::Literals;
 namespace {
 
 #ifdef EGLANTINE_STREAMLINE
-// LICHII_DLSS_FG_PRESENT_QUEUE=1: opt in to the experimental dedicated present queue.
-// The default uses the renderer's primary queue, which Streamline already knows.
+// LICHII_DLSS_FG_PRESENT_QUEUE=0: use the renderer's primary queue for an A/B test.
+// DLSS Frame Generation gets a dedicated Streamline-tracked swapchain queue by default;
+// its paced present can otherwise hold the renderer's graphics queue and stall rendering.
 bool UseFrameGenSwapchainQueue() {
     const char* const value = std::getenv("LICHII_DLSS_FG_PRESENT_QUEUE");
-    return value && value[0] == '1';
+    return !value || value[0] != '0';
 }
 #endif
 namespace Alternatives {
