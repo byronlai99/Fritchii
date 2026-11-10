@@ -110,8 +110,11 @@ void MainWindow::SetUpFritchiiUi() {
 #ifdef HAS_RESHADE
         .open_effects = [this] { OnPostProcessingShaders(); },
 #endif
+        .game_running = [this] { return emulation_running; },
+        .restart_game = [this] { OnRestartGame(); },
     };
     statusBar()->insertPermanentWidget(0, FritchiiUi::MakeGraphicsButton(this, graphics));
+    statusBar()->insertPermanentWidget(1, FritchiiUi::MakeFrameGenButton(this, graphics));
 
     // Home screen and rail.
     FritchiiUi::HomeHooks home{
