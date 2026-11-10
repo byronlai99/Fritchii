@@ -325,11 +325,14 @@ std::string FrameGenEnv() {
 void SetFrameGenEnv(bool enabled) {
 #ifdef _WIN32
     _putenv_s("LICHII_DLSS_FG", enabled ? "1" : "");
+    _putenv_s("LICHII_DLSS", enabled ? "1" : "");
 #else
     if (enabled) {
         setenv("LICHII_DLSS_FG", "1", 1);
+        setenv("LICHII_DLSS", "1", 1);
     } else {
         unsetenv("LICHII_DLSS_FG");
+        unsetenv("LICHII_DLSS");
     }
 #endif
 }
