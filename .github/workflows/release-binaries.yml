@@ -25,6 +25,7 @@ on:
       - ".patch/**"
       - "cpmfile.json"
       - ".github/workflows/release-binaries.yml"
+      - "docs/releases/**"
 
 permissions:
   contents: read
