@@ -366,9 +366,10 @@ QPushButton* MakeFrameGenButton(QWidget* parent, GraphicsHooks hooks) {
 
     QObject::connect(button, &QPushButton::clicked, button, [button, hooks, update] {
         if (Common::FrameGenStats::available.load(std::memory_order_relaxed)) {
-            Common::FrameGenStats::user_enabled.store(
-                !Common::FrameGenStats::user_enabled.load(std::memory_order_relaxed),
-                std::memory_order_relaxed);
+            const bool turn_on =
+                !Common::FrameGenStats::user_enabled.load(std::memory_order_relaxed);
+            Common::FrameGenStats::user_enabled.store(turn_on, std::memory_order_relaxed);
+            SetFrameGenEnv(turn_on);
             update();
             return;
         }
