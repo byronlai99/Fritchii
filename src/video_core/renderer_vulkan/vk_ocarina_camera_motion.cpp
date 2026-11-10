@@ -1108,9 +1108,12 @@ VideoCommon::OcarinaUpscaleBackend ResolveOcarinaUpscaler(const Device& device) 
 #ifdef EGLANTINE_STREAMLINE
     dlss_available = Streamline::IsDlssAvailable();
 #endif
+    const char* const dlss_override = std::getenv("LICHII_DLSS");
+    const bool dlss_enabled = (dlss_override != nullptr && dlss_override[0] == '1') ||
+                              Settings::values.nvidia_dlss.GetValue();
     const auto backend = VideoCommon::SelectOcarinaUpscaler(
-        Settings::values.oot_anti_aliasing.GetValue(), Settings::values.nvidia_dlss.GetValue(),
-        dlss_available, value ? value : "");
+        Settings::values.oot_anti_aliasing.GetValue(), dlss_enabled, dlss_available,
+        value ? value : "");
     if (backend == VideoCommon::OcarinaUpscaleBackend::Fsr && !Fsr3Upscaler::IsSupported(device)) {
         return VideoCommon::OcarinaUpscaleBackend::Native;
     }
