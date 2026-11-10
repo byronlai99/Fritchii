@@ -14,7 +14,7 @@ Fritchii-HDrum's Frame Generation integration is an opt-in extension of the exis
   - `sl.pcl.dll`
   - `NvLowLatencyVk.dll`
 
-The five supplied files were inspected and all are PE32+ AMD64 binaries. They are NVIDIA runtime components, not emulator source files; do not place them in the game or shader-cache directories. Keep them beside `sl.interposer.dll` so Streamline can load the plugins and their dependencies.
+The five supplied files were inspected and all are PE32+ AMD64 binaries. They are NVIDIA runtime components, not emulator source files, and are not compiled or copied into the emulator package by this source integration. Place them beside `sl.interposer.dll` in the Streamline plugin directory; do not put them in the game or shader-cache directories. This lets Streamline load the plugins and their dependencies.
 
 ## Enabling
 
