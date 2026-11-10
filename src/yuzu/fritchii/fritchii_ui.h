@@ -51,9 +51,13 @@ struct GraphicsHooks {
     std::function<bool()> renderer_locked;  ///< the renderer can't change while a game runs
     std::function<void()> open_settings;
     std::function<void()> open_effects;     ///< empty without ReShade-style effects
+    std::function<bool()> game_running;     ///< Frame Generation changes take effect on restart
+    std::function<void()> restart_game;
 };
 /// The status bar's one "Graphics" button: renderer, accuracy, filter, anti-aliasing, effects.
 [[nodiscard]] QPushButton* MakeGraphicsButton(QWidget* parent, GraphicsHooks hooks);
+/// DLSS Frame Generation 2x switch in the status bar.
+[[nodiscard]] QPushButton* MakeFrameGenButton(QWidget* parent, GraphicsHooks hooks);
 
 /// A settings page as the settings dialog shows it: inside a scroll area in Fritchii builds, so
 /// the window keeps a normal size with the larger type; the page itself otherwise.
