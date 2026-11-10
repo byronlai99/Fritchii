@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <algorithm>
+#include <cstdlib>
 #include <array>
 #include <limits>
 #include <vector>
@@ -251,8 +252,12 @@ u64 Swapchain::Present(VkSemaphore render_semaphore) {
     // swapchain, so one counter serves every swapchain this object creates.
     // No present ids with DLSS Frame Generation (LICHII_DLSS_FG_PRESENT_ID=1 keeps them): its
     // pacer presents on its own, and the ids may keep its present synchronous.
+    bool frame_gen_drops_present_ids = false;
+#ifdef EGLANTINE_STREAMLINE
+    frame_gen_drops_present_ids = Streamline::FrameGenDropsPresentIds();
+#endif
     const u64 present_id =
-        device.IsKhrPresentWaitSupported() && !Streamline::FrameGenDropsPresentIds() ? ++next_present_id : 0;
+        device.IsKhrPresentWaitSupported() && !frame_gen_drops_present_ids ? ++next_present_id : 0;
     const VkPresentIdKHR present_id_info{
         .sType = VK_STRUCTURE_TYPE_PRESENT_ID_KHR,
         .pNext = nullptr,
