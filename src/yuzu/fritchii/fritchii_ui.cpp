@@ -2,6 +2,9 @@
 
 #include "yuzu/fritchii/fritchii_ui.h"
 
+#include <cstdlib>
+#include <string>
+
 #include <map>
 #include <string_view>
 
@@ -21,6 +24,7 @@
 #include <QMainWindow>
 #include <QMenu>
 #include <QMenuBar>
+#include <QMessageBox>
 #include <QPalette>
 #include <QPixmap>
 #include <QProxyStyle>
@@ -28,10 +32,12 @@
 #include <QUrl>
 #include <QScrollArea>
 #include <QStyleFactory>
+#include <QTimer>
 
 #include "common/fs/fs_paths.h"
 #include "common/fs/path_util.h"
 #include "common/logging.h"
+#include "common/frame_gen_stats.h"
 #include "common/scm_rev.h"
 #include "common/settings.h"
 #include "core/core.h"
@@ -307,6 +313,84 @@ void RestructureMenus(Ui::MainWindow& ui, QMainWindow& window, const MenuHooks& 
     Rename(ui.action_Firmware_From_ZIP, tr("From &ZIP..."));
     Rename(ui.action_About, tr("&About Fritchii-HDrum"));
     Rename(ui.action_Eden_Dependencies, tr("&Open-Source Components"));
+}
+
+namespace {
+
+std::string FrameGenEnv() {
+    const char* const value = std::getenv("LICHII_DLSS_FG");
+    return value ? value : "";
+}
+
+void SetFrameGenEnv(bool enabled) {
+#ifdef _WIN32
+    _putenv_s("LICHII_DLSS_FG", enabled ? "1" : "");
+#else
+    if (enabled) {
+        setenv("LICHII_DLSS_FG", "1", 1);
+    } else {
+        unsetenv("LICHII_DLSS_FG");
+    }
+#endif
+}
+
+} // namespace
+
+QPushButton* MakeFrameGenButton(QWidget* parent, GraphicsHooks hooks) {
+    auto* button = new QPushButton(QObject::tr("FRAME GEN OFF"), parent);
+    button->setObjectName(QStringLiteral("TogglableStatusBarButton"));
+    button->setFocusPolicy(Qt::NoFocus);
+    button->setCheckable(true);
+
+    const auto update = [button] {
+        const bool available = Common::FrameGenStats::available.load(std::memory_order_relaxed);
+        const bool user_on = Common::FrameGenStats::user_enabled.load(std::memory_order_relaxed);
+        const bool next_start = FrameGenEnv() == "1";
+        const bool on = available ? user_on : next_start;
+        button->setChecked(on);
+        button->setText(on ? QObject::tr("FRAME GEN 2X") : QObject::tr("FRAME GEN OFF"));
+        if (available) {
+            button->setToolTip(on ? QObject::tr("DLSS Frame Generation 2x is on (active while the window has focus)")
+                                  : QObject::tr("DLSS Frame Generation 2x is off"));
+        } else {
+            button->setToolTip(next_start
+                ? QObject::tr("Frame Generation is requested for the next game start. NVIDIA DLSS and the Streamline Frame Gen plugins are required.")
+                : QObject::tr("Enable for the next game start. Requires NVIDIA DLSS, RTX 40-series or newer, and Streamline Frame Gen plugins."));
+        }
+    };
+    update();
+
+    auto* timer = new QTimer(button);
+    QObject::connect(timer, &QTimer::timeout, button, update);
+    timer->start(1000);
+
+    QObject::connect(button, &QPushButton::clicked, button, [button, hooks, update] {
+        if (Common::FrameGenStats::available.load(std::memory_order_relaxed)) {
+            Common::FrameGenStats::user_enabled.store(
+                !Common::FrameGenStats::user_enabled.load(std::memory_order_relaxed),
+                std::memory_order_relaxed);
+            update();
+            return;
+        }
+
+        const bool turn_on = FrameGenEnv() != "1";
+        SetFrameGenEnv(turn_on);
+        Common::FrameGenStats::user_enabled.store(turn_on, std::memory_order_relaxed);
+        if (turn_on && hooks.game_running && hooks.game_running() && hooks.restart_game) {
+            const auto answer = QMessageBox::question(
+                button->window(), QObject::tr("DLSS Frame Generation"),
+                QObject::tr("Frame Generation will be enabled the next time the game starts. Restart the game now?"),
+                QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+            if (answer == QMessageBox::Yes) {
+                hooks.restart_game();
+            }
+        }
+        update();
+        if (hooks.refresh) {
+            hooks.refresh();
+        }
+    });
+    return button;
 }
 
 QPushButton* MakeGraphicsButton(QWidget* parent, GraphicsHooks hooks) {
