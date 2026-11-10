@@ -261,7 +261,6 @@ private:
 
     void FrameDumpPass(const Framebuffer* framebuffer);
     bool OcarinaTemporalEnabled() const;
-    bool OcarinaDlssEnabled() const;
     void TrackOcarinaCamera();
     /// Offsets the viewport of Ocarina's scene draws (depth-tested, into the scene depth) by a
     /// sub-pixel amount that changes every frame while FSR replaces the game's upscale, so FSR
