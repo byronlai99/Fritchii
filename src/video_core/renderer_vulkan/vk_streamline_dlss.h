@@ -94,6 +94,11 @@ private:
     vk::Image output_image;
     vk::ImageView output_view;
     vk::Sampler point_sampler;
+    std::array<FrameGenCopy, FRAME_GEN_COPIES> fg_copies{};
+    VkExtent2D fg_copy_extent{};
+    VkFormat fg_depth_format = VK_FORMAT_UNDEFINED;
+    VkFormat fg_motion_format = VK_FORMAT_UNDEFINED;
+    size_t fg_copy_next{};
     std::atomic<bool> failed{};
 };
 
