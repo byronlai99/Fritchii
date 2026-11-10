@@ -2995,6 +2995,14 @@ void RasterizerVulkan::TracePendingCpuWrites(bool compute, std::span<const u64> 
     });
 }
 
+bool RasterizerVulkan::OcarinaDlssEnabled() const {
+    constexpr u64 ocarina_program = 0x0400486024DEC000ULL;
+    return program_id == ocarina_program && !oot_live_failed &&
+           (std::getenv("LICHII_DLSS") != nullptr ||
+            Settings::values.nvidia_dlss.GetValue()) &&
+           Streamline::IsDlssAvailable();
+}
+
 bool RasterizerVulkan::OcarinaTemporalEnabled() const {
     constexpr u64 ocarina_program = 0x0400486024DEC000ULL;
     if (program_id != ocarina_program || oot_live_failed) {
