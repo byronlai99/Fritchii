@@ -235,14 +235,14 @@ jobs:
           mapfile -t recipe_members < <(unzip -Z1 "$recipe_zip" | awk -F/ '$NF == "OoT v131072 (cache v54).nx2recipe"')
           if [[ "${#recipe_members[@]}" -ne 1 ]]; then
             echo "Expected exactly one OoT v131072 cache v54 recipe in the official package; found ${#recipe_members[@]}"
-            printf '%s\\n' "${recipe_members[@]}"
+            printf '%s\n' "${recipe_members[@]}"
             exit 1
           fi
           recipe_file="$artifact_dir/$recipe_path"
           mkdir -p "$(dirname "$recipe_file")"
           unzip -p "$recipe_zip" "${recipe_members[0]}" > "$recipe_file"
           # Verify the extracted bytes against the exact recipe file supplied for this release.
-          printf '%s  %s\\n' "$recipe_sha256" "$recipe_file" | sha256sum --check -
+          printf '%s  %s\n' "$recipe_sha256" "$recipe_file" | sha256sum --check -
 
           mkdir -p dist
           (cd "$artifact_dir" && zip -qr "${GITHUB_WORKSPACE}/dist/${archive}" .)
