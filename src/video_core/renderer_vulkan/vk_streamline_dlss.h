@@ -68,7 +68,20 @@ public:
     }
 
 private:
+    /// DLSS Frame Generation reads a frame's depth and motion at its (paced) present, after
+    /// the game has drawn over them: they are copied into a ring and tagged valid until present.
+    /// Streamline's own copies (eOnlyValidNow) held the Vulkan worker until frame generation had
+    /// consumed the previous frame, which halved the real frame rate.
+    struct FrameGenCopy {
+        vk::Image depth;
+        vk::ImageView depth_view;
+        vk::Image motion;
+        vk::ImageView motion_view;
+    };
+    static constexpr size_t FRAME_GEN_COPIES = 4;
+
     void CreateOutput(VkExtent2D upscale_size);
+    void CreateFrameGenCopies(const Inputs& inputs);
 
     const Device& device;
     Scheduler& scheduler;
