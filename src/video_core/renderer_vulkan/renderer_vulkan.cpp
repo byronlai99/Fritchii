@@ -124,6 +124,22 @@ Device CreateDevice(const vk::Instance& instance, const vk::InstanceDispatch& dl
     return Device(*instance, physical_device, surface, dld);
 }
 
+/// DLSS Frame Generation finds the swapchain's window through the surface it saw created, and
+/// its surface proxy needs the device Streamline was given: once the device exists, the surface is
+/// made again through it, before the swapchain. Returns the device for the next member.
+const Device& RebindSurfaceForFrameGen(
+    const vk::Instance& instance, vk::SurfaceKHR& surface,
+    const Core::Frontend::EmuWindow::WindowSystemInfo& window_info, const Device& device) {
+#ifdef EGLANTINE_STREAMLINE
+    if (Streamline::IsFrameGenAvailable()) {
+        surface = vk::SurfaceKHR{};
+        surface = CreateSurface(instance, window_info);
+        LOG_INFO(Render_Vulkan, "DLSS Frame Generation: window surface made through Streamline");
+    }
+#endif
+    return device;
+}
+
 RendererVulkan::RendererVulkan(Core::Frontend::EmuWindow& emu_window,
                                Tegra::MaxwellDeviceMemoryManager& device_memory_,
                                Tegra::GPU& gpu_,
@@ -149,7 +165,8 @@ try
     // Create surface
     , surface(CreateSurface(instance, render_window.GetWindowInfo()))
     , device(CreateDevice(instance, dld, *surface))
-    , memory_allocator(device)
+    , memory_allocator(RebindSurfaceForFrameGen(instance, surface, render_window.GetWindowInfo(),
+                                                device))
     , state_tracker()
     , scheduler(device, state_tracker)
     , swapchain(*surface,
@@ -230,8 +247,13 @@ void RendererVulkan::Composite(std::span<const Tegra::FramebufferConfig> framebu
                                 : std::chrono::steady_clock::time_point{};
 
     scheduler.RequestOutsideRenderPassOperationContext();
-    blit_swapchain.DrawToFrame(device, rasterizer, frame, framebuffers,
-                               render_window.GetFramebufferLayout(),
+    const auto frame_layout = render_window.GetFramebufferLayout();
+    // Where the game image lands in the frame (DLSS Frame Generation's backbuffer subrect).
+    frame->game_left = frame_layout.screen.left;
+    frame->game_top = frame_layout.screen.top;
+    frame->game_right = frame_layout.screen.right;
+    frame->game_bottom = frame_layout.screen.bottom;
+    blit_swapchain.DrawToFrame(device, rasterizer, frame, framebuffers, frame_layout,
                                present_manager.SwapchainImageCount(),
                                swapchain.GetImageViewFormat());
 
