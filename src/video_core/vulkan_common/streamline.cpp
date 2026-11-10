@@ -779,10 +779,13 @@ void TagFrameGen(const sl::FrameToken& frame, const sl::Resource& depth, const s
         };
         const VkResult wait_result =
             state.wait_semaphores(state.device, &wait, std::numeric_limits<u64>::max());
-        if (wait_result != VK_SUCCESS && state.fg_wait_timeouts++ == 0) {
-            LOG_ERROR(Render_Vulkan,
-                      "DLSS Frame Generation: inputs fence wait failed (VkResult {})",
-                      static_cast<int>(wait_result));
+        if (wait_result != VK_SUCCESS) {
+            if (state.fg_wait_timeouts++ == 0) {
+                LOG_ERROR(Render_Vulkan,
+                          "DLSS Frame Generation: inputs fence wait failed (VkResult {})",
+                          static_cast<int>(wait_result));
+            }
+            return;
         }
         state.fg_wait_ns.fetch_add(static_cast<u64>(std::chrono::duration_cast<std::chrono::nanoseconds>(
                                        std::chrono::steady_clock::now() - wait_begin)
@@ -830,7 +833,7 @@ void NoteFrameGenFreeWait(u64 ns) {
 }
 
 VkQueue FrameGenDeviceQueue(PFN_vkGetDeviceQueue get_queue, VkDevice device, u32 family,
-                          u32 index) {
+                            u32 index) {
     // vkGetDeviceQueue is not intercepted by Streamline's manual-hooking layer. Use the
     // application's native Vulkan dispatch for it, just as for every non-intercepted API.
     if (!get_queue) {
