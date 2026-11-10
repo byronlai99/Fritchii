@@ -346,7 +346,7 @@ void Nx2VideoDecoder::Decode(std::span<const u8> data, u64 pts, std::vector<Nx2P
     if (!impl->SendReceive(input_packet, pictures) && impl->open) {
         // The CPU decoder took over: give it this packet too (Open cleared the timestamps).
         impl->pending_pts.insert(pts);
-        impl->SendReceive(packet, pictures);
+        impl->SendReceive(input_packet, pictures);
     }
 }
 
