@@ -74,7 +74,7 @@ ConfigureMicrophone::ConfigureMicrophone(Core::System& system_, QWidget* parent)
     connect(volume, &QSlider::valueChanged, this, [this](int value) {
         volume_label->setText(tr("%1%").arg(value));
         if (preview_stream) {
-            preview_stream->SetInputPreviewGain(value / 100.0f);
+            preview_stream->SetInputPreviewGain(static_cast<float>(value) / 100.0f);
         }
     });
     RefreshDevices();
@@ -129,7 +129,7 @@ void ConfigureMicrophone::StartTest() {
     preview_stream = preview_sink->AcquireSinkStream(system, 2, "Microphone test", StreamType::In);
     if (preview_stream && preview_stream->IsReady()) {
         preview_stream->EnableInputPreview();
-        preview_stream->SetInputPreviewGain(volume->value() / 100.0f);
+        preview_stream->SetInputPreviewGain(static_cast<float>(volume->value()) / 100.0f);
         preview_stream->Start();
     }
     if (!preview_stream || !preview_stream->IsReady() || preview_stream->IsPaused()) {
