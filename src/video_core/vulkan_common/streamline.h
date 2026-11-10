@@ -74,9 +74,9 @@ void DropFrameGen(const char* reason);
 bool AttachDevice(VkInstance instance, VkPhysicalDevice physical, VkDevice device,
                   u32 graphics_family, u32 optical_flow_family, vk::DeviceDispatch& dld);
 
-/// A device queue fetched through Streamline's vkGetDeviceQueue, so DLSS-G accepts presents on
-/// it ("Invalid VK app queue - not created by the application" otherwise). Null without it.
-[[nodiscard]] VkQueue FrameGenDeviceQueue(VkDevice device, u32 family, u32 index);
+/// A device queue fetched through the application's native Vulkan dispatch.
+[[nodiscard]] VkQueue FrameGenDeviceQueue(PFN_vkGetDeviceQueue get_queue, VkDevice device,
+                                           u32 family, u32 index);
 
 /// Whether DLSS Frame Generation can run on the attached device.
 [[nodiscard]] bool IsFrameGenAvailable();
