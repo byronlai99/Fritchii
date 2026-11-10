@@ -209,7 +209,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir dist
-          (cd artifacts/lichii-windows-x86_64-${GITHUB_SHA} && zip -qr "${GITHUB_WORKSPACE}/dist/lichii-windows-x86_64.zip" .)
+          (cd artifacts && zip -qr "${GITHUB_WORKSPACE}/dist/lichii-windows-x86_64.zip" .)
           ls -la dist
 
       - name: Create release
