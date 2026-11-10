@@ -231,7 +231,7 @@ jobs:
           recipe_sha256="85d944c8557fbeffe02af566c9c4277251ed0ab1a0f2a3ab7a626af6a877c3a1"
           recipe_path="recipes/OoT v131072 (cache v54).nx2recipe"
           curl --fail --location --retry 3 --retry-delay 2 --output "$recipe_zip" "$recipe_url"
-          printf '%s  %s\\n' "$recipe_zip_sha256" "$recipe_zip" | sha256sum --check -
+          printf '%s  %s\n' "$recipe_zip_sha256" "$recipe_zip" | sha256sum --check -
           if ! unzip -Z1 "$recipe_zip" | grep -Fxq "$recipe_path"; then
             echo "The official Fritchii v5.5 package is missing $recipe_path"
             exit 1
@@ -239,7 +239,7 @@ jobs:
           recipe_file="$artifact_dir/$recipe_path"
           mkdir -p "$(dirname "$recipe_file")"
           unzip -p "$recipe_zip" "$recipe_path" > "$recipe_file"
-          printf '%s  %s\\n' "$recipe_sha256" "$recipe_file" | sha256sum --check -
+          printf '%s  %s\n' "$recipe_sha256" "$recipe_file" | sha256sum --check -
 
           mkdir -p dist
           (cd "$artifact_dir" && zip -qr "${GITHUB_WORKSPACE}/dist/${archive}" .)
