@@ -7,7 +7,7 @@ on:
       publish_release:
         description: Publish the binaries as a GitHub release
         type: boolean
-        default: true
+        default: false
   push:
     branches:
       - nx2-experimental
