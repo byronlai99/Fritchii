@@ -189,15 +189,15 @@ private:
     Result SendVibrationValueInBool(bool is_vibrating,
                                     Core::HID::VibrationDeviceHandle vibration_device_handle,
                                     ClientAppletResourceUserId aruid);
-    // Switch 2 sends vibration every frame with 214: pointer buffers of device handles and values
-    // like 206, but the aruid is raw data after an unknown u64 instead of a sent process id.
+    // Switch 2 sends vibration every frame with 214; its leading u64 is the guest mode.
     Result SendNx2VibrationValues(
-        u64 unknown, AppletResourceUserId aruid,
+        u64 mode, AppletResourceUserId aruid,
         InArray<Core::HID::VibrationDeviceHandle, BufferAttr_HipcPointer> vibration_handles,
         InArray<Core::HID::VibrationValue, BufferAttr_HipcPointer> vibration_values);
-    // 213 (32 bytes, aruid): sent per controller every frame by Kirby Air Riders (tens of
-    // thousands of auto stub log lines a run); no reply data. Accepted and dropped.
-    Result Unknown213();
+    // 213: single-controller vibration value plus mode; handled best-effort like command 201.
+    Result SendVibrationValueInMode(Core::HID::VibrationDeviceHandle vibration_device_handle,
+                                    u32 mode, Core::HID::VibrationValue vibration_value,
+                                    ClientAppletResourceUserId aruid);
     // 220 (16 bytes, aruid): replies one byte (meaning unknown); answer 0 instead of leaving it to
     // the message buffer's leftovers.
     Result Unknown220(Out<u8> out);

@@ -140,6 +140,8 @@ add_executable(yuzu
     configuration/configure_ui.cpp
     configuration/configure_ui.h
     configuration/configure_ui.ui
+    configuration/configure_hd_rumble.cpp
+    configuration/configure_hd_rumble.h
     configuration/configure_vibration.cpp
     configuration/configure_vibration.h
     configuration/configure_vibration.ui
@@ -503,5 +505,24 @@ endif()
 
 # Remember that the linker is incredibly stupid.
 target_link_libraries(yuzu PRIVATE OpenSSL::SSL OpenSSL::Crypto SDL3::SDL3)
+
+if (ENABLE_RENHDRUM AND RENHDRUM_DOWNLOAD AND WIN32 AND NOT ARCHITECTURE_x86_64)
+    message(WARNING "RENHDRUM_DOWNLOAD: the prebuilt renhdrum.dll is x64 only; skipped for this architecture")
+endif()
+if (ENABLE_RENHDRUM AND RENHDRUM_DOWNLOAD AND WIN32 AND ARCHITECTURE_x86_64)
+    set(RENHDRUM_VERSION 0.3.0)
+    set(RENHDRUM_DLL "${CMAKE_BINARY_DIR}/renhdrum/${RENHDRUM_VERSION}/renhdrum.dll")
+    file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/renhdrum/${RENHDRUM_VERSION}")
+    if (NOT EXISTS "${RENHDRUM_DLL}")
+        file(DOWNLOAD
+            "https://github.com/trzz1214/RenHDrum/releases/download/v${RENHDRUM_VERSION}/renhdrum.dll"
+            "${RENHDRUM_DLL}"
+            EXPECTED_HASH SHA256=33c88b343fa49627cc09fcd0cee7e46f5a85e16e77f1d404e44574d42eaa74e8
+            SHOW_PROGRESS)
+    endif()
+    add_custom_command(TARGET yuzu POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${RENHDRUM_DLL}" "$<TARGET_FILE_DIR:yuzu>"
+        VERBATIM)
+endif()
 
 create_target_directory_groups(yuzu)

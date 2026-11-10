@@ -1258,7 +1258,8 @@ bool EmulatedController::SetVibration(DeviceIndex device_index, const VibrationV
         return false;
     }
 
-    if (!Settings::values.enable_accurate_vibrations.GetValue()) {
+    if (!Settings::values.enable_accurate_vibrations.GetValue() &&
+        Settings::nx2_active_mode.load(std::memory_order_relaxed) != 2) {
         using std::chrono::duration_cast;
         using std::chrono::milliseconds;
         using std::chrono::steady_clock;

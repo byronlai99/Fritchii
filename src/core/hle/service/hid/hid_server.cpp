@@ -140,7 +140,7 @@ IHidServer::IHidServer(Core::System& system_, std::shared_ptr<ResourceManager> r
         {210, C<&IHidServer::EndPermitVibrationSession>, "EndPermitVibrationSession"},
         {211, C<&IHidServer::IsVibrationDeviceMounted>, "IsVibrationDeviceMounted"},
         {212, C<&IHidServer::SendVibrationValueInBool>, "SendVibrationValueInBool"},
-        {213, C<&IHidServer::Unknown213>, "Unknown213"},
+        {213, C<&IHidServer::SendVibrationValueInMode>, "SendVibrationValueInMode"},
         {214, C<&IHidServer::SendNx2VibrationValues>, "SendNx2VibrationValues (guessed)"},
         {220, C<&IHidServer::Unknown220>, "Unknown220"},
         {300, C<&IHidServer::ActivateConsoleSixAxisSensor>, "ActivateConsoleSixAxisSensor"},
@@ -955,6 +955,7 @@ Result IHidServer::SendVibrationValue(Core::HID::VibrationDeviceHandle vibration
               vibration_device_handle.npad_type, vibration_device_handle.npad_id,
               vibration_device_handle.device_index, aruid.pid);
 
+    Settings::nx2_active_mode.store(0, std::memory_order_relaxed);
     GetResourceManager()->SendVibrationValue(aruid.pid, vibration_device_handle, vibration_value);
     R_SUCCEED()
 }
@@ -1020,6 +1021,7 @@ Result IHidServer::SendVibrationValues(
 
     R_UNLESS(vibration_handles.size() == vibration_values.size(), ResultVibrationArraySizeMismatch);
 
+    Settings::nx2_active_mode.store(0, std::memory_order_relaxed);
     for (std::size_t i = 0; i < vibration_handles.size(); i++) {
         R_TRY(GetResourceManager()->SendVibrationValue(aruid.pid, vibration_handles[i],
                                                        vibration_values[i]));
@@ -1114,10 +1116,13 @@ Result IHidServer::IsVibrationDeviceMounted(
 }
 
 Result IHidServer::SendNx2VibrationValues(
-    u64 unknown, AppletResourceUserId aruid,
+    u64 mode, AppletResourceUserId aruid,
     InArray<Core::HID::VibrationDeviceHandle, BufferAttr_HipcPointer> vibration_handles,
     InArray<Core::HID::VibrationValue, BufferAttr_HipcPointer> vibration_values) {
-    LOG_DEBUG(Service_HID, "called, unknown={}, applet_resource_user_id={}", unknown, aruid.pid);
+    LOG_DEBUG(Service_HID, "called, mode={}, applet_resource_user_id={}", mode, aruid.pid);
+
+    // Mode 2 is Switch 2 HD Rumble; mode 0 preserves classic Switch vibration.
+    Settings::nx2_active_mode.store(mode == 2 ? 2 : 0, std::memory_order_relaxed);
 
     // Unlike 206 this never fails: rumble is best effort and the command is only known from
     // captures, so an unexpected handle or layout shouldn't return an error a game may treat as
@@ -1134,8 +1139,20 @@ Result IHidServer::SendNx2VibrationValues(
     R_SUCCEED();
 }
 
-Result IHidServer::Unknown213() {
-    LOG_DEBUG(Service_HID, "(STUBBED) called");
+Result IHidServer::SendVibrationValueInMode(
+    Core::HID::VibrationDeviceHandle vibration_device_handle, u32 mode,
+    Core::HID::VibrationValue vibration_value, ClientAppletResourceUserId aruid) {
+    LOG_DEBUG(Service_HID,
+              "called, npad_type={}, npad_id={}, device_index={}, mode={}, applet_resource_user_id={}",
+              vibration_device_handle.npad_type, vibration_device_handle.npad_id,
+              vibration_device_handle.device_index, mode, aruid.pid);
+
+    Settings::nx2_active_mode.store(mode == 2 ? 2 : 0, std::memory_order_relaxed);
+    const auto result =
+        GetResourceManager()->SendVibrationValue(aruid.pid, vibration_device_handle, vibration_value);
+    if (result.IsError()) {
+        LOG_DEBUG(Service_HID, "failed to send vibration 213, result={:#x}", result.raw);
+    }
     R_SUCCEED();
 }
 
