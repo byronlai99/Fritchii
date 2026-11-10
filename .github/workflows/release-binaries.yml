@@ -223,8 +223,27 @@ jobs:
             echo "Downloaded Windows artifact directory was not found"
             exit 1
           fi
+          # Reuse the recipe shipped in the official Fritchii v5.5 Windows package.
+          # Pin both the source archive and extracted recipe so the package cannot silently drift.
+          recipe_zip="$RUNNER_TEMP/Fritchii-v5.5-Windows-x64.zip"
+          recipe_url="https://github.com/Frizti/Fritchii/releases/download/fritchii-v5.5/Fritchii-v5.5-Windows-x64.zip"
+          recipe_zip_sha256="63112e7125e6174192079475b485f9633509a4a8dfb2630b5f8a96c644abf066"
+          recipe_sha256="85d944c8557fbeffe02af566c9c4277251ed0ab1a0f2a3ab7a626af6a877c3a1"
+          recipe_path="recipes/OoT v131072 (cache v54).nx2recipe"
+          curl --fail --location --retry 3 --retry-delay 2 --output "$recipe_zip" "$recipe_url"
+          printf '%s  %s\\n' "$recipe_zip_sha256" "$recipe_zip" | sha256sum --check -
+          if ! unzip -Z1 "$recipe_zip" | grep -Fxq "$recipe_path"; then
+            echo "The official Fritchii v5.5 package is missing $recipe_path"
+            exit 1
+          fi
+          recipe_file="$artifact_dir/$recipe_path"
+          mkdir -p "$(dirname "$recipe_file")"
+          unzip -p "$recipe_zip" "$recipe_path" > "$recipe_file"
+          printf '%s  %s\\n' "$recipe_sha256" "$recipe_file" | sha256sum --check -
+
           mkdir -p dist
           (cd "$artifact_dir" && zip -qr "${GITHUB_WORKSPACE}/dist/${archive}" .)
+          unzip -l "dist/$archive" | grep -F "$recipe_path"
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "archive=$archive" >> "$GITHUB_OUTPUT"
           ls -lh "dist/${archive}"
