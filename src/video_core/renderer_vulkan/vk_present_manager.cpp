@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <algorithm>
+#include <cstdlib>
 #include <utility>
 #include <thread>
 
@@ -172,8 +173,12 @@ PresentManager::PresentManager(const vk::Instance& instance_,
         free_queue.push_back(&frame);
     }
 
+#ifdef EGLANTINE_STREAMLINE
     present_wait_enabled = use_present_thread && device.IsKhrPresentWaitSupported() &&
                            !Streamline::FrameGenDropsPresentIds();
+#else
+    present_wait_enabled = use_present_thread && device.IsKhrPresentWaitSupported();
+#endif
     LOG_INFO(Render_Vulkan, "Host pacing: present wait {}",
              present_wait_enabled ? "supported" : "unavailable, frames are not paced");
     if (present_wait_enabled) {
