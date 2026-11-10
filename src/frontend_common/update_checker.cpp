@@ -33,7 +33,7 @@ std::optional<u64> ParseBuildNumber(std::string_view tag) {
     return number;
 }
 
-constexpr std::string_view ReleaseRepo = "Frizti/Lichii";
+constexpr std::string_view ReleaseRepo = "byronlai99/Fritchii-HDrum";
 // Download URLs name the repository by its current name; GitHub redirects the old one.
 constexpr std::array RepoNames{std::string_view{"Lichii"}, std::string_view{"Fritchii"}};
 
@@ -252,6 +252,8 @@ std::optional<Common::Net::Asset> SelectFritchiiAsset(const Common::Net::Release
         } else {
             for (const auto repo : RepoNames) {
                 if (url == fmt::format("https://github.com/Frizti/{}/releases/download/{}/{}", repo,
+                                       release.tag, filename) ||
+                    url == fmt::format("https://github.com/{}/releases/download/{}/{}", ReleaseRepo,
                                        release.tag, filename)) {
                     origin = "https://github.com";
                 }
