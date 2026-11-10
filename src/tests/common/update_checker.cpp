@@ -341,6 +341,19 @@ TEST_CASE("Fritchii-HDrum selects its own v5.5 package from a build release titl
     CHECK(asset->size == 68126892);
 }
 
+TEST_CASE("Fritchii-HDrum offers v5.6 from a build release titled for v5.6", "[updater]") {
+    const auto source = UpdateChecker::DefaultSource();
+    const std::string tag = "build-54";
+    const std::string filename = "Fritchii-HDrum-v5.6-Windows-x64.zip";
+    const auto releases = std::array{MakeFritchiiRelease(
+        tag, {HDrumUrl(tag, filename)}, ValidDigest,
+        "Fritchii v5.6 | Fritchii-HDrum build 54 (abc1234)")};
+    const auto update = UpdateChecker::SelectFritchiiUpdate(releases, {5, 5}, source);
+    REQUIRE(update);
+    CHECK(update->tag == tag);
+    CHECK_FALSE(UpdateChecker::SelectFritchiiUpdate(releases, {5, 6}, source));
+}
+
 TEST_CASE("Fritchii legacy releases still select the Windows HDrum package", "[updater]") {
     const auto source = UpdateChecker::DefaultSource();
     const std::string tag = "fritchii-v5";
@@ -402,8 +415,8 @@ TEST_CASE("Fritchii never offers a release whose notes hide it from the updater"
         return release;
     };
     const auto releases = std::array{
-        make("fritchii-v5.6", "Fritchii-v5.6-Windows-x64.zip", "Real notes"),
-        make("fritchii-v9", "Fritchii-v9-Windows-x64.zip",
+        make("fritchii-v5.6", "Fritchii-HDrum-v5.6-Windows-x64.zip", "Real notes"),
+        make("fritchii-v9", "Fritchii-HDrum-v9-Windows-x64.zip",
              "Big news!\n<!-- fritchii:no-update -->\nMore text"),
     };
     const auto source = UpdateChecker::DefaultSource();

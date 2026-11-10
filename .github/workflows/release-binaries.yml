@@ -1,5 +1,5 @@
 name: release-binaries
-# Re-run v5.5 MSVC build after the upstream merge.
+# Re-run v5.6 MSVC build after the upstream merge.
 
 on:
   workflow_dispatch:
@@ -234,11 +234,11 @@ jobs:
             echo "Required Qt runtime files are missing from the downloaded artifact"
             exit 1
           fi
-          # Reuse the recipe shipped in the official Fritchii v5.5 Windows package.
+          # Reuse the recipe shipped in the official Fritchii v5.6 Windows package.
           # Its checksum is pinned to the exact recipe file supplied for this release.
-          recipe_zip="$RUNNER_TEMP/Fritchii-v5.5-Windows-x64.zip"
-          recipe_url="https://github.com/Frizti/Fritchii/releases/download/fritchii-v5.5/Fritchii-v5.5-Windows-x64.zip"
-          recipe_zip_sha256="63112e7125e6174192079475b485f9633509a4a8dfb2630b5f8a96c644abf066"
+          recipe_zip="$RUNNER_TEMP/Fritchii-v5.6-Windows-x64.zip"
+          recipe_url="https://github.com/Frizti/Fritchii/releases/download/fritchii-v5.6/Fritchii-v5.6-Windows-x64.zip"
+          recipe_zip_sha256="3266298fe6b13aa98b72fd3fb05c219475608661fbe7e4b97902e719acb4c699"
           recipe_sha256="85d944c8557fbeffe02af566c9c4277251ed0ab1a0f2a3ab7a626af6a877c3a1"
           recipe_path="recipes/OoT v131072 (cache v54).nx2recipe"
           curl --fail --location --retry 3 --retry-delay 2 --output "$recipe_zip" "$recipe_url"
