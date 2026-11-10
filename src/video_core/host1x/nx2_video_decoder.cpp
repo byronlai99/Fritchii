@@ -336,14 +336,14 @@ void Nx2VideoDecoder::Decode(std::span<const u8> data, u64 pts, std::vector<Nx2P
         impl->h264_packets.Convert(std::span<u8>{impl->packet.data(), data.size()});
     }
 
-    FFmpeg::Packet packet{std::span<const u8>{impl->packet.data(), data.size()}};
-    packet.GetPacket()->pts = static_cast<s64>(pts);
+    FFmpeg::Packet input_packet{std::span<const u8>{impl->packet.data(), data.size()}};
+    input_packet.GetPacket()->pts = static_cast<s64>(pts);
     // Hidden VP9 frames never come out: keep the set from growing over a long movie.
     if (impl->pending_pts.size() >= 64) {
         impl->pending_pts.erase(impl->pending_pts.begin());
     }
     impl->pending_pts.insert(pts);
-    if (!impl->SendReceive(packet, pictures) && impl->open) {
+    if (!impl->SendReceive(input_packet, pictures) && impl->open) {
         // The CPU decoder took over: give it this packet too (Open cleared the timestamps).
         impl->pending_pts.insert(pts);
         impl->SendReceive(packet, pictures);
