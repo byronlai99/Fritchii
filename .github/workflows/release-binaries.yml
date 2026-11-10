@@ -299,8 +299,19 @@ jobs:
           tag="build-${GITHUB_RUN_NUMBER}"
           base="https://github.com/${GITHUB_REPOSITORY}/releases/download/${tag}"
           title="Fritchii v${VERSION} | Fritchii-HDrum build ${GITHUB_RUN_NUMBER} (${GITHUB_SHA::7})"
-          cat > notes.md <<EOF
+          changelog="docs/releases/v5.6-hdrum.md"
+          if [[ ! -s "$changelog" ]]; then
+            echo "Release changelog is missing or empty: $changelog"
+            exit 1
+          fi
+
+          {
+            cat <<EOF
           Automatic Windows x64 MSVC build of \`${GITHUB_REF_NAME}\` at ${GITHUB_SHA}.
+
+          EOF
+            cat "$changelog"
+            cat <<EOF
 
           ## Windows
 
@@ -308,6 +319,7 @@ jobs:
 
           Extract the ZIP and run \`lichii.exe\`.
           EOF
+          } > notes.md
 
           gh release create "$tag" "dist/${ARCHIVE}" \
             --repo "${GITHUB_REPOSITORY}" \
