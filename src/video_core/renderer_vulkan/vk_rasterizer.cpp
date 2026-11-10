@@ -3303,14 +3303,34 @@ bool RasterizerVulkan::TryOcarinaUpscale(const ComputePipeline& pipeline, bool r
         ? target.size.width == extent.width && target.size.height == extent.height
         : target.size.width == extent.width * 4 / 3 &&
             target.size.height == extent.height * 4 / 3;
-    if (!valid_extents || !color.BackingImage() || !target.BackingImage() ||
-        color.IsRescaled() || target.IsRescaled() ||
-        color.Samples() != VK_SAMPLE_COUNT_1_BIT || target.Samples() != VK_SAMPLE_COUNT_1_BIT ||
-        color.range != VideoCommon::SubresourceRange{} || target.range != VideoCommon::SubresourceRange{} ||
-        color.format != PixelFormat::E5B9G9R9_FLOAT || target.format != PixelFormat::B10G11R11_FLOAT ||
-        color.size.width != extent.width || color.size.height != extent.height ||
-        color.ImageHandle() == target.ImageHandle() || depth.ImageHandle() == target.ImageHandle()) {
-        return fail("unexpected upscale images");
+    if (!valid_extents) {
+        return fail("unexpected upscale extent");
+    }
+    if (!color.BackingImage() || !target.BackingImage()) {
+        return fail("missing upscale backing image");
+    }
+    if (color.IsRescaled() || target.IsRescaled()) {
+        return fail("rescaled upscale image");
+    }
+    if (color.Samples() != VK_SAMPLE_COUNT_1_BIT || target.Samples() != VK_SAMPLE_COUNT_1_BIT) {
+        return fail("multisampled upscale image");
+    }
+    if (color.range != VideoCommon::SubresourceRange{} ||
+        target.range != VideoCommon::SubresourceRange{}) {
+        return fail("unexpected upscale subresource range");
+    }
+    if (color.format != PixelFormat::E5B9G9R9_FLOAT ||
+        target.format != PixelFormat::B10G11R11_FLOAT) {
+        return fail("unexpected upscale format");
+    }
+    if (color.size.width != extent.width || color.size.height != extent.height) {
+        return fail("unexpected upscale input extent");
+    }
+    if (color.ImageHandle() == target.ImageHandle()) {
+        return fail("upscale input aliases target");
+    }
+    if (depth.ImageHandle() == target.ImageHandle()) {
+        return fail("depth image aliases target");
     }
 
     constexpr VkFormat output_format = VK_FORMAT_B10G11R11_UFLOAT_PACK32;

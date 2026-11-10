@@ -582,12 +582,17 @@ bool AttachDevice(VkInstance instance, VkPhysicalDevice physical, VkDevice devic
         Stop();
         return false;
     }
-    // Manual hooking: Streamline does its per-frame work in these.
+    // Manual hooking: device-level Vulkan proxies must be obtained through SL's
+    // vkGetDeviceProcAddr, not GetProcAddress on sl.interposer.dll.
+    const auto get_device_proc_addr = reinterpret_cast<PFN_vkGetDeviceProcAddr>(
+        GetProcAddress(state.module, "vkGetDeviceProcAddr"));
     const auto hook = [&](auto& function, const char* name) {
-        if (const FARPROC proxy = GetProcAddress(state.module, name)) {
+        const PFN_vkVoidFunction proxy =
+            get_device_proc_addr ? get_device_proc_addr(device, name) : nullptr;
+        if (proxy) {
             function = reinterpret_cast<std::remove_reference_t<decltype(function)>>(proxy);
         } else {
-            LOG_WARNING(Render_Vulkan, "sl.interposer.dll has no {}", name);
+            LOG_WARNING(Render_Vulkan, "Streamline has no Vulkan device proxy for {}", name);
         }
     };
     hook(dld.vkCreateSwapchainKHR, "vkCreateSwapchainKHR");
@@ -818,8 +823,13 @@ VkQueue FrameGenDeviceQueue(VkDevice device, u32 family, u32 index) {
     if (!state.module) {
         return VK_NULL_HANDLE;
     }
+    const auto get_device_proc_addr = reinterpret_cast<PFN_vkGetDeviceProcAddr>(
+        GetProcAddress(state.module, "vkGetDeviceProcAddr"));
+    if (!get_device_proc_addr) {
+        return VK_NULL_HANDLE;
+    }
     const auto get_queue =
-        reinterpret_cast<PFN_vkGetDeviceQueue>(GetProcAddress(state.module, "vkGetDeviceQueue"));
+        reinterpret_cast<PFN_vkGetDeviceQueue>(get_device_proc_addr(device, "vkGetDeviceQueue"));
     if (!get_queue) {
         return VK_NULL_HANDLE;
     }

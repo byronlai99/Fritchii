@@ -50,10 +50,11 @@ using namespace Common::Literals;
 namespace {
 
 #ifdef EGLANTINE_STREAMLINE
-// LICHII_DLSS_FG_PRESENT_QUEUE=0: present from the renderer's queue with frame generation (test).
+// LICHII_DLSS_FG_PRESENT_QUEUE=1: opt in to the experimental dedicated present queue.
+// The default uses the renderer's primary queue, which Streamline already knows.
 bool UseFrameGenSwapchainQueue() {
     const char* const value = std::getenv("LICHII_DLSS_FG_PRESENT_QUEUE");
-    return !value || value[0] != '0';
+    return value && value[0] == '1';
 }
 #endif
 namespace Alternatives {
@@ -866,16 +867,17 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
         const auto ci = std::ranges::find(queue_cis, graphics_family,
                                           &VkDeviceQueueCreateInfo::queueFamilyIndex);
         if (ci != queue_cis.end() && ci->queueCount > index) {
-            VkQueue queue{};
-            // Through Streamline, so DLSS-G knows the queue it is handed presents on.
-            queue = Streamline::FrameGenDeviceQueue(*logical, graphics_family, index);
-            if (!queue) {
-                dld.vkGetDeviceQueue(*logical, graphics_family, index, &queue);
+            const VkQueue queue = Streamline::FrameGenDeviceQueue(*logical, graphics_family, index);
+            if (queue) {
+                swapchain_queue = vk::Queue(queue, dld);
+                has_swapchain_queue = true;
+                LOG_INFO(Render_Vulkan, "DLSS Frame Generation: Streamline swapchain queue {} of family {}",
+                         index, graphics_family);
+            } else {
+                LOG_WARNING(Render_Vulkan,
+                            "DLSS Frame Generation: could not obtain a Streamline-tracked swapchain "
+                            "queue; using the primary present queue");
             }
-            swapchain_queue = vk::Queue(queue, dld);
-            has_swapchain_queue = true;
-            LOG_INFO(Render_Vulkan, "DLSS Frame Generation: swapchain queue {} of family {}",
-                     index, graphics_family);
         }
     }
 #endif
