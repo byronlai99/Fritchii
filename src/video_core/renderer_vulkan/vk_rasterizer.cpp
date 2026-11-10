@@ -3210,7 +3210,11 @@ void RasterizerVulkan::ReadOcarinaActor(OcarinaActorMesh& mesh) {
 /// Track the scene depth on its reader dispatch, or try to replace a recognized upscale dispatch.
 bool RasterizerVulkan::TryOcarinaUpscale(const ComputePipeline& pipeline, bool replace) {
     constexpr u64 depth_reader = 0x1fc7a0423116281fULL;
-    const bool upscale_4k = replace && pipeline.ShaderHash() == ComputePipeline::Ocarina1440pShader;
+    // The 1440p shader is also used for ordinary 1080p -> 1440p scaling. Only
+    // treat it as the 4K path when the scene itself is actually 1440p.
+    const bool upscale_4k =
+        replace && pipeline.ShaderHash() == ComputePipeline::Ocarina1440pShader &&
+        oot_motion.extent.width == 2560 && oot_motion.extent.height == 1440;
     if ((!replace && pipeline.ShaderHash() != depth_reader) || !OcarinaTemporalEnabled()) {
         return false;
     }
@@ -3295,15 +3299,26 @@ bool RasterizerVulkan::TryOcarinaUpscale(const ComputePipeline& pipeline, bool r
     auto& target = texture_cache.GetImageView(written[0]);
     using VideoCore::Surface::PixelFormat;
     const auto extent = oot_motion.extent;
-    const bool native_size = pipeline.ShaderHash() == ComputePipeline::OcarinaFullSizeShader;
+    // Ocarina can render to several output ratios depending on the active game mode
+    // and resolution profile. The shader hash identifies the upscale pass, but does
+    // not by itself determine whether this frame is 4K. Accept same-size and any
+    // proportional upscale for the normal path; DLSS selects its mode from the ratio.
+    const bool proportional_upscale =
+        target.size.width >= extent.width && target.size.height >= extent.height &&
+        u64{target.size.width} * extent.height == u64{target.size.height} * extent.width;
     const bool valid_extents = upscale_4k
         ? extent.width == 2560 && extent.height == 1440 &&
-            target.size.width == 2560 && target.size.height == 1440
-        : native_size
-        ? target.size.width == extent.width && target.size.height == extent.height
-        : target.size.width == extent.width * 4 / 3 &&
-            target.size.height == extent.height * 4 / 3;
+              target.size.width == 2560 && target.size.height == 1440
+        : proportional_upscale;
     if (!valid_extents) {
+        static u32 extent_mismatch_count{};
+        if (extent_mismatch_count++ % 120 == 0) {
+            LOG_INFO(Render_Vulkan,
+                     "Ocarina temporal extent mismatch: shader={:016x}, scene={}x{}, "
+                     "target={}x{}, 4K path={}",
+                     pipeline.ShaderHash(), extent.width, extent.height,
+                     target.size.width, target.size.height, upscale_4k);
+        }
         return fail("unexpected upscale extent");
     }
     if (!color.BackingImage() || !target.BackingImage()) {
