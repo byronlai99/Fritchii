@@ -825,16 +825,10 @@ void NoteFrameGenFreeWait(u64 ns) {
     }
 }
 
-VkQueue FrameGenDeviceQueue(VkDevice device, u32 family, u32 index) {
-    const State& state = GetState();
-    if (!state.module) {
-        return VK_NULL_HANDLE;
-    }
-    // Use the queue entry point exported by Streamline's interposer. Resolving
-    // vkGetDeviceQueue through vkGetDeviceProcAddr can bypass the interposer's
-    // queue tracking, causing slHookVkPresent to reject this queue as unknown.
-    const auto get_queue =
-        reinterpret_cast<PFN_vkGetDeviceQueue>(GetProcAddress(state.module, "vkGetDeviceQueue"));
+VkQueue FrameGenDeviceQueue(PFN_vkGetDeviceQueue get_queue, VkDevice device, u32 family,
+                          u32 index) {
+    // vkGetDeviceQueue is not intercepted by Streamline's manual-hooking layer. Use the
+    // application's native Vulkan dispatch for it, just as for every non-intercepted API.
     if (!get_queue) {
         return VK_NULL_HANDLE;
     }
