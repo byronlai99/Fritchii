@@ -863,8 +863,10 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
     if (Streamline::IsFrameGenAvailable() && UseFrameGenSwapchainQueue() &&
         present_family == graphics_family) {
         const Streamline::ExtraQueues extra = Streamline::ExtraQueuesWanted();
-        const u32 index = 1 + extra.compute + extra.graphics +
-                          (optical_flow_family == graphics_family ? extra.optical_flow : 0);
+        // slSetVulkanInfo registers the first Streamline graphics queue at this index.
+        // Presenting from a later, unregistered queue makes slHookVkPresent reject it
+        // as "not created by the application" on some Vulkan interposer/driver setups.
+        const u32 index = 1 + extra.compute;
         const auto ci = std::ranges::find(queue_cis, graphics_family,
                                           &VkDeviceQueueCreateInfo::queueFamilyIndex);
         if (ci != queue_cis.end() && ci->queueCount > index) {
@@ -872,12 +874,14 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
             if (queue) {
                 swapchain_queue = vk::Queue(queue, dld);
                 has_swapchain_queue = true;
-                LOG_INFO(Render_Vulkan, "DLSS Frame Generation: Streamline swapchain queue {} of family {}",
+                LOG_INFO(Render_Vulkan,
+                         "DLSS Frame Generation: presenting on Streamline graphics queue {} "
+                         "of family {}",
                          index, graphics_family);
             } else {
                 LOG_WARNING(Render_Vulkan,
-                            "DLSS Frame Generation: could not obtain a Streamline-tracked swapchain "
-                            "queue; using the primary present queue");
+                            "DLSS Frame Generation: could not obtain Streamline's registered "
+                            "graphics queue; using the primary present queue");
             }
         }
     }
@@ -2283,10 +2287,8 @@ std::vector<VkDeviceQueueCreateInfo> Device::GetDeviceQueueCreateInfos() const {
             unique_queue_families.insert(*optical_flow_family);
         }
     }
-    // Plus the swapchain queue, after all of frame generation's (see the constructor).
-    if (graphics_extra != 0 && UseFrameGenSwapchainQueue()) {
-        ++graphics_extra;
-    }
+    // The swapchain presents on Streamline's registered graphics queue (index
+    // 1 + compute queues), so do not allocate an unregistered extra queue here.
 #endif
     const std::vector queue_family_properties = physical.GetQueueFamilyProperties();
     std::vector<VkDeviceQueueCreateInfo> queue_cis;
