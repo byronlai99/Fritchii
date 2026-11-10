@@ -132,7 +132,7 @@ jobs:
           -DYUZU_USE_BUNDLED_QT=OFF
           -DYUZU_USE_BUNDLED_SDL3=OFF
           -DENABLE_RENHDRUM=ON
-          -DRENHDRUM_DOWNLOAD=ON
+          -DRENHDRUM_DOWNLOAD=OFF
           -DRENHDRUM_SDL_PATCHES=ON
           -DENABLE_UPDATE_CHECKER=ON
           -DLICHII_BUILD_TAG=build-${{ github.run_number }}
@@ -152,7 +152,7 @@ jobs:
         shell: bash
         run: |
           sccache --zero-stats
-          cmake --build build/release --target yuzu yuzu-cmd --parallel
+          cmake --build build/release --target yuzu --parallel
           sccache --show-stats
 
       - name: Stop sccache on Windows
@@ -167,31 +167,20 @@ jobs:
           path: .sccache
           key: ${{ steps.compiler-cache.outputs.cache-primary-key }}
 
-      - name: Package Windows binary
+      - name: Stage Windows executable
         shell: pwsh
         run: |
-          foreach ($exe in 'lichii.exe', 'eden-cli.exe') {
-            if (-not (Test-Path "build/release/bin/$exe")) {
-              throw "build/release/bin/$exe was not produced"
-            }
-          }
-          windeployqt --release --no-translations build/release/bin/lichii.exe
+          $exe = 'build/release/bin/lichii.exe'
+          if (-not (Test-Path $exe)) { throw "Main executable was not produced: $exe" }
+          New-Item -ItemType Directory -Path 'release-exe' -Force | Out-Null
+          Copy-Item $exe 'release-exe/lichii.exe' -Force
+          Get-Item 'release-exe/lichii.exe' | Select-Object Name, Length
 
-          # Keep the release focused on the main app and its runtime dependencies.
-          $bin = (Resolve-Path 'build/release/bin').Path
-          Remove-Item (Join-Path $bin 'eden-cli.exe') -Force -ErrorAction SilentlyContinue
-          Get-ChildItem -Path $bin -Filter '*.pdb' -File -ErrorAction SilentlyContinue |
-            Remove-Item -Force
-          Get-ChildItem -Path $bin -Force |
-            Where-Object { $_.Name -like 'vc_redist*' } |
-            Remove-Item -Recurse -Force
-          Get-ChildItem $bin | Select-Object Name, Length
-
-      - name: Upload Windows binary
+      - name: Upload Windows executable
         uses: actions/upload-artifact@v7
         with:
           name: Fritchii-HDrum-Windows-x64-${{ github.sha }}
-          path: build/release/bin/
+          path: release-exe/lichii.exe
           if-no-files-found: error
           retention-days: 7
 
@@ -206,11 +195,11 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v5
 
-      - name: Download binaries
+      - name: Download Windows executable
         uses: actions/download-artifact@v7
         with:
-          pattern: Fritchii-HDrum-Windows-x64-${{ github.sha }}
-          path: artifacts
+          name: Fritchii-HDrum-Windows-x64-${{ github.sha }}
+          path: built-exe
 
       - name: Package release files
         id: package-release
@@ -223,48 +212,51 @@ jobs:
             exit 1
           fi
           archive="Fritchii-HDrum-v${version}-Windows-x64.zip"
-          # download-artifact places the files directly under artifacts/.
-          # Do not select the first subdirectory: Qt plugin folders live there too.
-          artifact_dir="artifacts"
-          if [[ ! -f "$artifact_dir/lichii.exe" ]]; then
-            echo "Main executable is missing from the downloaded artifact root"
-            find "$artifact_dir" -maxdepth 3 -type f -print | sort | head -100
+          exe="built-exe/lichii.exe"
+          if [[ ! -s "$exe" ]]; then
+            echo "Freshly built lichii.exe is missing"
+            find built-exe -maxdepth 2 -type f -print || true
             exit 1
           fi
-          if [[ ! -f "$artifact_dir/Qt6Core.dll" || ! -f "$artifact_dir/platforms/qwindows.dll" ]]; then
-            echo "Required Qt runtime files are missing from the downloaded artifact"
+
+          # Start from the last verified v5.6 + RenHDrum package.
+          # Runtime DLLs, Qt plugins, SDL3 transport and recipe are copied as-is.
+          base_zip="$RUNNER_TEMP/Fritchii-HDrum-build-59.zip"
+          base_url="https://github.com/byronlai99/Fritchii-HDrum/releases/download/build-59/Fritchii-HDrum-v5.6-Windows-x64.zip"
+          base_sha256="d82f59a2fd46d55233f4666df6a74d0544cda0918286bc7921e76b33468096f9"
+          curl --fail --location --retry 3 --retry-delay 2 --output "$base_zip" "$base_url"
+          printf '%s  %s\n' "$base_sha256" "$base_zip" | sha256sum --check -
+
+          artifact_dir="$RUNNER_TEMP/windows-package"
+          mkdir -p "$artifact_dir"
+          unzip -q "$base_zip" -d "$artifact_dir"
+          if [[ ! -s "$artifact_dir/lichii.exe" ]]; then
+            echo "The verified base package does not contain lichii.exe"
             exit 1
           fi
-          # Reuse the recipe shipped in the official Fritchii v5.6 Windows package.
-          # Its checksum is pinned to the exact recipe file supplied for this release.
-          recipe_zip="$RUNNER_TEMP/Fritchii-v5.6-Windows-x64.zip"
-          recipe_url="https://github.com/Frizti/Fritchii/releases/download/fritchii-v5.6/Fritchii-v5.6-Windows-x64.zip"
-          recipe_zip_sha256="3266298fe6b13aa98b72fd3fb05c219475608661fbe7e4b97902e719acb4c699"
-          recipe_sha256="85d944c8557fbeffe02af566c9c4277251ed0ab1a0f2a3ab7a626af6a877c3a1"
+
+          # Replace only the application executable; keep every other file byte-for-byte.
+          install -m 755 "$exe" "$artifact_dir/lichii.exe"
+
           recipe_path="recipes/OoT v131072 (cache v54).nx2recipe"
-          curl --fail --location --retry 3 --retry-delay 2 --output "$recipe_zip" "$recipe_url"
-          printf '%s  %s\n' "$recipe_zip_sha256" "$recipe_zip" | sha256sum --check -
-          mapfile -t recipe_members < <(unzip -Z1 "$recipe_zip" | awk -F/ '$NF == "OoT v131072 (cache v54).nx2recipe"')
-          if [[ "${#recipe_members[@]}" -ne 1 ]]; then
-            echo "Expected exactly one OoT v131072 cache v54 recipe in the official package; found ${#recipe_members[@]}"
-            printf '%s\n' "${recipe_members[@]}"
-            exit 1
-          fi
-          recipe_file="$artifact_dir/$recipe_path"
-          mkdir -p "$(dirname "$recipe_file")"
-          unzip -p "$recipe_zip" "${recipe_members[0]}" > "$recipe_file"
-          printf '%s  %s\n' "$recipe_sha256" "$recipe_file" | sha256sum --check -
+          recipe_sha256="85d944c8557fbeffe02af566c9c4277251ed0ab1a0f2a3ab7a626af6a877c3a1"
+          for required in "lichii.exe" "renhdrum.dll" "Qt6Core.dll" "platforms/qwindows.dll" "$recipe_path"; do
+            if [[ ! -s "$artifact_dir/$required" ]]; then
+              echo "Base package is missing required runtime file: $required"
+              exit 1
+            fi
+          done
+          printf '%s  %s\n' "$recipe_sha256" "$artifact_dir/$recipe_path" | sha256sum --check -
 
           file_count=$(find "$artifact_dir" -type f | wc -l)
           if (( file_count < 30 )); then
-            echo "Only $file_count files found in the Windows package; refusing to publish an incomplete ZIP"
+            echo "Only $file_count files found in the Windows package; refusing to publish"
             find "$artifact_dir" -type f -print | sort
             exit 1
           fi
 
           mkdir -p dist
           (cd "$artifact_dir" && zip -qr "${GITHUB_WORKSPACE}/dist/${archive}" .)
-
           zip_entries=$(unzip -Z1 "dist/$archive")
           for required in "lichii.exe" "renhdrum.dll" "Qt6Core.dll" "platforms/qwindows.dll" "$recipe_path"; do
             if ! grep -Fxq "$required" <<< "$zip_entries"; then
@@ -272,6 +264,11 @@ jobs:
               exit 1
             fi
           done
+          if grep -Eq '(^|/)(eden-cli\.exe|vc_redist\.x64\.exe|eden-cli\.pdb|lichii\.pdb)$' <<< "$zip_entries"; then
+            echo "The Windows package contains an excluded file:"
+            grep -E '(^|/)(eden-cli\.exe|vc_redist\.x64\.exe|eden-cli\.pdb|lichii\.pdb)$' <<< "$zip_entries"
+            exit 1
+          fi
           zip_entry_count=$(wc -l <<< "$zip_entries")
           if (( zip_entry_count < 30 )); then
             echo "Final ZIP contains only $zip_entry_count entries; refusing to publish"
