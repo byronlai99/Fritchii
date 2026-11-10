@@ -9,6 +9,7 @@
 #include <chrono>
 #include <condition_variable>
 #include <mutex>
+#include <limits>
 #include <stop_token>
 #include <thread>
 #include <utility>
@@ -695,12 +696,12 @@ private:
     std::jthread thread;
 };
 
-// LICHII_DLSS_FG_WAIT=1: CPU wait for frame generation's inputs fence before tagging. Off: it held
-// the worker ~20 ms per frame, and the tagged inputs are copies in a ring (vk_streamline_dlss).
+// DLSS-G's eBlockNoClientQueues mode requires waiting for its inputs fence before reusing
+// tagged resources on any client queue. LICHII_DLSS_FG_WAIT=0 is an opt-out for diagnostics only.
 bool FrameGenWaitsForInputs() {
     static const bool waits = [] {
         const char* const value = std::getenv("LICHII_DLSS_FG_WAIT");
-        return value && value[0] == '1';
+        return !value || value[0] != '0';
     }();
     return waits;
 }
@@ -776,9 +777,12 @@ void TagFrameGen(const sl::FrameToken& frame, const sl::Resource& depth, const s
             .pSemaphores = &fence,
             .pValues = &value,
         };
-        if (state.wait_semaphores(state.device, &wait, 100'000'000) == VK_TIMEOUT &&
-            state.fg_wait_timeouts++ == 0) {
-            LOG_WARNING(Render_Vulkan, "DLSS Frame Generation: inputs fence wait timed out");
+        const VkResult wait_result =
+            state.wait_semaphores(state.device, &wait, std::numeric_limits<u64>::max());
+        if (wait_result != VK_SUCCESS && state.fg_wait_timeouts++ == 0) {
+            LOG_ERROR(Render_Vulkan,
+                      "DLSS Frame Generation: inputs fence wait failed (VkResult {})",
+                      static_cast<int>(wait_result));
         }
         state.fg_wait_ns.fetch_add(static_cast<u64>(std::chrono::duration_cast<std::chrono::nanoseconds>(
                                        std::chrono::steady_clock::now() - wait_begin)
