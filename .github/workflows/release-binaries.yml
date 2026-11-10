@@ -238,17 +238,17 @@ jobs:
           recipe_sha256="85d944c8557fbeffe02af566c9c4277251ed0ab1a0f2a3ab7a626af6a877c3a1"
           recipe_path="recipes/OoT v131072 (cache v54).nx2recipe"
           curl --fail --location --retry 3 --retry-delay 2 --output "$recipe_zip" "$recipe_url"
-          printf '%s  %s\\n' "$recipe_zip_sha256" "$recipe_zip" | sha256sum --check -
+          printf '%s  %s\n' "$recipe_zip_sha256" "$recipe_zip" | sha256sum --check -
           mapfile -t recipe_members < <(unzip -Z1 "$recipe_zip" | awk -F/ '$NF == "OoT v131072 (cache v54).nx2recipe"')
           if [[ "${#recipe_members[@]}" -ne 1 ]]; then
             echo "Expected exactly one OoT v131072 cache v54 recipe in the official package; found ${#recipe_members[@]}"
-            printf '%s\\n' "${recipe_members[@]}"
+            printf '%s\n' "${recipe_members[@]}"
             exit 1
           fi
           recipe_file="$artifact_dir/$recipe_path"
           mkdir -p "$(dirname "$recipe_file")"
           unzip -p "$recipe_zip" "${recipe_members[0]}" > "$recipe_file"
-          printf '%s  %s\\n' "$recipe_sha256" "$recipe_file" | sha256sum --check -
+          printf '%s  %s\n' "$recipe_sha256" "$recipe_file" | sha256sum --check -
 
           file_count=$(find "$artifact_dir" -type f | wc -l)
           if (( file_count < 30 )); then
