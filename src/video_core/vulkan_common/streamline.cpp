@@ -830,13 +830,11 @@ VkQueue FrameGenDeviceQueue(VkDevice device, u32 family, u32 index) {
     if (!state.module) {
         return VK_NULL_HANDLE;
     }
-    const auto get_device_proc_addr = reinterpret_cast<PFN_vkGetDeviceProcAddr>(
-        GetProcAddress(state.module, "vkGetDeviceProcAddr"));
-    if (!get_device_proc_addr) {
-        return VK_NULL_HANDLE;
-    }
+    // Use the queue entry point exported by Streamline's interposer. Resolving
+    // vkGetDeviceQueue through vkGetDeviceProcAddr can bypass the interposer's
+    // queue tracking, causing slHookVkPresent to reject this queue as unknown.
     const auto get_queue =
-        reinterpret_cast<PFN_vkGetDeviceQueue>(get_device_proc_addr(device, "vkGetDeviceQueue"));
+        reinterpret_cast<PFN_vkGetDeviceQueue>(GetProcAddress(state.module, "vkGetDeviceQueue"));
     if (!get_queue) {
         return VK_NULL_HANDLE;
     }
