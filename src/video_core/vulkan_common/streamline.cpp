@@ -339,9 +339,16 @@ bool Start() {
     if (state.started) {
         return true;
     }
-    if (!Settings::values.nvidia_dlss.GetValue()) {
+    // DLSS-G is selected independently from the legacy DLSS setting. The session override
+    // is supplied by the Fritchii Graphics menu and Frame Gen switch.
+    const char* const dlss_override = std::getenv("LICHII_DLSS");
+    const bool dlss_enabled =
+        (dlss_override != nullptr && dlss_override[0] == '1') ||
+        Settings::values.nvidia_dlss.GetValue();
+    if (!dlss_enabled) {
         return false;
     }
+
     if (!state.module) {
         const DlssFiles files = FindDlssFiles();
         if (!files.model.empty() && !IsSignedByNvidia(files.model)) {
