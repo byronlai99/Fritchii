@@ -185,7 +185,7 @@ jobs:
       - name: Upload Windows binary
         uses: actions/upload-artifact@v7
         with:
-          name: lichii-windows-x86_64-${{ github.sha }}
+          name: Fritchii-HDrum-Windows-x64-${{ github.sha }}
           path: build/release/bin/
           if-no-files-found: error
           retention-days: 7
@@ -198,24 +198,43 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: Check out source
+        uses: actions/checkout@v5
+
       - name: Download binaries
         uses: actions/download-artifact@v7
         with:
-          pattern: lichii-windows-x86_64-${{ github.sha }}
+          pattern: Fritchii-HDrum-Windows-x64-${{ github.sha }}
           path: artifacts
 
       - name: Package release files
+        id: package-release
         shell: bash
         run: |
           set -euo pipefail
-          mkdir dist
-          (cd artifacts && zip -qr "${GITHUB_WORKSPACE}/dist/lichii-windows-x86_64.zip" .)
-          ls -la dist
+          version="$(tr -d '\r\n' < dist/frizti_version.txt)"
+          if [[ ! "$version" =~ ^[0-9]+([.][0-9]+)?$ ]]; then
+            echo "Invalid Fritchii version: $version"
+            exit 1
+          fi
+          archive="Fritchii-HDrum-v${version}-Windows-x64.zip"
+          artifact_dir="$(find artifacts -mindepth 1 -maxdepth 1 -type d -print -quit)"
+          if [[ -z "$artifact_dir" ]]; then
+            echo "Downloaded Windows artifact directory was not found"
+            exit 1
+          fi
+          mkdir -p dist
+          (cd "$artifact_dir" && zip -qr "${GITHUB_WORKSPACE}/dist/${archive}" .)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "archive=$archive" >> "$GITHUB_OUTPUT"
+          ls -lh "dist/${archive}"
 
       - name: Create release
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.package-release.outputs.version }}
+          ARCHIVE: ${{ steps.package-release.outputs.archive }}
         run: |
           set -euo pipefail
           tag_sha=$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/build-${GITHUB_RUN_NUMBER}" --jq '.object.sha')
@@ -225,23 +244,23 @@ jobs:
           fi
           tag="build-${GITHUB_RUN_NUMBER}"
           base="https://github.com/${GITHUB_REPOSITORY}/releases/download/${tag}"
+          title="Fritchii v${VERSION} | Fritchii-HDrum build ${GITHUB_RUN_NUMBER} (${GITHUB_SHA::7})"
           cat > notes.md <<EOF
           Automatic Windows x64 MSVC build of \`${GITHUB_REF_NAME}\` at ${GITHUB_SHA}.
 
           ## Windows
 
-          Windows x64 MSVC package: [Download ZIP](${base}/lichii-windows-x86_64.zip).
+          Windows x64 MSVC package: [Download ZIP](${base}/${ARCHIVE}).
 
           Extract the ZIP and run \`lichii.exe\`.
           EOF
 
-          gh release create "$tag" dist/* \
+          gh release create "$tag" "dist/${ARCHIVE}" \
             --repo "${GITHUB_REPOSITORY}" \
             --verify-tag \
             --prerelease \
-            --title "Fritchii v5.3 ${GITHUB_REF_NAME} build ${GITHUB_RUN_NUMBER} (${GITHUB_SHA::7})" \
+            --title "$title" \
             --notes-file notes.md
-
       - name: Verify the release tag matches the run number
         shell: bash
         env:

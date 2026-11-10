@@ -192,8 +192,25 @@ std::optional<FritchiiVersion> ParseFritchiiTag(std::string_view tag) {
     return std::nullopt;
 }
 
+std::optional<FritchiiVersion> ParseFritchiiReleaseVersion(const Common::Net::Release& release) {
+    if (const auto version = ParseFritchiiTag(release.tag)) {
+        return version;
+    }
+    for (const std::string_view prefix : {"Fritchii v", "Frizti v"}) {
+        if (std::string_view{release.title}.starts_with(prefix)) {
+            auto text = std::string_view{release.title}.substr(prefix.size());
+            const auto end = text.find_first_not_of("0123456789.");
+            if (end != std::string_view::npos) {
+                text = text.substr(0, end);
+            }
+            return ParseFritchiiVersion(text);
+        }
+    }
+    return std::nullopt;
+}
+
 std::string FritchiiAssetName(const FritchiiVersion& version) {
-    return fmt::format("Fritchii-v{}-Windows-x64.zip", version.ToString());
+    return fmt::format("Fritchii-HDrum-v{}-Windows-x64.zip", version.ToString());
 }
 
 Source DefaultSource() {
@@ -236,7 +253,7 @@ std::optional<Source> ParseSourceOverride(std::string_view url) {
 
 std::optional<Common::Net::Asset> SelectFritchiiAsset(const Common::Net::Release& release,
                                                       const Source& source) {
-    const auto version = ParseFritchiiTag(release.tag);
+    const auto version = ParseFritchiiReleaseVersion(release);
     if (!version) {
         return std::nullopt;
     }
@@ -281,7 +298,7 @@ std::optional<Common::Net::Release> SelectFritchiiUpdate(
     const Common::Net::Release* selected = nullptr;
     FritchiiVersion newest = current;
     for (const auto& release : releases) {
-        const auto version = ParseFritchiiTag(release.tag);
+        const auto version = ParseFritchiiReleaseVersion(release);
         if (version && *version > newest && SelectFritchiiAsset(release, source)) {
             newest = *version;
             selected = &release;
