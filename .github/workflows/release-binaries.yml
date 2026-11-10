@@ -218,35 +218,62 @@ jobs:
             exit 1
           fi
           archive="Fritchii-HDrum-v${version}-Windows-x64.zip"
-          artifact_dir="$(find artifacts -mindepth 1 -maxdepth 1 -type d -print -quit)"
-          if [[ -z "$artifact_dir" ]]; then
-            echo "Downloaded Windows artifact directory was not found"
+          # download-artifact places the files directly under artifacts/.
+          # Do not select the first subdirectory: Qt plugin folders live there too.
+          artifact_dir="artifacts"
+          if [[ ! -f "$artifact_dir/lichii.exe" ]]; then
+            echo "Main executable is missing from the downloaded artifact root"
+            find "$artifact_dir" -maxdepth 3 -type f -print | sort | head -100
+            exit 1
+          fi
+          if [[ ! -f "$artifact_dir/Qt6Core.dll" || ! -f "$artifact_dir/platforms/qwindows.dll" ]]; then
+            echo "Required Qt runtime files are missing from the downloaded artifact"
             exit 1
           fi
           # Reuse the recipe shipped in the official Fritchii v5.5 Windows package.
-          # Pin both the source archive and extracted recipe so the package cannot silently drift.
+          # Its checksum is pinned to the exact recipe file supplied for this release.
           recipe_zip="$RUNNER_TEMP/Fritchii-v5.5-Windows-x64.zip"
           recipe_url="https://github.com/Frizti/Fritchii/releases/download/fritchii-v5.5/Fritchii-v5.5-Windows-x64.zip"
           recipe_zip_sha256="63112e7125e6174192079475b485f9633509a4a8dfb2630b5f8a96c644abf066"
           recipe_sha256="85d944c8557fbeffe02af566c9c4277251ed0ab1a0f2a3ab7a626af6a877c3a1"
           recipe_path="recipes/OoT v131072 (cache v54).nx2recipe"
           curl --fail --location --retry 3 --retry-delay 2 --output "$recipe_zip" "$recipe_url"
-          printf '%s  %s\n' "$recipe_zip_sha256" "$recipe_zip" | sha256sum --check -
+          printf '%s  %s\\n' "$recipe_zip_sha256" "$recipe_zip" | sha256sum --check -
           mapfile -t recipe_members < <(unzip -Z1 "$recipe_zip" | awk -F/ '$NF == "OoT v131072 (cache v54).nx2recipe"')
           if [[ "${#recipe_members[@]}" -ne 1 ]]; then
             echo "Expected exactly one OoT v131072 cache v54 recipe in the official package; found ${#recipe_members[@]}"
-            printf '%s\n' "${recipe_members[@]}"
+            printf '%s\\n' "${recipe_members[@]}"
             exit 1
           fi
           recipe_file="$artifact_dir/$recipe_path"
           mkdir -p "$(dirname "$recipe_file")"
           unzip -p "$recipe_zip" "${recipe_members[0]}" > "$recipe_file"
-          # Verify the extracted bytes against the exact recipe file supplied for this release.
-          printf '%s  %s\n' "$recipe_sha256" "$recipe_file" | sha256sum --check -
+          printf '%s  %s\\n' "$recipe_sha256" "$recipe_file" | sha256sum --check -
+
+          file_count=$(find "$artifact_dir" -type f | wc -l)
+          if (( file_count < 30 )); then
+            echo "Only $file_count files found in the Windows package; refusing to publish an incomplete ZIP"
+            find "$artifact_dir" -type f -print | sort
+            exit 1
+          fi
 
           mkdir -p dist
           (cd "$artifact_dir" && zip -qr "${GITHUB_WORKSPACE}/dist/${archive}" .)
-          unzip -l "dist/$archive" | grep -F "$recipe_path"
+
+          zip_entries=$(unzip -Z1 "dist/$archive")
+          for required in "lichii.exe" "Qt6Core.dll" "platforms/qwindows.dll" "$recipe_path"; do
+            if ! grep -Fxq "$required" <<< "$zip_entries"; then
+              echo "Final ZIP is missing required file: $required"
+              exit 1
+            fi
+          done
+          zip_entry_count=$(wc -l <<< "$zip_entries")
+          if (( zip_entry_count < 30 )); then
+            echo "Final ZIP contains only $zip_entry_count entries; refusing to publish"
+            exit 1
+          fi
+          echo "Final ZIP contains $zip_entry_count entries"
+          unzip -l "dist/$archive" | tail -5
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "archive=$archive" >> "$GITHUB_OUTPUT"
           ls -lh "dist/${archive}"
