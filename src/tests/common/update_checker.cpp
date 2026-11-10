@@ -247,15 +247,20 @@ const std::string ValidDigest =
 
 Common::Net::Release MakeFritchiiRelease(const std::string& tag,
                                          const std::vector<std::string>& urls,
-                                         const std::string& digest = ValidDigest) {
+                                         const std::string& digest = ValidDigest, const std::string& title = {}) {
     nlohmann::json assets = nlohmann::json::array();
     for (const auto& url : urls) {
         assets.push_back(
             {{"browser_download_url", url}, {"size", u64{68126892}}, {"digest", digest}});
     }
     const nlohmann::json json{
-        {"tag_name", tag}, {"name", "Fritchii " + tag}, {"prerelease", true}, {"assets", assets}};
+        {"tag_name", tag}, {"name", title.empty() ? "Fritchii " + tag : title}, {"prerelease", true}, {"assets", assets}};
     return Common::Net::Release::FromJson(json, "https://api.github.com", "Frizti/Lichii").value();
+}
+
+std::string HDrumUrl(std::string_view tag, std::string_view name) {
+    return fmt::format("https://github.com/byronlai99/Fritchii-HDrum/releases/download/{}/{}",
+                       tag, name);
 }
 
 std::string GitHubUrl(std::string_view repo, std::string_view tag, std::string_view name) {
@@ -308,47 +313,52 @@ TEST_CASE("GitHub digests are parsed only when they are SHA-256", "[updater]") {
     CHECK_FALSE(Common::Net::ParseSha256Digest(digest));
 }
 
-TEST_CASE("Fritchii selects only the Windows package from the Frizti repository", "[updater]") {
+TEST_CASE("Fritchii-HDrum selects its own v5.5 package from a build release title", "[updater]") {
     const auto source = UpdateChecker::DefaultSource();
     CHECK(source.origin == "https://api.github.com");
-    CHECK(source.api_path == "/repos/Frizti/Lichii/releases?per_page=100");
+    CHECK(source.api_path == "/repos/byronlai99/Fritchii-HDrum/releases?per_page=100");
     CHECK_FALSE(source.test);
 
-    const std::string tag = "fritchii-v5";
-    const std::string repo = GENERATE("Lichii", "Fritchii");
+    const std::string tag = "build-130";
+    const std::string filename = "Fritchii-HDrum-v5.5-Windows-x64.zip";
     const auto release = MakeFritchiiRelease(
-        tag, {GitHubUrl(repo, tag, "Fritchii-v5-debug-symbols-not-needed-to-play.zip"),
-              GitHubUrl(repo, tag, "Fritchii-v5-Windows-x64.zip")});
+        tag, {HDrumUrl(tag, filename)}, ValidDigest,
+        "Fritchii v5.5 | Fritchii-HDrum build 130 (3dae119)");
     const auto asset = UpdateChecker::SelectFritchiiAsset(release, source);
     REQUIRE(asset);
-    CHECK(asset->filename == "Fritchii-v5-Windows-x64.zip");
+    CHECK(asset->filename == filename);
     CHECK(asset->url == "https://github.com");
-    CHECK(asset->path == "/Frizti/" + repo + "/releases/download/fritchii-v5/" + asset->filename);
+    CHECK(asset->path == "/byronlai99/Fritchii-HDrum/releases/download/" + tag + "/" + filename);
     CHECK(asset->sha256 == "597200a1bffa3d2ecfb2f3f2a464515d57d7f6dc674060f16719830c790bada7");
     CHECK(asset->size == 68126892);
+}
 
-    // Selected, but the dialog refuses to install it without a digest.
-    const auto no_digest = MakeFritchiiRelease(
-        tag, {GitHubUrl(repo, tag, "Fritchii-v5-Windows-x64.zip")}, "sha256:short");
-    const auto unverified = UpdateChecker::SelectFritchiiAsset(no_digest, source);
-    REQUIRE(unverified);
-    CHECK(unverified->sha256.empty());
+TEST_CASE("Fritchii legacy releases still select the Windows HDrum package", "[updater]") {
+    const auto source = UpdateChecker::DefaultSource();
+    const std::string tag = "fritchii-v5";
+    const std::string filename = "Fritchii-HDrum-v5-Windows-x64.zip";
+    const auto release = MakeFritchiiRelease(
+        tag, {GitHubUrl("Lichii", tag, filename)});
+    const auto asset = UpdateChecker::SelectFritchiiAsset(release, source);
+    REQUIRE(asset);
+    CHECK(asset->filename == filename);
+    CHECK(asset->path == "/Frizti/Lichii/releases/download/" + tag + "/" + filename);
 }
 
 TEST_CASE("Fritchii ignores debug zips, old asset names and lookalike URLs", "[updater]") {
     const std::string url = GENERATE(
-        GitHubUrl("Lichii", "fritchii-v5", "Fritchii-v5-debug-symbols-not-needed-to-play.zip"),
+        GitHubUrl("Lichii", "fritchii-v5", "Fritchii-HDrum-v5-debug-symbols-not-needed-to-play.zip"),
         GitHubUrl("Lichii", "fritchii-v5", "Lichii-Frizti-v5-Windows-x64.zip"),
-        GitHubUrl("Lichii", "fritchii-v5", "Fritchii-v4-Windows-x64.zip"),
-        GitHubUrl("Lichii", "fritchii-v4", "Fritchii-v5-Windows-x64.zip"),
-        GitHubUrl("Other", "fritchii-v5", "Fritchii-v5-Windows-x64.zip"),
+        GitHubUrl("Lichii", "fritchii-v5", "Fritchii-HDrum-v4-Windows-x64.zip"),
+        GitHubUrl("Lichii", "fritchii-v4", "Fritchii-HDrum-v5-Windows-x64.zip"),
+        GitHubUrl("Other", "fritchii-v5", "Fritchii-HDrum-v5-Windows-x64.zip"),
         std::string{"https://github.com/zortos293/Lichii/releases/download/fritchii-v5/"
-                    "Fritchii-v5-Windows-x64.zip"},
+                    "Fritchii-HDrum-v5-Windows-x64.zip"},
         std::string{"http://github.com/Frizti/Lichii/releases/download/fritchii-v5/"
-                    "Fritchii-v5-Windows-x64.zip"},
+                    "Fritchii-HDrum-v5-Windows-x64.zip"},
         std::string{"https://github.com.evil.com/Frizti/Lichii/releases/download/fritchii-v5/"
-                    "Fritchii-v5-Windows-x64.zip"},
-        std::string{"http://127.0.0.1:8000/Fritchii-v5-Windows-x64.zip"},
+                    "Fritchii-HDrum-v5-Windows-x64.zip"},
+        std::string{"http://127.0.0.1:8000/Fritchii-HDrum-v5-Windows-x64.zip"},
         std::string{"https://github.com/Frizti/Lichii/archive/refs/tags/fritchii-v5.zip"});
     const auto release = MakeFritchiiRelease("fritchii-v5", {url});
     CHECK_FALSE(UpdateChecker::SelectFritchiiAsset(release, UpdateChecker::DefaultSource()));
@@ -360,9 +370,9 @@ TEST_CASE("Fritchii picks the newest newer release that has a package", "[update
     };
     const auto releases = std::array{
         make("frizti-v3", "Lichii-Frizti-v3-Windows-x64.zip"),
-        make("fritchii-v4", "Fritchii-v4-Windows-x64.zip"),
-        make("fritchii-v5", "Fritchii-v5-debug-symbols-not-needed-to-play.zip"),
-        make("fritchii-v4.1", "Fritchii-v4.1-Windows-x64.zip"),
+        make("fritchii-v4", "Fritchii-HDrum-v4-Windows-x64.zip"),
+        make("fritchii-v5", "Fritchii-HDrum-v5-debug-symbols-not-needed-to-play.zip"),
+        make("fritchii-v4.1", "Fritchii-HDrum-v4.1-Windows-x64.zip"),
         make("build-99", "lichii-windows-x86_64.zip"),
     };
     const auto source = UpdateChecker::DefaultSource();
@@ -402,18 +412,18 @@ TEST_CASE("A test source accepts packages only from its own origin", "[updater]"
     const auto source = UpdateChecker::ParseSourceOverride("http://127.0.0.1:8000/releases.json");
     REQUIRE(source);
     const auto local =
-        MakeFritchiiRelease("fritchii-v5", {"http://127.0.0.1:8000/Fritchii-v5-Windows-x64.zip"});
+        MakeFritchiiRelease("fritchii-v5", {"http://127.0.0.1:8000/Fritchii-HDrum-v5-Windows-x64.zip"});
     const auto asset = UpdateChecker::SelectFritchiiAsset(local, *source);
     REQUIRE(asset);
     CHECK(asset->url == "http://127.0.0.1:8000");
-    CHECK(asset->path == "/Fritchii-v5-Windows-x64.zip");
+    CHECK(asset->path == "/Fritchii-HDrum-v5-Windows-x64.zip");
 
     const std::string url =
-        GENERATE(std::string{"http://127.0.0.1:9000/Fritchii-v5-Windows-x64.zip"},
-                 std::string{"http://127.0.0.1:80000/Fritchii-v5-Windows-x64.zip"},
-                 std::string{"http://127.0.0.1:8000/../Fritchii-v5-Windows-x64.zip"},
-                 std::string{"http://127.0.0.1:8000/x?/Fritchii-v5-Windows-x64.zip"},
-                 GitHubUrl("Lichii", "fritchii-v5", "Fritchii-v5-Windows-x64.zip"));
+        GENERATE(std::string{"http://127.0.0.1:9000/Fritchii-HDrum-v5-Windows-x64.zip"},
+                 std::string{"http://127.0.0.1:80000/Fritchii-HDrum-v5-Windows-x64.zip"},
+                 std::string{"http://127.0.0.1:8000/../Fritchii-HDrum-v5-Windows-x64.zip"},
+                 std::string{"http://127.0.0.1:8000/x?/Fritchii-HDrum-v5-Windows-x64.zip"},
+                 GitHubUrl("Lichii", "fritchii-v5", "Fritchii-HDrum-v5-Windows-x64.zip"));
     CHECK_FALSE(
         UpdateChecker::SelectFritchiiAsset(MakeFritchiiRelease("fritchii-v5", {url}), *source));
 }
