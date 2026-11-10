@@ -265,7 +265,7 @@ jobs:
           (cd "$artifact_dir" && zip -qr "${GITHUB_WORKSPACE}/dist/${archive}" .)
 
           zip_entries=$(unzip -Z1 "dist/$archive")
-          for required in "lichii.exe" "Qt6Core.dll" "platforms/qwindows.dll" "$recipe_path"; do
+          for required in "lichii.exe" "renhdrum.dll" "Qt6Core.dll" "platforms/qwindows.dll" "$recipe_path"; do
             if ! grep -Fxq "$required" <<< "$zip_entries"; then
               echo "Final ZIP is missing required file: $required"
               exit 1
