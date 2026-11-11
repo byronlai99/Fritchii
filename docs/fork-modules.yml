@@ -252,7 +252,9 @@ integration_failure_ledger:
       workflow_run_url: https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43065581977
       tested_commit: 4835fe1d2ac861e173f39c367cf9ce0bfc97e965
       stage: Build
-    status: fixed_awaiting_ci
+    status: fixed_and_ci_verified
+    verified_by_run: 43070225601
+    verification: "Windows x64 MSVC Build, Package test binary, and Upload test artifact all succeeded; no compiler diagnostics or D9014 were present."
     symptoms:
       - "C4458 at src/core/core.cpp:253: RefreshTime local service_manager hides Core::System::Impl::service_manager at line 656."
     resolution:
@@ -319,8 +321,12 @@ recent_workflow_audit:
     errors: [F-005, F-009]
   - run: 43070225601
     label: integration-run-22
-    result: in_progress_at_last_audit
+    result: success
     errors: []
+    verified_fix: F-008
+    artifact: Fritchii-v5.8.4-RenHDrum-zh-CN-Windows-x64-9e053b5a7af47e4c8281da9ecf99de60f5f70bb2
+    artifact_sha256: 8b498bc84acdec0c3c6c80e73ecd570dc9062fc137dc6078dbb9cfa3a34e6042
+    artifact_expires_at: 2026-11-18T18:10:27Z
 
 workflow_portability_policy:
   upstream_reference:
