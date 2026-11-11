@@ -104,3 +104,19 @@ A user request to add or remove a module overrides this list for that task, and 
 ## Current baseline note
 
 The manifest currently records upstream `fritchii-v5.8.4` as the baseline. The first 5.8.4 port still requires a fresh successful Actions run and hands-on controller/UI testing; a previous run failed because the port referenced `Settings::nx2_active_mode`, which was absent from that base. That NX2-only reference has been removed from the v5.8.4 RenHDrum path.
+
+## Pre-build static review gate (must run before Actions)
+
+A successful CMake configure is not proof that the source is MSVC-clean or that the runtime integration is complete. Before requesting a Windows build:
+
+1. **Compile-diagnostic sweep:** inspect every compiler error from the previous run, then statically search all changed files and newly added C++ files for warnings promoted to errors under the target's actual MSVC flags (especially C4456/C4457/C4458 and the project's /we options). Check the full build targets, not only the file that failed last time. Rename shadowing locals instead of weakening warning levels.
+2. **CMake/link graph:** verify all RenHDrum targets are added only for supported desktop targets, propagate SDL3 and required include directories, link the runtime driver into the final application path, and make sure the UI source is compiled exactly once. Confirm the SDL3 patch set is applied to the exact resolved SDL3 revision and the patched symbols are available to the application link.
+3. **Runtime ABI/package:** compare every required and optional RenHDrum symbol with the selected DLL release/header. Confirm architecture, version and SHA-256, DLL search location, and fallback behavior when the DLL is missing or incomplete.
+4. **SDL/controller lifecycle:** inspect hotplug/reconnect, duplicate device registration, joystick/gamepad close order, thread stop/join, audio callback shutdown, HID close, SDL subsystem init/quit reference counting, and lock order. Ensure no RenHDrum worker/callback can use a joystick, stream, or DLL after it is destroyed.
+5. **Settings semantics:** check global vs per-game behavior, load/save/cancel/default flows, and old config compatibility. Keep `vibration_enabled`, `enable_accurate_vibrations`, and `hd_rumble_enabled` distinct. A new default must not silently overwrite an existing user's stored choice. Check all new RenHDrum options in the Fritchii per-game tuning/reconcile list when they are intended to be tuned.
+6. **Translation pipeline:** confirm `zh_CN.ts` is included in the Qt translation build, new RenHDrum strings are present, the runtime translation resource is generated/loaded, and deployment does not suppress translations (do not use `windeployqt --no-translations` for a build whose Chinese UI must be tested).
+7. **UI and interaction:** check Qt parent ownership, signal/slot connections, accepted/cancelled dialog persistence, slider/combobox index ranges, and that any config UI target is neither omitted nor duplicate-compiled.
+8. **Package contract:** check executable name, runtime DLL, Qt runtime files, translations, recipe/config files, and required assets. Exclude `eden-cli.exe`, `vc_redist*`, and `*.pdb` as defined by the manifest.
+9. **Only then run CI:** use one test-artifact build. After CI passes, inspect the artifact contents before handing it to the user. Do not claim hardware behavior is verified without real controller testing.
+
+Record each finding as **fixed before build**, **known non-blocking**, or **requires CI/hardware validation**. Do not knowingly leave a statically identifiable compile or packaging issue for the next Actions run.
