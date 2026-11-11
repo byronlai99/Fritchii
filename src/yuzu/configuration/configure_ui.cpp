@@ -186,16 +186,9 @@ void ConfigureUi::RequestGameListUpdate() {
 void ConfigureUi::SetConfiguration() {
     ui->theme_combobox->setCurrentIndex(
         ui->theme_combobox->findData(QString::fromStdString(UISettings::values.theme)));
-    QString language = QString::fromStdString(UISettings::values.language.GetValue());
-    if (language.isEmpty()) {
-        language = QStringLiteral("en");
-        UISettings::values.language = "en";
-    }
-    if (language != QStringLiteral("zh_CN")) {
-        language = QStringLiteral("en");
-        UISettings::values.language = "en";
-    }
-    ui->language_combobox->setCurrentIndex(ui->language_combobox->findData(language));
+    const QString language = QString::fromStdString(UISettings::values.language.GetValue());
+    const int language_index = ui->language_combobox->findData(language);
+    ui->language_combobox->setCurrentIndex(language_index >= 0 ? language_index : 0);
     ui->show_add_ons->setChecked(UISettings::values.show_add_ons.GetValue());
     ui->show_size->setChecked(UISettings::values.show_size.GetValue());
     ui->show_types->setChecked(UISettings::values.show_types.GetValue());
@@ -241,7 +234,8 @@ void ConfigureUi::RetranslateUI() {
 }
 
 void ConfigureUi::InitializeLanguageComboBox() {
-    // Keep the interface language list intentionally small and predictable.
+    // System locale, English and Simplified Chinese are the only offered choices.
+    ui->language_combobox->addItem(tr("<System>"), QString{});
     ui->language_combobox->addItem(tr("English"), QStringLiteral("en"));
     ui->language_combobox->addItem(tr("简体中文"), QStringLiteral("zh_CN"));
 
