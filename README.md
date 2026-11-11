@@ -83,7 +83,7 @@ Fritchii-HDrum 将模拟器内置的控制器驱动与 RenHDrum 相结合，以�
 | Sony DualSense | 进阶触觉反馈 | USB 通过多声道音频驱动触觉执行器；在 RenHDrum 运行时支持的情况下，蓝牙使用 HID 触觉反馈。 |
 | Sony DualSense Edge | 进阶触觉反馈 | 已实现 USB 与蓝牙触觉反馈路径，实际可用性取决于运行时和设备支持情况。 |
 | Xbox One 控制器 | 增强震动 | 由 RenHDrum 处理；只有当控制器和连接方式提供扳机马达时，才可使用扳机震动。 |
-| Xbox Series X\\|S 控制器 | 增强震动 | 由 RenHDrum 处理；只有当控制器和连接方式提供扳机马达时，才可使用扳机震动。 |
+| Xbox Series X\|S 控制器 | 增强震动 | 由 RenHDrum 处理；只有当控制器和连接方式提供扳机马达时，才可使用扳机震动。 |
 | Xbox 360 兼容控制器 | 增强震动 | 当 SDL 将控制器识别为 Xbox 360 类型手柄时即可支持。 |
 | 兼容的第三方 XInput 控制器 | 增强震动 | 包括 GameSir、8BitDo 和 PowerA 等品牌的受支持 Xbox 风格设备。实际功能因型号和连接方式而异。 |
 
