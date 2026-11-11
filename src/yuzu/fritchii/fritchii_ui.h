@@ -56,7 +56,7 @@ struct GraphicsHooks {
 };
 /// The status bar's one "Graphics" button: renderer, accuracy, filter, anti-aliasing, effects.
 [[nodiscard]] QPushButton* MakeGraphicsButton(QWidget* parent, GraphicsHooks hooks);
-/// DLSS Frame Generation 2x switch in the status bar.
+/// DLSS Frame Generation mode switch in the status bar.
 [[nodiscard]] QPushButton* MakeFrameGenButton(QWidget* parent, GraphicsHooks hooks);
 
 /// A settings page as the settings dialog shows it: inside a scroll area in Fritchii builds, so
