@@ -986,9 +986,10 @@ void FrameGenAfterPresent(void* token) {
     }
     // What reached the screen, for the frontend's FPS counters (one-second windows).
     {
-        const u32 shown = (std::max)(fg_state.numFramesActuallyPresented, 1u);
+        const u32 shown =
+            token ? (std::max)(fg_state.numFramesActuallyPresented, 1u) : 1u;
         state.fg_window_shown += shown;
-        state.fg_window_generated += shown > 1 ? 1 : 0;
+        state.fg_window_generated += token && shown > 1 ? 1 : 0;
         ++state.fg_window_presents;
         if (state.fg_window_begin == std::chrono::steady_clock::time_point{}) {
             state.fg_window_begin = now;
@@ -1007,7 +1008,7 @@ void FrameGenAfterPresent(void* token) {
             state.fg_window_presents = 0;
         }
     }
-    if (fg_state.numFramesActuallyPresented > 1) {
+    if (token && fg_state.numFramesActuallyPresented > 1) {
         ++state.fg_generated_presents;
     }
     if (fg_state.status != state.fg_last_status) {
