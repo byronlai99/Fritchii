@@ -5898,34 +5898,38 @@ void MainWindow::UpdateUITheme() {
 }
 
 void MainWindow::LoadTranslation() {
+    const std::string language = UISettings::values.language.GetValue();
     bool loaded;
 
-    if (UISettings::values.language.GetValue().empty()) {
-        // If the selected language is empty, use system locale
+    if (language.empty()) {
+        // If the selected language is empty, use system locale.
         loaded = translator.load(QLocale(), {}, {}, QStringLiteral(":/languages/"));
     } else {
-        // Otherwise load from the specified file
-        loaded = translator.load(QString::fromStdString(UISettings::values.language.GetValue()),
-                                 QStringLiteral(":/languages/"));
+        // Otherwise load the selected language.
+        loaded = translator.load(QString::fromStdString(language), QStringLiteral(":/languages/"));
     }
 
-    if (loaded)
+    if (loaded) {
         qApp->installTranslator(&translator);
-    else
-        UISettings::values.language = std::string("en");
+    } else if (!language.empty() && language != "en") {
+        // Keep the selected locale so it can become available again in a future build.
+        LOG_WARNING(Frontend, "No UI translation for \"{}\" in this build, showing English",
+                    language);
+    }
 }
 
 void MainWindow::OnLanguageChanged(const QString& locale) {
     if (UISettings::values.language.GetValue() != std::string("en"))
         qApp->removeTranslator(&translator);
 
+    UISettings::values.language = locale.toStdString();
+    LoadTranslation();
+
     QList<QAction*> actions = game_size_actions->actions();
     for (size_t i = 0; i < default_game_icon_sizes.size(); i++) {
         actions.at(i)->setText(GetTranslatedGameIconSize(i));
     }
 
-    UISettings::values.language = locale.toStdString();
-    LoadTranslation();
     ui->retranslateUi(this);
     multiplayer_state->retranslateUi();
     UpdateWindowTitle();
