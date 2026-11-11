@@ -13,8 +13,6 @@
 #include <QComboBox>
 #include <QCoreApplication>
 #include <QDirIterator>
-#include <QLocale>
-#include <QTranslator>
 #include <QFileDialog>
 #include <QString>
 #include <QToolButton>
@@ -58,12 +56,6 @@ QString GetTranslatedRowTextName(size_t index) {
     return QCoreApplication::translate("ConfigureUI", row_text_names[index]);
 }
 
-/// A translation's name in the language list, e.g. "German (Germany)" for "de".
-QString LanguageName(const QString& locale) {
-    const QLocale language(locale);
-    return QStringLiteral("%1 (%2)").arg(QLocale::languageToString(language.language()),
-                                         QLocale::territoryToString(language.territory()));
-}
 } // Anonymous namespace
 
 static float GetUpFactor(Settings::ResolutionSetup res_setup) {
