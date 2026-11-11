@@ -126,3 +126,18 @@ build_policy:
     - vc_redist*
     - "*.pdb"
   artifact_retention_days: 7
+
+
+pre_build_static_review:
+  required: true
+  workflow_document: docs/FORK_MODULE_INTEGRATION_WORKFLOW.md
+  checks:
+    - msvc_warning_as_error_sweep
+    - cmake_target_and_link_graph
+    - sdl3_patch_application_and_symbol_export
+    - renhdrum_runtime_abi_and_dll_hash
+    - controller_hotplug_thread_audio_and_hid_lifecycle
+    - global_per_game_setting_persistence
+    - qt_translation_generation_and_deployment
+    - ui_dialog_accept_cancel_and_widget_ownership
+    - package_contents_and_exclusions
