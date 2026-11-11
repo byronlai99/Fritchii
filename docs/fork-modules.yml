@@ -3,7 +3,7 @@
 # To add a module: append an entry with a unique id and enabled: true.
 # To stop applying a module: set enabled: false (do not delete its history casually).
 schema_version: 1
-last_updated: 2026-11-11
+last_updated: 2026-11-12
 
 # Current fork branch containing the active module set and its latest integration work.
 # This is a working branch, not the repository's stable default branch.
@@ -175,20 +175,44 @@ integration_failure_ledger:
       - "Translate only required dependencies/setup into the fork-owned workflow and test the actual release targets."
     prevention:
       - "Record runner, compiler, generator, Qt/SDL3/CPM versions, CMake options, targets, and artifact path for each upgrade."
-  - id: F-005-msvc-d9014-invalid-w4-value
+  - id: F-005-msvc-c4505-invalid-warning-switch
     evidence:
-      workflow_run: 43043541561
-      workflow_run_url: https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43043541561
+      workflow_runs:
+        - 43043541561
+        - 43049341434
+      latest_workflow_url: https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43049341434
+      baseline_file: src/CMakeLists.txt
+      upstream_baseline: Frizti/Fritchii@fritchii-v5.8.4
       stage: Build
-    status: non_blocking_root_cause_unconfirmed
+    status: fixed_in_current_branch
     symptoms:
-      - "Repeated D9014 diagnostics reported invalid value 505 for /w4."
-      - "This warning was not the fatal cause of the run; C4457/C4458 errors stopped compilation."
+      - "MSVC repeatedly emitted D9014: invalid value 505 for /w4."
+      - "The generated compiler command contained /w4505."
+    root_cause:
+      - "The upstream v5.8.4 src/CMakeLists.txt used /w4505 where /wd4505 was intended to disable C4505."
+      - "The malformed option was interpreted as /w4 with invalid warning number 505."
     resolution:
-      - "No global warning-level change or speculative suppression was made."
+      - "Corrected /w4505 to /wd4505 without changing the warning level or weakening the C445x-as-error policy."
     prevention:
-      - "Capture the complete MSVC compiler invocation and inspect the target-level CMake options for malformed or accidentally concatenated flags."
-      - "Keep this warning separate from fatal compiler errors until its source is confirmed."
+      - "Inspect generated MSVC command lines for exact /wdNNNN, /weNNNN and /wN syntax."
+      - "Do not assume an upstream warning flag is valid merely because it is present in the baseline."
+  - id: F-006-nx2-decoder-packet-name-hiding
+    evidence:
+      workflow_run: 43049341434
+      workflow_run_url: https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43049341434
+      tested_commit: 2177f5d8e9deed6a1b2976ba428c755010922c18
+      file: src/video_core/host1x/nx2_video_decoder.cpp
+      line: 236
+      stage: Build
+    status: fixed_in_current_branch
+    symptoms:
+      - "C4458: SendReceive parameter packet hid Nx2VideoDecoder::Impl::packet."
+    resolution:
+      - "Renamed the SendReceive parameter to input_packet and passed it to context->SendPacket."
+      - "Kept the Impl::packet byte buffer unchanged."
+    prevention:
+      - "Scan all target-baseline C++ sources, not just module-specific changed files, for C4456/C4457/C4458."
+      - "Check method parameters against members of nested implementation classes."
   - id: F-004-package-contents-regression
     evidence:
       context: historical_v5x_packaging_iteration
@@ -204,6 +228,17 @@ integration_failure_ledger:
       - "Verify eden-cli.exe, vc_redist*, and *.pdb are absent."
 
 workflow_portability_policy:
+  upstream_reference:
+    repository: Frizti/Fritchii
+    tag: fritchii-v5.8.4
+    workflow: .github/workflows/release-binaries.yml
+    url: https://github.com/Frizti/Fritchii/blob/fritchii-v5.8.4/.github/workflows/release-binaries.yml
+  intentional_v584_fork_differences:
+    - "YUZU_USE_BUNDLED_SDL3=OFF with RENHDRUM_SDL_PATCHES=ON selects the sdl3-hdrumble CPM package; upstream ON selects sdl3-ci and bypasses the custom RenHDrum SDL3 patch path."
+    - "ENABLE_RENHDRUM=ON and RENHDRUM_SDL_PATCHES=ON enable the controller integration."
+    - "ENABLE_QT_TRANSLATION=ON compiles the fork's Simplified Chinese catalog."
+    - "Use the upstream windeployqt --release --no-translations deployment option; zh_CN is embedded in the app resource."
+    - "Upload a short-retention test artifact only; remove eden-cli.exe, vc_redist*, and *.pdb per fork package policy."
   authoritative_workflow: .github/workflows/renhdrum-v584-build.yml
   rule: "External module workflows are reference material only; the fork-owned MSVC workflow is authoritative."
   compare_before_porting:
@@ -222,17 +257,18 @@ workflow_portability_policy:
 # Last full static review for the current 5.8.4 integration branch.
 # Status describes source inspection only; it is not a successful CI build.
 last_static_review:
-  date: 2026-11-11
+  date: 2026-11-12
   scope: feature/v5.8.4-renhdrum-zh-cn
   findings_fixed:
     - "MSVC C4457/C4458 local/member shadowing in kepler_compute.cpp and maxwell_3d.cpp."
     - "Removed unavailable/unused NX2 Settings and RenHDrum API references from the v5.8.4 target."
     - "Renamed potential MSVC shadowing locals in the RenHDrum driver."
-    - "Kept the application zh_CN translation in the Qt resource pipeline; deployment of Qt external translation files is checked separately."
+    - "Matched upstream v5.8.4 windeployqt --release --no-translations; application zh_CN is compiled into its Qt resource."
     - "Added RenHDrum gain and low-boost settings to OoT tuned settings; bumped Frizti tuning revision to 13."
     - "Added a mandatory pre-build static review gate to the maintenance workflow."
   requires_ci_validation:
     - "Full Windows x64 MSVC compile and link for yuzu and yuzu-cmd."
+    - "Confirm the SendReceive C4458 fix compiles and the corrected /wd4505 flag removes D9014 from the MSVC command output."
     - "Confirm SDL3 HD Rumble patches apply to the exact fetched SDL3 source and patched functions link."
     - "Confirm the Windows artifact contains lichii.exe, renhdrum.dll, Qt runtime dependencies and embedded zh_CN translation resources."
     - "Inspect final archive and confirm eden-cli.exe, vc_redist* and *.pdb are absent."
