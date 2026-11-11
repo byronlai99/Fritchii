@@ -43,7 +43,6 @@ struct RenHDrumApi {
     decltype(&renhdrum_engine_apply_settings) engine_apply_settings{};
     decltype(&renhdrum_engine_push_half_sample) engine_push_half_sample{};
     decltype(&renhdrum_engine_tick) engine_tick{};
-    decltype(&renhdrum_set_nx2_mode) set_nx2_mode{};
     decltype(&renhdrum_settings_resolve) settings_resolve{};
     decltype(&renhdrum_dualsense_dsp_create) dsp_create{};
     decltype(&renhdrum_dualsense_dsp_destroy) dsp_destroy{};
@@ -96,8 +95,6 @@ const RenHDrumApi& Api() {
             // Optional: a missing symbol leaves it null
             (void)a.library.GetSymbol("renhdrum_dualsense_dsp_build_bt_report",
                                       &a.dsp_build_bt_report);
-            // RenHDrum 0.3.0+: per-controller calibration for Switch 2 Mode 2.
-            (void)a.library.GetSymbol("renhdrum_set_nx2_mode", &a.set_nx2_mode);
             (void)a.library.GetSymbol("renhdrum_xbox_rumble_create", &a.xbox_create);
             (void)a.library.GetSymbol("renhdrum_xbox_rumble_destroy", &a.xbox_destroy);
             (void)a.library.GetSymbol("renhdrum_xbox_rumble_push_half_sample",
