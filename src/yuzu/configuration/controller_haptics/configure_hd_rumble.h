@@ -13,6 +13,7 @@ class QSlider;
 class QSpinBox;
 class QStackedWidget;
 class QVBoxLayout;
+class QLabel;
 class QString;
 class QWidget;
 
