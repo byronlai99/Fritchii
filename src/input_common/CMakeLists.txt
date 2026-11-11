@@ -86,7 +86,7 @@ else()
     target_include_directories(input_common_renhdrum
         PUBLIC ${PROJECT_SOURCE_DIR}/src
     )
-    target_link_libraries(input_common_renhdrum PRIVATE common SDL3::SDL3)
+    target_link_libraries(input_common_renhdrum PRIVATE common PUBLIC SDL3::SDL3)
     if (MSVC)
         target_compile_options(input_common_renhdrum PRIVATE
             /we4242
