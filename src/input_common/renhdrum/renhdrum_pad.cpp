@@ -844,13 +844,8 @@ bool RenHDrumPad::Vibrate(std::int64_t now_us, bool is_right,
         change = impl->RefreshUserSettings();
         const auto& u = impl->user;
         const auto& api = Api();
-        // Switch 2 Mode 2 uses calibrated RenHDrum 0.3.0 response curves. Classic Switch
-        // vibration remains bit-exact (mode 0). Apply only when the guest mode changes.
-        static std::atomic<int> applied_nx2_mode{-1};
-        const int nx2_mode = Settings::nx2_active_mode.load(std::memory_order_relaxed);
-        if (api.set_nx2_mode && applied_nx2_mode.exchange(nx2_mode, std::memory_order_relaxed) != nx2_mode) {
-            api.set_nx2_mode(nx2_mode);
-        }
+        // NX2-specific RenHDrum mode switching is unavailable in the Fritchii v5.8.4
+        // base. Keep the library's standard/classic response curve for this target.
         if (impl->xbox && u.hd_enabled && u.xbox_enabled && u.xbox_direct) {
             // Both halves share one pad: each motor follows the stronger side
             const std::size_t side = is_right ? 1 : 0;
