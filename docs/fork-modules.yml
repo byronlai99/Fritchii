@@ -5,6 +5,15 @@
 schema_version: 1
 last_updated: 2026-11-11
 
+# Current fork branch containing the active module set and its latest integration work.
+# This is a working branch, not the repository's stable default branch.
+active_module_branch:
+  name: feature/v5.8.4-renhdrum-zh-cn
+  url: https://github.com/byronlai99/Fritchii-HDrum/tree/feature/v5.8.4-renhdrum-zh-cn
+  status: integration-in-progress
+  purpose: Current module integration branch for the v5.8.4 upstream baseline.
+  stable_default_branch: fix/v5.6-msvc-c4458-packet-shadow
+
 baseline:
   upstream_repository: Frizti/Fritchii
   upstream_tag: fritchii-v5.8.4
