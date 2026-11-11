@@ -184,7 +184,7 @@ Record each finding as **fixed before build**, **known non-blocking**, or **requ
 - **Diagnostic:** `error C4458: declaration of 'service_manager' hides class member`; the hidden member is `Core::System::Impl::service_manager` at line 656.
 - **Cause:** `RefreshTime` declared a local reference with the same identifier as the class member. MSVC /we4458 promoted this shadowing warning to an error.
 - **Fix:** Rename only the local reference to `current_service_manager` and update its three `GetService` uses. No service lookup order or runtime behavior changed.
-- **Status:** Fixed in commit `9e053b5a7af47e4c8281da9ecf99de60f5f70bb2`; awaiting CI verification.
+- **Status:** Fixed in commit `9e053b5a7af47e4c8281da9ecf99de60f5f70bb2` and verified by [Run #22](https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43070225601). Full Windows x64 MSVC build, package, and artifact upload succeeded; the log contains no compiler errors or D9014.
 
 ## Baseline-first upgrade gate (mandatory from the next upstream update)
 
@@ -211,7 +211,7 @@ The following runs were inspected. Repeated errors are linked to their existing 
 | [#20 / 43058500053](https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43058500053) | Integration commit 996f7f0821c4200ddf6b897364d1fd922af7cc0a | Failed | C4456 index in vk_pipeline_cache.cpp:5186 (same F-007 issue as #18). D9014 was no longer present in this log. |
 | [#21 / 43065581977](https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43065581977) | Integration commit 4835fe1d2ac861e173f39c367cf9ce0bfc97e965 | Failed | C4458 service_manager in core.cpp:253 (F-008). D9014 was absent. |
 | [Upstream v5.8.4 / 43068107673](https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43068107673) | Pristine official tag 4f5c53149b7e17d1c24445f68d79a83a3b2a17f9 | Windows MSVC job failed; other matrix jobs were cancelled | Four C4459 diagnostics in frizti_settings.cpp (new F-009) and repeated D9014 from the upstream /w4505 typo (F-005). The overall run was cancelled, but its Windows MSVC job itself completed with failure. |
-| [#22 / 43070225601](https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43070225601) | Integration commit 9e053b5a7af47e4c8281da9ecf99de60f5f70bb2 | In progress at last inspection | Build step was still running; its log was not yet available. Do not mark F-008 verified or infer success until the run completes. |
+| [#22 / 43070225601](https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43070225601) | Integration commit 9e053b5a7af47e4c8281da9ecf99de60f5f70bb2 | Succeeded | Configure, full MSVC Build, Package test binary, and Upload test artifact all succeeded; log contained no compiler errors and no D9014. F-008 verified. |
 
 Run #9 also showed the older F-001 count/state diagnostics again; these are duplicate sightings of that already recorded code family, not a new root cause. Runs #18 and #20 both showed the same F-007 diagnostic before its source rename was carried into a later build. Do not treat cancelled runs as compiler failures.
 
@@ -225,3 +225,6 @@ Run #9 also showed the older F-001 count/state diagnostics again; these are dupl
 - **Status:** Open in the pristine upstream baseline. No source fix has been applied to the clean reference branch. Repair on a dedicated MSVC-fix branch by renaming only the conflicting locals/parameters and updating their local uses; preserve /we4459.
 - **Related pre-existing defect:** the same job repeated D9014 because upstream v5.8.4 still passes malformed /w4505; this belongs to F-005, not a second new diagnostic family.
 - **Prevention:** preflight all baseline C++ sources for C4456/C4457/C4458/C4459 and inspect the generated compiler command for valid MSVC warning switches before the first baseline build.
+
+
+Run #22 artifact metadata: Fritchii-v5.8.4-RenHDrum-zh-CN-Windows-x64-9e053b5a7af47e4c8281da9ecf99de60f5f70bb2 (SHA-256 8b498bc84acdec0c3c6c80e73ecd570dc9062fc137dc6078dbb9cfa3a34e6042; expires 2026-11-18). The workflow package and upload steps passed; the ZIP's internal file list has not yet been audited separately.
