@@ -248,6 +248,15 @@ endif()
 
 option(YUZU_USE_BUNDLED_SDL3 "Download bundled SDL3 build" ${EXT_DEFAULT})
 
+# RenHDrum HD Rumble and controller haptics. The library is loaded at runtime.
+option(ENABLE_RENHDRUM "Enable RenHDrum controller haptics" ON)
+cmake_dependent_option(RENHDRUM_SDL_PATCHES
+    "Build SDL3 with RenHDrum's HD Rumble transport patches" OFF "ENABLE_RENHDRUM" OFF)
+if (RENHDRUM_SDL_PATCHES AND YUZU_USE_BUNDLED_SDL3)
+    message(STATUS "RENHDRUM_SDL_PATCHES: selecting patched SDL3 source build")
+    set(YUZU_USE_BUNDLED_SDL3 OFF)
+endif()
+
 # ffmpeg
 option(YUZU_USE_BUNDLED_FFMPEG "Download bundled FFmpeg" ${EXT_DEFAULT})
 cmake_dependent_option(YUZU_USE_EXTERNAL_FFMPEG "Build FFmpeg from external source" "${SOLARIS}" "NOT WIN32 AND NOT ANDROID" OFF)
