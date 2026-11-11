@@ -694,54 +694,54 @@ std::shared_ptr<RenHDrumPad> RenHDrumPad::Create(SDL_Joystick* joystick, SDL_Gam
 
     // Not shared yet: no other thread can reach `state` until it is returned.
     const auto& api = Api();
-    auto state = std::make_unique<Impl>();
-    state->joystick = joystick;
-    state->gamepad = gamepad;
-    state->is_bluetooth =
+    auto pad_state = std::make_unique<Impl>();
+    pad_state->joystick = joystick;
+    pad_state->gamepad = gamepad;
+    pad_state->is_bluetooth =
         SDL_GetJoystickConnectionState(joystick) == SDL_JOYSTICK_CONNECTION_WIRELESS;
-    state->user = ReadUserSettings();
+    pad_state->user = ReadUserSettings();
     if (xbox_pad) {
         // Unknown connection: the safer Bluetooth pacing (20 ms ticks)
         const bool wired =
             SDL_GetJoystickConnectionState(joystick) == SDL_JOYSTICK_CONNECTION_WIRED;
-        state->xbox = api.xbox_create(!wired);
-        if (!state->xbox) {
+        pad_state->xbox = api.xbox_create(!wired);
+        if (!pad_state->xbox) {
             return nullptr;
         }
-        state->xbox_triggers = SDL_GetBooleanProperty(
+        pad_state->xbox_triggers = SDL_GetBooleanProperty(
             SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_TRIGGER_RUMBLE_BOOLEAN,
             false);
         const char* gamepad_name = SDL_GetGamepadName(gamepad);
         LOG_INFO(Input,
                  "RenHDrum: Xbox rumble for {:04X}:{:04X} \"{}\" (wired: {}, trigger motors: {})",
-                 vid, pid, gamepad_name ? gamepad_name : "", wired, state->xbox_triggers);
+                 vid, pid, gamepad_name ? gamepad_name : "", wired, pad_state->xbox_triggers);
     } else if (switch_pad) {
-        state->engine = api.engine_create(state->is_bluetooth, pid == 0x2009);
-        if (!state->engine) {
+        pad_state->engine = api.engine_create(pad_state->is_bluetooth, pid == 0x2009);
+        if (!pad_state->engine) {
             return nullptr;
         }
         LOG_INFO(Input, "RenHDrum: HD Rumble for {:04X}:{:04X} (Bluetooth: {})", vid, pid,
-                 state->is_bluetooth);
-        state->ConfigureEngine();
+                 pad_state->is_bluetooth);
+        pad_state->ConfigureEngine();
     } else {
-        state->dsp = api.dsp_create(state->user.dualsense_volume, state->user.dualsense_crisp_notes);
-        if (!state->dsp) {
+        pad_state->dsp = api.dsp_create(pad_state->user.dualsense_volume, pad_state->user.dualsense_crisp_notes);
+        if (!pad_state->dsp) {
             return nullptr;
         }
         LOG_INFO(Input, "RenHDrum: DualSense haptics for {:04X}:{:04X}", vid, pid);
-        state->OpenDualSenseAudio();
+        pad_state->OpenDualSenseAudio();
     }
-    state->kind = xbox_pad ? 2 : switch_pad ? 0 : 1;
-    ++connected_count[state->kind];
-    if (state->xbox_triggers) {
+    pad_state->kind = xbox_pad ? 2 : switch_pad ? 0 : 1;
+    ++connected_count[pad_state->kind];
+    if (pad_state->xbox_triggers) {
         ++xbox_trigger_pads;
     }
-    state->official_no_triggers = xbox_pad && vid == MicrosoftVendorId && !state->xbox_triggers;
-    if (state->official_no_triggers) {
+    pad_state->official_no_triggers = xbox_pad && vid == MicrosoftVendorId && !pad_state->xbox_triggers;
+    if (pad_state->official_no_triggers) {
         ++xbox_official_no_triggers;
     }
-    last_connected_kind = state->kind;
-    return std::shared_ptr<RenHDrumPad>(new RenHDrumPad(std::move(state)));
+    last_connected_kind = pad_state->kind;
+    return std::shared_ptr<RenHDrumPad>(new RenHDrumPad(std::move(pad_state)));
 }
 
 int GetRenHDrumConnectedKind() {
