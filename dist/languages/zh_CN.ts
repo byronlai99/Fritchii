@@ -5758,6 +5758,14 @@ Drag points to change position, or double-click table cells to edit values.</sou
         <source>Enable Accurate Vibration</source>
         <translation>启用精确震动</translation>
     </message>
+    <message>
+        <source>HD Rumble...</source>
+        <translation>HD Rumble...</translation>
+    </message>
+    <message>
+        <source>HD Rumble for Pro Controller / Joy-Con and DualSense haptics (RenHDrum).</source>
+        <translation>适用于 Pro Controller、Joy-Con 和 DualSense 触觉反馈的 HD Rumble（RenHDrum）。</translation>
+    </message>
 </context>
 <context>
     <name>ConfigureWeb</name>
@@ -10744,6 +10752,251 @@ Error code: %3</source>
         <location filename="../../src/yuzu/updater/update_dialog.cpp" line="173"/>
         <source>Successfully downloaded %1. Would you like to open it?</source>
         <translation>已成功下载 %1。您要打开它吗?</translation>
+    </message>
+</context>
+<context>
+    <name>ConfigureHdRumble</name>
+    <message>
+        <source>HD Rumble</source>
+        <translation>HD Rumble</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;HD Rumble&lt;/b&gt;</source>
+        <translation>&lt;b&gt;HD Rumble&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Enabled</source>
+        <translation>启用</translation>
+    </message>
+    <message>
+        <source>Off: the controllers use the emulator's standard rumble.</source>
+        <translation>关闭时，手柄将使用模拟器的标准震动。</translation>
+    </message>
+    <message>
+        <source>renhdrum.dll was not found next to the emulator, so the controllers use the standard rumble. Get it from &lt;a href="https://github.com/trzz1214/RenHDrum/releases"&gt;the RenHDrum releases&lt;/a&gt; and restart the emulator.</source>
+        <translation>未在模拟器程序所在目录找到 renhdrum.dll，因此手柄将使用标准震动。请从 &lt;a href="https://github.com/trzz1214/RenHDrum/releases"&gt;RenHDrum 发布页&lt;/a&gt;下载该文件并重新启动模拟器。</translation>
+    </message>
+    <message>
+        <source>Intensity</source>
+        <translation>震动强度</translation>
+    </message>
+    <message>
+        <source>Lifts weak vibrations more than strong ones. 0% keeps the game's curve.</source>
+        <translation>增强弱震动的力度，对强震动影响较小。设为 0% 可保留游戏原始曲线。</translation>
+    </message>
+    <message>
+        <source>Weak rumble boost</source>
+        <translation>弱震动增强</translation>
+    </message>
+    <message>
+        <source>Intensity: this game has its own value, and changes here apply to it.</source>
+        <translation>强度：当前游戏使用独立设置，此处调整只对当前游戏生效。</translation>
+    </message>
+    <message>
+        <source>Intensity multiplies the game's rumble. Some Switch 2 games (Ocarina of Time) send very weak values that the Joy-Con 2 still plays strongly: try 400-600% for them.</source>
+        <translation>强度会按比例放大游戏的震动值。部分 Switch 2 游戏（例如《时之笛》）发送的震动值非常弱，但 Joy-Con 2 仍可强烈响应，可尝试设为 400% 至 600%。</translation>
+    </message>
+    <message>
+        <source>Switch Controller</source>
+        <translation>Switch 手柄</translation>
+    </message>
+    <message>
+        <source>DualSense</source>
+        <translation>DualSense</translation>
+    </message>
+    <message>
+        <source>Xbox</source>
+        <translation>Xbox</translation>
+    </message>
+    <message>
+        <source>%1 (connected)</source>
+        <translation>%1（已连接）</translation>
+    </message>
+    <message>
+        <source>Changes reach connected controllers on their next vibration. To feel them now, open the Vibration settings and hold a button on the controller.</source>
+        <translation>设置会在手柄下一次震动时生效。若要立即测试，请打开「震动」设置并按住手柄上的任意按键。</translation>
+    </message>
+    <message>
+        <source>Powered by RenHDrum</source>
+        <translation>由 RenHDrum 提供支持</translation>
+    </message>
+    <message>
+        <source>Pro Controller and Joy-Con: the game's HD Rumble sent with full detail instead of a plain motor rumble.</source>
+        <translation>适用于 Pro Controller 和 Joy-Con：以完整细节传输游戏的 HD Rumble，而不是普通马达震动。</translation>
+    </message>
+    <message>
+        <source>Wired (USB)</source>
+        <translation>有线（USB）</translation>
+    </message>
+    <message>
+        <source> ms</source>
+        <translation> 毫秒</translation>
+    </message>
+    <message>
+        <source>Time between rumble packets. 15 ms is the console's rate.</source>
+        <translation>震动数据包之间的间隔。主机使用 15 毫秒的间隔。</translation>
+    </message>
+    <message>
+        <source>5 ms envelope (three samples per packet)</source>
+        <translation>5 毫秒包络（每个数据包包含三个采样）</translation>
+    </message>
+    <message>
+        <source>Frequency changes inside a packet</source>
+        <translation>允许在数据包内改变频率</translation>
+    </message>
+    <message>
+        <source>Crisp notes (stronger attack, softer sustain)</source>
+        <translation>清晰音效（增强起始冲击，减弱持续震动）</translation>
+    </message>
+    <message>
+        <source>Packet interval</source>
+        <translation>数据包间隔</translation>
+    </message>
+    <message>
+        <source>Bluetooth</source>
+        <translation>蓝牙</translation>
+    </message>
+    <message>
+        <source>1 - Stable (60 ms)</source>
+        <translation>1 - 稳定（60 毫秒）</translation>
+    </message>
+    <message>
+        <source>2 - Balanced (45 ms)</source>
+        <translation>2 - 均衡（45 毫秒）</translation>
+    </message>
+    <message>
+        <source>3 - Quality (35 ms)</source>
+        <translation>3 - 高品质（35 毫秒）</translation>
+    </message>
+    <message>
+        <source>Lower levels send less often, which keeps input lag down on a busy Bluetooth link.</source>
+        <translation>较低等级会减少发送频率，在蓝牙连接繁忙时有助于降低输入延迟。</translation>
+    </message>
+    <message>
+        <source>Send right after an input report</source>
+        <translation>收到输入报告后立即发送</translation>
+    </message>
+    <message>
+        <source>5 ms envelope while the link is idle</source>
+        <translation>蓝牙链路空闲时使用 5 毫秒包络</translation>
+    </message>
+    <message>
+        <source>Crisp notes</source>
+        <translation>清晰音效</translation>
+    </message>
+    <message>
+        <source>Level</source>
+        <translation>等级</translation>
+    </message>
+    <message>
+        <source>Detailed rumble on the DualSense and DualSense Edge haptics, wired or on Bluetooth.</source>
+        <translation>为 DualSense 和 DualSense Edge 提供细腻触觉反馈，支持 USB 有线和蓝牙连接。</translation>
+    </message>
+    <message>
+        <source>Haptics</source>
+        <translation>触觉反馈</translation>
+    </message>
+    <message>
+        <source>Use the haptic voice coils</source>
+        <translation>使用触觉线圈</translation>
+    </message>
+    <message>
+        <source>Off: the DualSense uses its standard rumble.</source>
+        <translation>关闭时，DualSense 将使用标准震动。</translation>
+    </message>
+    <message>
+        <source>Volume</source>
+        <translation>音量</translation>
+    </message>
+    <message>
+        <source>Xbox controllers and Xbox-style controllers from other brands.</source>
+        <translation>Xbox 手柄，以及其他品牌的 Xbox 布局手柄。</translation>
+    </message>
+    <message>
+        <source>Motors</source>
+        <translation>马达</translation>
+    </message>
+    <message>
+        <source>Use RenHDrum's Xbox rumble</source>
+        <translation>使用 RenHDrum 的 Xbox 震动</translation>
+    </message>
+    <message>
+        <source>Off: Xbox controllers use the emulator's standard rumble.</source>
+        <translation>关闭时，Xbox 手柄将使用模拟器的标准震动。</translation>
+    </message>
+    <message>
+        <source>How hard the motors run. Raise it if the rumble feels weak.</source>
+        <translation>控制马达的驱动强度。如果震动感觉太弱，可以提高此数值。</translation>
+    </message>
+    <message>
+        <source>RenHDrum (smart: richer effects, best on official Xbox controllers)</source>
+        <translation>RenHDrum（智能模式：效果更丰富，适合官方 Xbox 手柄）</translation>
+    </message>
+    <message>
+        <source>Direct (stronger: full motor power)</source>
+        <translation>直接模式（力度更强：使用马达全功率）</translation>
+    </message>
+    <message>
+        <source>RenHDrum: richer effects, made for official Xbox controllers.
+Direct: full motor power, simpler feel.</source>
+        <translation>RenHDrum：效果更丰富，针对官方 Xbox 手柄优化。
+直接模式：使用马达全功率，震动效果更直接。</translation>
+    </message>
+    <message>
+        <source>Mode</source>
+        <translation>模式</translation>
+    </message>
+    <message>
+        <source>Motor strength</source>
+        <translation>马达强度</translation>
+    </message>
+    <message>
+        <source>Detail on main motor</source>
+        <translation>主马达细节</translation>
+    </message>
+    <message>
+        <source>Adds the fine vibration to the main motor, so it is felt with strength. Direct mode.</source>
+        <translation>将细微震动混入主马达，让细节更容易被感受到。仅适用于直接模式。</translation>
+    </message>
+    <message>
+        <source>Hit accents</source>
+        <translation>撞击强调</translation>
+    </message>
+    <message>
+        <source>A short burst when a hit starts, so quick taps are felt. Direct mode.</source>
+        <translation>撞击开始时发出短促震动，让快速敲击也能清晰感受到。仅适用于直接模式。</translation>
+    </message>
+    <message>
+        <source>Trigger rumble</source>
+        <translation>扳机震动</translation>
+    </message>
+    <message>
+        <source>Fine vibration on the triggers, on controllers that have trigger motors. Direct mode.</source>
+        <translation>在配备扳机马达的手柄上提供细腻的扳机震动。仅适用于直接模式。</translation>
+    </message>
+    <message>
+        <source>This controller has no trigger motors.</source>
+        <translation>此手柄没有扳机马达。</translation>
+    </message>
+    <message>
+        <source>Trigger rumble needs "XInput 8 player support".</source>
+        <translation>扳机震动需要启用「XInput 8 人支持」。</translation>
+    </message>
+    <message>
+        <source>Turn it on</source>
+        <translation>立即启用</translation>
+    </message>
+    <message>
+        <source>Turned on. Restart the emulator to feel the triggers.
+
+While this is on, games can't open their web pages (some manuals and logins). You can turn it off in Controls &gt; Advanced.</source>
+        <translation>已启用。请重新启动模拟器以使用扳机震动。
+
+启用此选项期间，游戏无法打开网页（例如部分说明书和登录页面）。你可以在「手柄 &gt; 高级」中将其关闭。</translation>
+    </message>
+    <message>
+        <source>Trigger rumble works only with official Xbox controllers. Most wireless receivers drive just the grip motors.</source>
+        <translation>扳机震动仅适用于官方 Xbox 手柄。大多数无线接收器只能驱动握把马达。</translation>
     </message>
 </context>
 </TS>
