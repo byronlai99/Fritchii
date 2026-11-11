@@ -565,10 +565,10 @@ struct RenHDrumPad::Impl {
     /// in `audio_stream`, or nullptr. Called without the mutex, with the SDL audio subsystem
     /// initialized.
     SDL_AudioStream* OpenDualSenseAudioStream(SDL_Joystick* js) {
-        int count = 0;
-        SDL_AudioDeviceID* devices = SDL_GetAudioPlaybackDevices(&count);
+        int device_count = 0;
+        SDL_AudioDeviceID* devices = SDL_GetAudioPlaybackDevices(&device_count);
         SDL_AudioDeviceID matched = 0;
-        for (int i = 0; devices && i < count; ++i) {
+        for (int i = 0; devices && i < device_count; ++i) {
             const char* name = SDL_GetAudioDeviceName(devices[i]);
             SDL_AudioSpec spec{};
             const int channels =
