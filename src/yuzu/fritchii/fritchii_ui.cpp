@@ -345,7 +345,7 @@ void SetFrameGenEnv(bool enabled) {
         setenv("LICHII_DLSS", "1", 1);
     } else {
         unsetenv("LICHII_DLSS_FG");
-        unsetenv("LICHII_DLSS", 1);
+        unsetenv("LICHII_DLSS");
     }
 #endif
 }
