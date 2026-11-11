@@ -38,6 +38,8 @@ The exact files, source references, build flags, migration notes, and validation
 
 ## Standard procedure for each upstream update
 
+**Baseline gate comes first.** Do not reconcile or port any fork module until the exact upstream tag has passed a Windows x64 MSVC-only baseline build. Preserve the pristine tag, create a separate branch that changes only the workflow matrix to remove non-Windows/MSVC jobs, and run that single supported target. Fix source errors only on a separate MSVC-fix branch. After the clean-source MSVC build, link, and package stages pass, create the module-integration branch and port the enabled modules. This prevents upstream defects from being mixed with RenHDrum/UI integration failures.
+
 ### 1. Establish a clean upstream baseline
 
 - Confirm the requested upstream release tag exists and resolve it to its commit SHA.
