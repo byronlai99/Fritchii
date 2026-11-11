@@ -328,6 +328,7 @@ struct State {
     std::mutex fg_inputs_mutex;
     std::condition_variable fg_inputs_cv;
     std::array<bool, FRAME_GEN_INPUT_SLOT_COUNT> fg_input_pending{};
+    std::array<VkSemaphore, FRAME_GEN_INPUT_SLOT_COUNT> fg_input_fences{};
     std::array<u64, FRAME_GEN_INPUT_SLOT_COUNT> fg_input_values{};
     // Adaptive and fixed-ratio scheduling happens on the serialized Vulkan render worker.
     FrameGenPacer fg_pacer;
@@ -1038,15 +1039,14 @@ bool WaitFrameGenFence(State& state, VkSemaphore fence, u64 value, bool slot_wai
     return false;
 }
 
-void CompleteFrameGenInputSlot(State& state, u32 slot, u64 value) {
+void CompleteFrameGenInputSlot(State& state, u32 slot, VkSemaphore fence, u64 value) {
     if (slot >= FRAME_GEN_INPUT_SLOT_COUNT) {
         return;
     }
     {
         std::lock_guard lock{state.fg_inputs_mutex};
-        if (value != 0) {
-            state.fg_input_values[slot] = value;
-        }
+        state.fg_input_fences[slot] = value != 0 ? fence : VK_NULL_HANDLE;
+        state.fg_input_values[slot] = value;
         state.fg_input_pending[slot] = false;
     }
     state.fg_inputs_cv.notify_all();
@@ -1165,15 +1165,16 @@ bool WaitFrameGenInputSlot(u32 slot) {
     }
     State& state = GetState();
     u64 value{};
+    VkSemaphore fence{};
     {
         std::unique_lock lock{state.fg_inputs_mutex};
         state.fg_inputs_cv.wait(lock, [&] { return !state.fg_input_pending[slot]; });
         value = state.fg_input_values[slot];
+        fence = state.fg_input_fences[slot];
     }
     if (value == 0) {
         return true;
     }
-    const VkSemaphore fence = state.fg_inputs_fence.load(std::memory_order_acquire);
     if (!WaitFrameGenFence(state, fence, value, true)) {
         return false;
     }
@@ -1181,6 +1182,7 @@ bool WaitFrameGenInputSlot(u32 slot) {
         std::lock_guard lock{state.fg_inputs_mutex};
         if (state.fg_input_values[slot] == value) {
             state.fg_input_values[slot] = 0;
+            state.fg_input_fences[slot] = VK_NULL_HANDLE;
         }
     }
     return true;
@@ -1208,6 +1210,7 @@ void AbandonFrameGenInputSlot(u32 slot) {
         std::lock_guard lock{state.fg_inputs_mutex};
         state.fg_input_pending[slot] = false;
         state.fg_input_values[slot] = 0;
+        state.fg_input_fences[slot] = VK_NULL_HANDLE;
     }
     state.fg_inputs_cv.notify_all();
 }
@@ -1267,7 +1270,7 @@ void* TakeFrameGenToken(u32* generations, u32* input_slot) {
         const u32 slot = state.fg_tagged_input_slot.exchange(
             FRAME_GEN_INPUT_SLOT_NONE, std::memory_order_acq_rel);
         state.fg_tagged.exchange(nullptr, std::memory_order_acq_rel);
-        CompleteFrameGenInputSlot(state, slot, 0);
+        CompleteFrameGenInputSlot(state, slot, VK_NULL_HANDLE, 0);
         return nullptr;
     }
     const sl::FrameToken* const frame =
@@ -1276,7 +1279,7 @@ void* TakeFrameGenToken(u32* generations, u32* input_slot) {
         FRAME_GEN_INPUT_SLOT_NONE, std::memory_order_acq_rel);
     if (!frame) {
         state.fg_pacer.Reset();
-        CompleteFrameGenInputSlot(state, slot, 0);
+        CompleteFrameGenInputSlot(state, slot, VK_NULL_HANDLE, 0);
         return nullptr;
     }
 
@@ -1301,7 +1304,7 @@ void* TakeFrameGenToken(u32* generations, u32* input_slot) {
     if (requested == 0) {
         // This frame will be presented without interpolation, so Streamline will not consume
         // its depth/motion copy. Release the slot instead of waiting for a fence.
-        CompleteFrameGenInputSlot(state, slot, 0);
+        CompleteFrameGenInputSlot(state, slot, VK_NULL_HANDLE, 0);
         return nullptr;
     }
     if (generations) {
@@ -1379,7 +1382,7 @@ void FrameGenBeforePresent(void* token, u32 generations, u32 game_left, u32 game
 void FrameGenAfterPresent(void* token, u32 input_slot) {
     State& state = GetState();
     if (!IsFrameGenAvailable()) {
-        CompleteFrameGenInputSlot(state, input_slot, 0);
+        CompleteFrameGenInputSlot(state, input_slot, VK_NULL_HANDLE, 0);
         return;
     }
     const Api& api = state.api;
@@ -1394,6 +1397,9 @@ void FrameGenAfterPresent(void* token, u32 input_slot) {
     }
     state.fg_last_present = now;
 
+    if (token) {
+        api.pcl_set_marker(sl::PCLMarker::ePresentEnd, *static_cast<const sl::FrameToken*>(token));
+    }
     // Query after every host present, not only presents carrying an FG token. NVIDIA reports
     // numFramesActuallyPresented since the previous GetState call, so skipping non-FG frames
     // would make the FPS window double-count or misattribute delayed presents.
@@ -1409,7 +1415,7 @@ void FrameGenAfterPresent(void* token, u32 input_slot) {
         if (token && input_slot < FRAME_GEN_INPUT_SLOT_COUNT) {
             AbandonFrameGenInputSlot(input_slot);
         } else {
-            CompleteFrameGenInputSlot(state, input_slot, 0);
+            CompleteFrameGenInputSlot(state, input_slot, VK_NULL_HANDLE, 0);
         }
         if (token && input_slot >= FRAME_GEN_INPUT_SLOT_COUNT) {
             const VkResult idle =
@@ -1431,7 +1437,7 @@ void FrameGenAfterPresent(void* token, u32 input_slot) {
             const u64 value = fg_state.lastPresentInputsProcessingCompletionFenceValue;
             state.fg_inputs_value.store(value, std::memory_order_release);
             state.fg_inputs_fence.store(fence, std::memory_order_release);
-            CompleteFrameGenInputSlot(state, input_slot, value);
+            CompleteFrameGenInputSlot(state, input_slot, fence, value);
         } else if (input_slot < FRAME_GEN_INPUT_SLOT_COUNT) {
             AbandonFrameGenInputSlot(input_slot);
         } else {
@@ -1445,12 +1451,12 @@ void FrameGenAfterPresent(void* token, u32 input_slot) {
             state.fg_inputs_value.store(0, std::memory_order_release);
         }
     } else {
-        CompleteFrameGenInputSlot(state, input_slot, 0);
+        CompleteFrameGenInputSlot(state, input_slot, VK_NULL_HANDLE, 0);
     }
 
     // What reached the screen, for the frontend FPS counters and per-second diagnostics.
     // numFramesActuallyPresented is a delta since the previous GetState call.
-    const u32 shown = fg_state.numFramesActuallyPresented;
+    const u32 shown = (std::max)(fg_state.numFramesActuallyPresented, 1u);
     state.fg_window_shown += shown;
     if (shown > 1) {
         state.fg_window_generated += shown - 1;
@@ -1546,6 +1552,7 @@ void Stop() {
     {
         std::lock_guard lock{state.fg_inputs_mutex};
         state.fg_input_pending.fill(false);
+        state.fg_input_fences.fill(VK_NULL_HANDLE);
         state.fg_input_values.fill(0);
     }
     state.fg_inputs_cv.notify_all();
