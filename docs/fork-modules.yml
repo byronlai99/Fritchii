@@ -180,6 +180,8 @@ integration_failure_ledger:
       workflow_runs:
         - 43043541561
         - 43049341434
+        - 43068107673
+      upstream_baseline_reproduction_url: https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43068107673
       latest_workflow_url: https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43049341434
       baseline_file: src/CMakeLists.txt
       upstream_baseline: Frizti/Fritchii@fritchii-v5.8.4
@@ -242,6 +244,82 @@ integration_failure_ledger:
       - "Inspect the final archive contents, not only the artifact-upload step."
       - "Verify executable, Qt/runtime dependencies, RenHDrum DLL, translations, recipes/assets, and required files."
       - "Verify eden-cli.exe, vc_redist*, and *.pdb are absent."
+
+
+  - id: F-008-msvc-c4458-service-manager-shadow
+    evidence:
+      workflow_run: 43065581977
+      workflow_run_url: https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43065581977
+      tested_commit: 4835fe1d2ac861e173f39c367cf9ce0bfc97e965
+      stage: Build
+    status: fixed_awaiting_ci
+    symptoms:
+      - "C4458 at src/core/core.cpp:253: RefreshTime local service_manager hides Core::System::Impl::service_manager at line 656."
+    resolution:
+      - "Renamed only the local reference to current_service_manager and updated its three GetService uses in commit 9e053b5a7af47e4c8281da9ecf99de60f5f70bb2."
+      - "No service lookup order or runtime behavior was changed."
+    prevention:
+      - "Search class methods for locals that reuse member identifiers, including references returned by System accessors."
+  - id: F-009-upstream-v584-frizti-settings-c4459
+    evidence:
+      workflow_run: 43068107673
+      workflow_run_url: https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43068107673
+      job_id: 130688435891
+      tested_branch: experiment/upstream-v5.8.4-clean
+      tested_commit: 4f5c53149b7e17d1c24445f68d79a83a3b2a17f9
+      stage: Build
+      source_origin: pristine_upstream
+    status: open_upstream_baseline_error
+    symptoms:
+      - "C4459 at src/common/frizti_settings.cpp:25: TunedSettings parameter values hides Settings::values."
+      - "C4459 at src/common/frizti_settings.cpp:136: FixDockedController parameter values hides Settings::values."
+      - "C4459 at src/common/frizti_settings.cpp:147: local values in GlobalValues hides Settings::values."
+      - "C4459 at src/common/frizti_settings.cpp:155: local values in PerGameValues hides Settings::values."
+      - "The hidden global is declared in src/common/settings.h:1075."
+    root_cause:
+      - "The pristine v5.8.4 source has local parameters/declarations named values that shadow the global Settings::values object."
+      - "The fork's strict /we4459 setting promotes these MSVC name-hiding diagnostics to errors."
+    resolution:
+      - "Not yet fixed. Preserve the pristine reference branch and fix the source only on a dedicated MSVC-fix branch."
+      - "Rename only the conflicting locals/parameters and their local uses; do not suppress C4459 or weaken the warning policy."
+    prevention:
+      - "Before the first build of each upstream tag, scan the full target source for C4456/C4457/C4458/C4459 and all configured /we diagnostics."
+      - "Record whether each issue comes from pristine upstream, workflow adaptation, or fork-module integration."
+
+recent_workflow_audit:
+  - run: 43048515194
+    label: integration-run-9
+    result: failure
+    errors: [F-001, F-005, F-006]
+  - run: 43049341434
+    label: integration-run-17
+    result: failure
+    errors: [F-005, F-006]
+  - run: 43058482286
+    label: integration-run-18
+    result: failure
+    errors: [F-005, F-007]
+  - run: 43058492202
+    label: integration-run-19
+    result: cancelled
+    errors: []
+  - run: 43058500053
+    label: integration-run-20
+    result: failure
+    errors: [F-007]
+  - run: 43065581977
+    label: integration-run-21
+    result: failure
+    errors: [F-008]
+  - run: 43068107673
+    label: pristine-upstream-v5.8.4-baseline
+    overall_result: cancelled
+    windows_x64_msvc_job_result: failure
+    errors: [F-005, F-009]
+  - run: 43070225601
+    label: integration-run-22
+    result: in_progress_at_last_audit
+    errors: []
 
 workflow_portability_policy:
   upstream_reference:
@@ -312,13 +390,3 @@ pre_build_static_review:
     - external_workflow_portability_comparison
     - historical_failure_ledger_review
     - final_archive_content_audit
-
-  - id: F-008-msvc-c4458-service-manager-shadow
-    status: fixed-awaiting-ci
-    introduced_by_run: 43065581977
-    source_file: src/core/core.cpp
-    source_line: 253
-    diagnostic: "C4458: declaration of service_manager hides Core::System::Impl::service_manager"
-    cause: "RefreshTime local reference shadows the Impl member; /we4458 promotes it to an error."
-    fix_commit: 9e053b5a7af47e4c8281da9ecf99de60f5f70bb2
-    fix: "Rename the local reference to current_service_manager and update its three GetService uses."
