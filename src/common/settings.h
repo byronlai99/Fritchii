@@ -920,7 +920,7 @@ struct Values {
 
     SwitchableSetting<bool> vibration_enabled{linkage, true, "vibration_enabled",
                                               Category::Controls};
-    SwitchableSetting<bool> enable_accurate_vibrations{linkage, false, "enable_accurate_vibrations",
+    SwitchableSetting<bool> enable_accurate_vibrations{linkage, true, "enable_accurate_vibrations",
                                                        Category::Controls};
 
     // RenHDrum HD Rumble (Switch Pro Controller / Joy-Con) and DualSense haptics.
