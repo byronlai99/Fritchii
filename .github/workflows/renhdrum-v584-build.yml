@@ -137,7 +137,9 @@ jobs:
           if (-not (Test-Path (Join-Path $bin 'lichii.exe'))) {
             throw 'lichii.exe was not produced'
           }
-          windeployqt --release --no-translations (Join-Path $bin 'lichii.exe')
+          # Keep Qt translation support: the Simplified Chinese catalog is compiled into
+          # the app's translation resource at build time; windeployqt must not suppress it.
+          windeployqt --release (Join-Path $bin 'lichii.exe')
 
           $dll = Join-Path $bin 'renhdrum.dll'
           Invoke-WebRequest -Uri 'https://github.com/trzz1214/RenHDrum/releases/download/v0.3.0/renhdrum.dll' -OutFile $dll
