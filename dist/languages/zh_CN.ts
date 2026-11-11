@@ -2162,6 +2162,283 @@ Enabling it bypasses such prompts and directly exits the emulation.</source>
         <source>Grid View</source>
         <translation>网格视图</translation>
     </message>
+    <message>
+        <source>Use the game's own DLSS</source>
+        <translation>使用游戏自身的 DLSS</translation>
+    </message>
+    <message>
+        <source>Runs a Switch 2 game's own DLSS (its upscaling network, translated for this GPU) instead of AMD FSR 3.1 in its place.
+AMD FSR 3.1 still draws while the network is checked, when it can't run on this GPU, with resolution scaling, and for the rest of the session if its output fails Lichii's checks.
+Takes effect when a game starts.</source>
+        <translation>使用 Switch 2 游戏自身的 DLSS（针对本显卡转换的超分辨率网络），替代 AMD FSR 3.1。
+启用此选项时，如果该网络无法在此显卡上运行、正在进行分辨率缩放，或其输出未通过 Lichii 的检查，本次游戏运行期间仍会使用 AMD FSR 3.1。
+重新启动游戏后生效。</translation>
+    </message>
+    <message>
+        <source>RCAS Sharpness:</source>
+        <translation>RCAS 锐化强度：</translation>
+    </message>
+    <message>
+        <source>Strength of RCAS (AMD's contrast-adaptive sharpening) on the upscaler used in place of a game's DLSS (AMD FSR 3.1); 0% turns it off.
+Also sets the sharpening of the AMD FSR 1 and SGSR window adapting filters.</source>
+        <translation>设置替代游戏 DLSS 的升频器（AMD FSR 3.1）所使用的 RCAS（AMD 对比度自适应锐化）强度；0% 表示关闭。
+此选项也会调整 AMD FSR 1 和 SGSR 窗口自适应滤镜的锐化强度。</translation>
+    </message>
+    <message>
+        <source>DLSS preset:</source>
+        <translation>DLSS 预设：</translation>
+    </message>
+    <message>
+        <source>The DLSS model. K is the tested default; L and M are NVIDIA's newer models, J the older one. Default lets NVIDIA choose per quality mode.</source>
+        <translation>DLSS 模型。K 是经过测试的默认选择；L 和 M 是 NVIDIA 较新的模型，J 是较旧的模型。选择“默认”时，由 NVIDIA 根据画质模式自动选择。</translation>
+    </message>
+    <message>
+        <source>Use NVIDIA DLSS in place of a game's DLSS (experimental)</source>
+        <translation>使用 NVIDIA DLSS 替代游戏自身的 DLSS（实验性）</translation>
+    </message>
+    <message>
+        <source>Uses NVIDIA DLSS on GeForce RTX cards in place of a Switch 2 game's own DLSS, instead of AMD FSR 3.1.
+Needs NVIDIA's Streamline loader, and NVIDIA DLSS unless the NVIDIA app has downloaded it; Lichii does not ship NVIDIA's files. Use the download button below.
+Fire Emblem: Fortune's Weave also needs EDEN_NX2_DLSS_REPLACEMENT=dlss. Without that override, its spatial workaround remains active.
+In The Legend of Zelda: Ocarina of Time it replaces the game's upscaler at 1x resolution scale.
+Takes effect when a game starts.</source>
+        <translation>在 GeForce RTX 显卡上使用 NVIDIA DLSS 替代 Switch 2 游戏自身的 DLSS，而不是 AMD FSR 3.1。
+需要 NVIDIA Streamline 加载器，以及 NVIDIA DLSS 文件（除非 NVIDIA App 已经下载）。Lichii 不附带 NVIDIA 的文件，请使用下方的下载按钮。
+《Fire Emblem: Fortune's Weave》还需要设置 EDEN_NX2_DLSS_REPLACEMENT=dlss。未设置此变量时，游戏仍会使用空间缩放兼容方案。
+在《塞尔达传说：时之笛》中，此功能会在 1 倍分辨率缩放下替代游戏自身的升频器。
+重新启动游戏后生效。</translation>
+    </message>
+    <message>
+        <source>Ocarina of Time movies:</source>
+        <translation>时之笛过场影片：</translation>
+    </message>
+    <message>
+        <source>How the title screen and cutscene videos are scaled up.
+Game's own upscaler: the game's video upscaler, which removes banding and sharpens. Fast on NVIDIA RTX, slow on GPUs that emulate its math.
+Bilinear: a plain, fast stretch.
+Automatic: the game's upscaler where the GPU runs it natively, bilinear elsewhere.</source>
+        <translation>设置标题画面和过场影片的放大方式。
+游戏自身的升频器：使用游戏内置的视频升频器，可减少色带并增强锐度。在 NVIDIA RTX 显卡上速度较快，在需要模拟其运算的显卡上速度较慢。
+双线性：简单、快速的画面拉伸。
+自动：显卡可原生运行游戏升频器时使用该升频器，否则使用双线性。</translation>
+    </message>
+    <message>
+        <source>Ocarina of Time anti-aliasing:</source>
+        <translation>时之笛抗锯齿：</translation>
+    </message>
+    <message>
+        <source>The Legend of Zelda: Ocarina of Time only.
+Game: the game's own anti-aliasing network, which sharpens heavily.
+No sharpening: the image as the game renders it, without the network (faster; pairs well with a higher resolution).
+AMD FSR 3.1: AMD's upscaler in place of the game's, on any GPU. RCAS Sharpness sets its sharpening.
+AMD FSR 4: AMD's newer upscaler on Radeon RX 6000 or newer and Ryzen AI GPUs, with AMD's files (download below). Without them, FSR 3.1 runs.
+With Game or No sharpening, NVIDIA DLSS replaces the game's upscaler while its setting is on.
+Takes effect when the game starts.</source>
+        <translation>仅适用于《塞尔达传说：时之笛》。
+游戏：使用游戏自身的抗锯齿网络，锐化效果较强。
+不锐化：不使用该网络，保留游戏原始渲染画面（速度更快，适合搭配更高分辨率）。
+AMD FSR 3.1：在任何显卡上使用 AMD 升频器替代游戏自身的升频器。可通过 RCAS 锐化强度调整锐化效果。
+AMD FSR 4：在 Radeon RX 6000 或更新显卡，以及 Ryzen AI GPU 上使用 AMD 较新的升频器，需要 AMD 文件（见下方下载）。如果文件不可用，则会使用 FSR 3.1。
+选择“游戏”或“不锐化”时，只要启用了 NVIDIA DLSS 选项，NVIDIA DLSS 就会替代游戏自身的升频器。
+重新启动游戏后生效。</translation>
+    </message>
+    <message>
+        <source>Enable Frame Generation</source>
+        <translation>启用帧生成</translation>
+    </message>
+    <message>
+        <source>Frame Generation Type</source>
+        <translation>帧生成类型</translation>
+    </message>
+    <message>
+        <source>Frame Generation Multiplier</source>
+        <translation>帧生成倍数</translation>
+    </message>
+    <message>
+        <source>Target Frame Rate</source>
+        <translation>目标帧率</translation>
+    </message>
+    <message>
+        <source>Auto Flow Scale</source>
+        <translation>自动光流缩放</translation>
+    </message>
+    <message>
+        <source>Flow Scale</source>
+        <translation>光流缩放</translation>
+    </message>
+    <message>
+        <source>Queue Target</source>
+        <translation>队列目标</translation>
+    </message>
+    <message>
+        <source>Dump Optical Flow</source>
+        <translation>导出光流数据</translation>
+    </message>
+    <message>
+        <source>Native compute write mark:</source>
+        <translation>原生计算写入标记：</translation>
+    </message>
+    <message>
+        <source>How much of a Switch 2 compute shader's storage buffer is treated as written by the GPU after each dispatch.
+Auto marks what the shader's stores can reach and falls back to Full when that cannot be proven.
+Full marks the whole binding (up to 8 MiB), the original behaviour: it can delay the game's own writes to nearby memory (flickering effects) and copy far more data back from the GPU.
+64 KiB cap marks at most 64 KiB, which can miss data a large dispatch really wrote.</source>
+        <translation>每次派发后，将 Switch 2 计算着色器的储存缓冲区中多大范围视为已由 GPU 写入。
+自动：标记着色器可能写入的范围；如果无法确定，则回退为“完整绑定”。
+完整绑定：标记整个绑定范围（最大 8 MiB），这是原本的行为；可能延迟游戏对相邻内存的写入（导致画面闪烁），并从 GPU 复制更多数据。
+64 KiB 上限：最多只标记 64 KiB，可能漏掉大型派发实际写入的数据。</translation>
+    </message>
+    <message>
+        <source>Shader libraries (faster first-time shader builds)</source>
+        <translation>着色器库（加快首次着色器构建）</translation>
+    </message>
+    <message>
+        <source>Builds each shader stage once and links them into pipelines, so new shaders cause shorter stutters.
+Used on NVIDIA and AMD GPUs. The graphics half of the shader warm-up (Prepare shaders in the game list) needs it.
+Takes effect after restarting the game.</source>
+        <translation>每个着色器阶段只构建一次，再将它们链接成管线，从而缩短新着色器造成的卡顿。
+适用于 NVIDIA 和 AMD 显卡。游戏列表中的“准备着色器”功能，其图形阶段需要此选项。
+重新启动游戏后生效。</translation>
+    </message>
+    <message>
+        <source>Shader warm-up threads:</source>
+        <translation>着色器预热线程：</translation>
+    </message>
+    <message>
+        <source>CPU threads the shader warm-up uses (low priority). More threads finish the warm-up sooner. It builds only while the game is paused, or from Emulation, Prepare Shaders Now, when it shares the CPU with the game.
+Takes effect at the next game start.</source>
+        <translation>着色器预热使用的 CPU 线程数（低优先级）。线程越多，预热完成得越快。预热只会在游戏暂停时进行，或通过“模拟 → 立即准备着色器”启动；后一种情况会与游戏共享 CPU 资源。
+下次启动游戏时生效。</translation>
+    </message>
+    <message>
+        <source>Ocarina of Time: 30 FPS mode (lower-end PCs)</source>
+        <translation>时之笛：30 FPS 模式（适合较低端电脑）</translation>
+    </message>
+    <message>
+        <source>Caps Ocarina of Time at 30 FPS. The game keeps its normal speed. Takes effect at once; the 60 FPS / 30 FPS button in the status bar switches it too.</source>
+        <translation>将《时之笛》限制为 30 FPS，游戏速度保持正常。立即生效；也可以使用状态栏中的 60 FPS / 30 FPS 按钮切换。</translation>
+    </message>
+    <message>
+        <source>OoT: high refresh rate (experimental)</source>
+        <translation>时之笛：高刷新率（实验性）</translation>
+    </message>
+    <message>
+        <source>Lets Ocarina of Time run above 60 FPS, up to the chosen cap, at its normal speed. Untested in much of the game: timers, cutscenes or minigames may run off. Takes effect at once; Ctrl+U switches it while you play. The 30 FPS mode overrides it.</source>
+        <translation>允许《时之笛》以正常游戏速度运行在 60 FPS 以上，最高达到所选上限。游戏中的许多部分尚未测试，计时器、过场动画或小游戏可能出现速度异常。立即生效；游玩时按 Ctrl+U 可切换。30 FPS 模式的优先级更高。</translation>
+    </message>
+    <message>
+        <source>Mario Kart World: 30 FPS mode</source>
+        <translation>《马力欧赛车 世界》：30 FPS 模式</translation>
+    </message>
+    <message>
+        <source>Forces the game to use its native 30 FPS mode at normal game speed. Takes effect after restarting the game.</source>
+        <translation>强制游戏以原生 30 FPS 模式运行，并保持正常游戏速度。重新启动游戏后生效。</translation>
+    </message>
+    <message>
+        <source>Mario Kart World: dynamic FPS (experimental)</source>
+        <translation>《马力欧赛车 世界》：动态 FPS（实验性）</translation>
+    </message>
+    <message>
+        <source>Lets the game adjust between 30 and 60 FPS using whole-frame timing to maintain normal game speed. Takes effect after restarting the game and takes precedence over the 30 FPS mode.</source>
+        <translation>使用整帧计时，让游戏在 30 至 60 FPS 之间动态调整，同时保持正常游戏速度。重新启动游戏后生效，并优先于 30 FPS 模式。</translation>
+    </message>
+    <message>
+        <source>Mesh Shaders</source>
+        <translation>网格着色器</translation>
+    </message>
+    <message>
+        <source>How Switch 2 games' mesh shader geometry is drawn.
+Native uses the GPU's mesh shaders. Compute Fallback emulates them with compute shaders: it can be slower in scenes with a lot of foliage, and it can't draw every kind of mesh program.
+Automatic uses the compute fallback on AMD GPUs, where native mesh shaders can hang the GPU, and native mesh shaders everywhere else.</source>
+        <translation>设置 Switch 2 游戏的网格着色器几何体绘制方式。
+原生：使用 GPU 的网格着色器。
+计算着色器回退：使用计算着色器模拟网格着色器。在植被较多的场景中可能较慢，也无法绘制所有类型的网格程序。
+自动：在 AMD 显卡上使用计算着色器回退，因为原生网格着色器可能导致 GPU 卡死；其他显卡则使用原生网格着色器。</translation>
+    </message>
+    <message>
+        <source>Auto (shader extent)</source>
+        <translation>自动（着色器范围）</translation>
+    </message>
+    <message>
+        <source>Full binding</source>
+        <translation>完整绑定</translation>
+    </message>
+    <message>
+        <source>64 KiB cap</source>
+        <translation>64 KiB 上限</translation>
+    </message>
+    <message>
+        <source>Lossless Scaling (LSFG)</source>
+        <translation>Lossless Scaling（LSFG）</translation>
+    </message>
+    <message>
+        <source>Optical Flow Interpolation (built-in)</source>
+        <translation>光流插帧（内置）</translation>
+    </message>
+    <message>
+        <source>AMD FidelityFX Super Resolution 1 (FSR 1)</source>
+        <translation>AMD FidelityFX Super Resolution 1（FSR 1）</translation>
+    </message>
+    <message>
+        <source>AMD FidelityFX Super Resolution 1, softer sharpening</source>
+        <translation>AMD FidelityFX Super Resolution 1，较柔和的锐化</translation>
+    </message>
+    <message>
+        <source>Default (NVIDIA's choice)</source>
+        <translation>默认（由 NVIDIA 选择）</translation>
+    </message>
+    <message>
+        <source>J</source>
+        <translation>J</translation>
+    </message>
+    <message>
+        <source>K (recommended)</source>
+        <translation>K（推荐）</translation>
+    </message>
+    <message>
+        <source>M</source>
+        <translation>M</translation>
+    </message>
+    <message>
+        <source>Bilinear (fast)</source>
+        <translation>双线性（快速）</translation>
+    </message>
+    <message>
+        <source>Game's own upscaler</source>
+        <translation>游戏自身的升频器</translation>
+    </message>
+    <message>
+        <source>No sharpening</source>
+        <translation>不锐化</translation>
+    </message>
+    <message>
+        <source>AMD FSR 3.1</source>
+        <translation>AMD FSR 3.1</translation>
+    </message>
+    <message>
+        <source>AMD FSR 4</source>
+        <translation>AMD FSR 4</translation>
+    </message>
+    <message>
+        <source>Monitor refresh rate</source>
+        <translation>显示器刷新率</translation>
+    </message>
+    <message>
+        <source>144 FPS</source>
+        <translation>144 FPS</translation>
+    </message>
+    <message>
+        <source>165 FPS</source>
+        <translation>165 FPS</translation>
+    </message>
+    <message>
+        <source>Native</source>
+        <translation>原生</translation>
+    </message>
+    <message>
+        <source>Compute Fallback</source>
+        <translation>计算着色器回退</translation>
+    </message>
 </context>
 <context>
     <name>ConfigureApplets</name>
@@ -10748,6 +11025,342 @@ Error code: %3</source>
         <location filename="../../src/yuzu/updater/update_dialog.cpp" line="173"/>
         <source>Successfully downloaded %1. Would you like to open it?</source>
         <translation>已成功下载 %1。您要打开它吗?</translation>
+    </message>
+</context>
+<context>
+    <name>ConfigureHdRumble</name>
+    <message>
+        <source>HD Rumble</source>
+        <translation>HD 震动</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;HD Rumble&lt;/b&gt;</source>
+        <translation>&lt;b&gt;HD 震动&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Enabled</source>
+        <translation>已启用</translation>
+    </message>
+    <message>
+        <source>Off: the controllers use the emulator's standard rumble.</source>
+        <translation>关闭：控制器将使用模拟器的标准震动。</translation>
+    </message>
+    <message>
+        <source>renhdrum.dll was not found next to the emulator, so the controllers use the standard rumble. Get it from &lt;a href=&quot;https://github.com/trzz1214/RenHDrum/releases&quot;&gt;the RenHDrum releases&lt;/a&gt; and restart the emulator.</source>
+        <translation>在模拟器目录中找不到 renhdrum.dll，因此控制器将使用标准震动。请从 &lt;a href=&quot;https://github.com/trzz1214/RenHDrum/releases&quot;&gt;RenHDrum 发布页面&lt;/a&gt;下载该文件，然后重新启动模拟器。</translation>
+    </message>
+    <message>
+        <source>Intensity</source>
+        <translation>强度</translation>
+    </message>
+    <message>
+        <source>Lifts weak vibrations more than strong ones. 0% keeps the game's curve.</source>
+        <translation>增强较弱的震动，强震动受到的影响较小。0% 表示保留游戏原本的震动曲线。</translation>
+    </message>
+    <message>
+        <source>Weak rumble boost</source>
+        <translation>弱震动增强</translation>
+    </message>
+    <message>
+        <source>Intensity: this game has its own value, and changes here apply to it.</source>
+        <translation>强度：此游戏使用独立数值，在此处所做的更改仅应用于该游戏。</translation>
+    </message>
+    <message>
+        <source>Intensity multiplies the game's rumble. Some Switch 2 games (Ocarina of Time) send very weak values that the Joy-Con 2 still plays strongly: try 400-600% for them.</source>
+        <translation>强度会按比例放大游戏发出的震动。部分 Switch 2 游戏（例如《时之笛》）发送的震动数值非常弱，但 Joy-Con 2 仍可能将其播放得很强；建议为这些游戏尝试 400–600%。</translation>
+    </message>
+    <message>
+        <source>Switch Controller</source>
+        <translation>Switch 控制器</translation>
+    </message>
+    <message>
+        <source>DualSense</source>
+        <translation>DualSense</translation>
+    </message>
+    <message>
+        <source>Xbox</source>
+        <translation>Xbox</translation>
+    </message>
+    <message>
+        <source>%1 (connected)</source>
+        <translation>%1（已连接）</translation>
+    </message>
+    <message>
+        <source>Changes reach connected controllers on their next vibration. To feel them now, open the Vibration settings and hold a button on the controller.</source>
+        <translation>更改会在连接中的控制器下次震动时生效。若要立即测试，请打开“震动”设置，然后按住控制器上的任意按钮。</translation>
+    </message>
+    <message>
+        <source>Powered by RenHDrum</source>
+        <translation>由 RenHDrum 提供支持</translation>
+    </message>
+    <message>
+        <source>Pro Controller and Joy-Con: the game's HD Rumble sent with full detail instead of a plain motor rumble.</source>
+        <translation>Pro Controller 和 Joy-Con：完整传递游戏的 HD 震动细节，而不是简化为普通马达震动。</translation>
+    </message>
+    <message>
+        <source>Wired (USB)</source>
+        <translation>有线（USB）</translation>
+    </message>
+    <message>
+        <source> ms</source>
+        <translation> 毫秒</translation>
+    </message>
+    <message>
+        <source>Time between rumble packets. 15 ms is the console's rate.</source>
+        <translation>震动数据包之间的间隔。主机的标准间隔为 15 毫秒。</translation>
+    </message>
+    <message>
+        <source>5 ms envelope (three samples per packet)</source>
+        <translation>5 毫秒包络（每个数据包包含三个采样）</translation>
+    </message>
+    <message>
+        <source>Frequency changes inside a packet</source>
+        <translation>允许在同一个数据包内改变频率</translation>
+    </message>
+    <message>
+        <source>Crisp notes (stronger attack, softer sustain)</source>
+        <translation>清晰震动（起始更强，持续阶段更柔和）</translation>
+    </message>
+    <message>
+        <source>Packet interval</source>
+        <translation>数据包间隔</translation>
+    </message>
+    <message>
+        <source>Bluetooth</source>
+        <translation>蓝牙</translation>
+    </message>
+    <message>
+        <source>1 - Stable (60 ms)</source>
+        <translation>1 - 稳定（60 毫秒）</translation>
+    </message>
+    <message>
+        <source>2 - Balanced (45 ms)</source>
+        <translation>2 - 平衡（45 毫秒）</translation>
+    </message>
+    <message>
+        <source>3 - Quality (35 ms)</source>
+        <translation>3 - 高质量（35 毫秒）</translation>
+    </message>
+    <message>
+        <source>Lower levels send less often, which keeps input lag down on a busy Bluetooth link.</source>
+        <translation>较低等级的数据发送频率较低，在蓝牙连接繁忙时有助于降低输入延迟。</translation>
+    </message>
+    <message>
+        <source>Send right after an input report</source>
+        <translation>收到输入报告后立即发送</translation>
+    </message>
+    <message>
+        <source>5 ms envelope while the link is idle</source>
+        <translation>蓝牙链路空闲时使用 5 毫秒包络</translation>
+    </message>
+    <message>
+        <source>Crisp notes</source>
+        <translation>清晰震动</translation>
+    </message>
+    <message>
+        <source>Level</source>
+        <translation>等级</translation>
+    </message>
+    <message>
+        <source>Detailed rumble on the DualSense and DualSense Edge haptics, wired or on Bluetooth.</source>
+        <translation>为 DualSense 和 DualSense Edge 提供细腻震动效果，支持有线和蓝牙连接。</translation>
+    </message>
+    <message>
+        <source>Haptics</source>
+        <translation>触觉反馈</translation>
+    </message>
+    <message>
+        <source>Use the haptic voice coils</source>
+        <translation>使用触觉线圈</translation>
+    </message>
+    <message>
+        <source>Off: the DualSense uses its standard rumble.</source>
+        <translation>关闭：DualSense 将使用标准震动。</translation>
+    </message>
+    <message>
+        <source>Volume</source>
+        <translation>强度</translation>
+    </message>
+    <message>
+        <source>Xbox controllers and Xbox-style controllers from other brands.</source>
+        <translation>适用于 Xbox 控制器，以及其他品牌的 Xbox 风格控制器。</translation>
+    </message>
+    <message>
+        <source>Motors</source>
+        <translation>马达</translation>
+    </message>
+    <message>
+        <source>Use RenHDrum's Xbox rumble</source>
+        <translation>使用 RenHDrum 的 Xbox 震动</translation>
+    </message>
+    <message>
+        <source>Off: Xbox controllers use the emulator's standard rumble.</source>
+        <translation>关闭：Xbox 控制器将使用模拟器的标准震动。</translation>
+    </message>
+    <message>
+        <source>How hard the motors run. Raise it if the rumble feels weak.</source>
+        <translation>控制马达的驱动力度。如果感觉震动太弱，可以调高此数值。</translation>
+    </message>
+    <message>
+        <source>RenHDrum (smart: richer effects, best on official Xbox controllers)</source>
+        <translation>RenHDrum（智能模式：效果更丰富，最适合官方 Xbox 控制器）</translation>
+    </message>
+    <message>
+        <source>Direct (stronger: full motor power)</source>
+        <translation>直接模式（力度更强：使用完整马达功率）</translation>
+    </message>
+    <message>
+        <source>RenHDrum: richer effects, made for official Xbox controllers.
+Direct: full motor power, simpler feel.</source>
+        <translation>RenHDrum：效果更丰富，专为官方 Xbox 控制器设计。
+直接模式：使用完整马达功率，震动表现更直接。</translation>
+    </message>
+    <message>
+        <source>Mode</source>
+        <translation>模式</translation>
+    </message>
+    <message>
+        <source>Motor strength</source>
+        <translation>马达强度</translation>
+    </message>
+    <message>
+        <source>Detail on main motor</source>
+        <translation>主马达细节</translation>
+    </message>
+    <message>
+        <source>Adds the fine vibration to the main motor, so it is felt with strength. Direct mode.</source>
+        <translation>为主马达加入细腻震动，让细节更明显。仅适用于直接模式。</translation>
+    </message>
+    <message>
+        <source>Hit accents</source>
+        <translation>撞击强调</translation>
+    </message>
+    <message>
+        <source>A short burst when a hit starts, so quick taps are felt. Direct mode.</source>
+        <translation>在撞击开始时加入短促震动，让快速轻击也能被感受到。仅适用于直接模式。</translation>
+    </message>
+    <message>
+        <source>Trigger rumble</source>
+        <translation>扳机震动</translation>
+    </message>
+    <message>
+        <source>Fine vibration on the triggers, on controllers that have trigger motors. Direct mode.</source>
+        <translation>在配备扳机马达的控制器上提供细腻的扳机震动。仅适用于直接模式。</translation>
+    </message>
+    <message>
+        <source>This controller has no trigger motors.</source>
+        <translation>此控制器没有扳机马达。</translation>
+    </message>
+    <message>
+        <source>Trigger rumble needs &quot;XInput 8 player support&quot;.</source>
+        <translation>扳机震动需要启用“XInput 8 人支持”。</translation>
+    </message>
+    <message>
+        <source>Turn it on</source>
+        <translation>启用</translation>
+    </message>
+    <message>
+        <source>Turned on. Restart the emulator to feel the triggers.
+
+While this is on, games can't open their web pages (some manuals and logins). You can turn it off in Controls &gt; Advanced.</source>
+        <translation>已启用。重新启动模拟器后即可体验扳机震动。
+
+启用此功能后，游戏将无法打开网页（例如部分说明书和登录页面）。你可以在“控制 → 高级”中关闭此功能。</translation>
+    </message>
+    <message>
+        <source>Trigger rumble works only with official Xbox controllers. Most wireless receivers drive just the grip motors.</source>
+        <translation>扳机震动仅适用于官方 Xbox 控制器。大多数无线接收器只能驱动握把马达。</translation>
+    </message>
+</context>
+<context>
+    <name>NvidiaDlssPanel</name>
+    <message>
+        <source>Open Folder</source>
+        <translation>打开文件夹</translation>
+    </message>
+    <message>
+        <source>Where do these files come from?</source>
+        <translation>这些文件来自哪里？</translation>
+    </message>
+    <message>
+        <source>NVIDIA's Streamline releases on GitHub. The files are in bin\x64 of the release zip.</source>
+        <translation>NVIDIA 在 GitHub 上发布的 Streamline。所需文件位于发行版 ZIP 压缩包的 bin\x64 目录中。</translation>
+    </message>
+    <message>
+        <source>%1 from the NVIDIA app</source>
+        <translation>来自 NVIDIA App 的 %1</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Ready.&lt;/b&gt; Found %1 and %2.</source>
+        <translation>&lt;b&gt;已就绪。&lt;/b&gt;已找到 %1 和 %2。</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;One file needed:&lt;/b&gt; NVIDIA's Streamline loader (sl.interposer.dll). %1 will be used. Until then, games use AMD FSR 3.1.</source>
+        <translation>&lt;b&gt;还需要一个文件：&lt;/b&gt;NVIDIA Streamline 加载器（sl.interposer.dll）。将使用 %1。在此之前，游戏会使用 AMD FSR 3.1。</translation>
+    </message>
+    <message>
+        <source>Download from NVIDIA (1 MB)</source>
+        <translation>从 NVIDIA 下载（1 MB）</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;One file needed:&lt;/b&gt; NVIDIA DLSS (nvngx_dlss.dll). Until then, games use AMD FSR 3.1.</source>
+        <translation>&lt;b&gt;还需要一个文件：&lt;/b&gt;NVIDIA DLSS（nvngx_dlss.dll）。在此之前，游戏会使用 AMD FSR 3.1。</translation>
+    </message>
+    <message>
+        <source>Download from NVIDIA (31 MB)</source>
+        <translation>从 NVIDIA 下载（31 MB）</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;NVIDIA's files needed:&lt;/b&gt; the Streamline loader and DLSS (sl.interposer.dll and nvngx_dlss.dll). Until then, games use AMD FSR 3.1.</source>
+        <translation>&lt;b&gt;需要 NVIDIA 的文件：&lt;/b&gt;Streamline 加载器和 DLSS（sl.interposer.dll 与 nvngx_dlss.dll）。在此之前，游戏会使用 AMD FSR 3.1。</translation>
+    </message>
+    <message>
+        <source>Download from NVIDIA (32 MB)</source>
+        <translation>从 NVIDIA 下载（32 MB）</translation>
+    </message>
+    <message>
+        <source>Folder: %1</source>
+        <translation>文件夹：%1</translation>
+    </message>
+    <message>
+        <source>NVIDIA DLSS</source>
+        <translation>NVIDIA DLSS</translation>
+    </message>
+    <message>
+        <source>Could not download NVIDIA's files: %1</source>
+        <translation>无法下载 NVIDIA 文件：%1</translation>
+    </message>
+    <message>
+        <source>Contacting NVIDIA's download...</source>
+        <translation>正在连接 NVIDIA 下载服务器...</translation>
+    </message>
+    <message>
+        <source>NVIDIA Streamline</source>
+        <translation>NVIDIA Streamline</translation>
+    </message>
+    <message>
+        <source>Download NVIDIA DLSS</source>
+        <translation>下载 NVIDIA DLSS</translation>
+    </message>
+    <message>
+        <source>Lichii will download %1 from NVIDIA's Streamline %2 release on GitHub into %3.&lt;br&gt;These files are NVIDIA's, under NVIDIA's licence terms below.</source>
+        <translation>Lichii 将从 GitHub 上 NVIDIA Streamline %2 版本下载 %1，并将其保存到 %3。&lt;br&gt;这些文件由 NVIDIA 提供，并受下方 NVIDIA 许可条款约束。</translation>
+    </message>
+    <message>
+        <source>Accept and Download</source>
+        <translation>接受并下载</translation>
+    </message>
+    <message>
+        <source>Downloading NVIDIA's DLSS files...</source>
+        <translation>正在下载 NVIDIA DLSS 文件...</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <source>NVIDIA DLSS is ready. It is used the next time a game starts.</source>
+        <translation>NVIDIA DLSS 已准备就绪。将在下次启动游戏时使用。</translation>
     </message>
 </context>
 </TS>
