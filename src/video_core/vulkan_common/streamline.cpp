@@ -65,6 +65,11 @@ struct State {
     std::vector<std::string> fg_device_extensions;
     // Per frame: the token of the latest DLSS evaluation, until a present takes it (worker).
     std::atomic<const sl::FrameToken*> fg_tagged{};
+    // Manual fractional generation: divisor 1 = 2x, divisor 2 = one generated frame per
+    // two rendered frames. Accessed by the serialized Vulkan render/present worker.
+    u32 fg_generation_divisor{1};
+    u32 fg_generation_phase{};
+    u32 fg_mode_switches{};
     bool fg_reflex_set{}; ///< Worker
     bool fg_reflex_on{};  ///< Worker: Reflex set for the player's frame generation switch on
     // eBlockNoClientQueues: frame generation's inputs fence, from the present thread to the worker.
@@ -343,7 +348,8 @@ bool Start() {
     // DLSS-G is selected independently from the legacy DLSS setting. The session override
     // is supplied by the Fritchii Graphics menu and Frame Gen switch.
     const char* const dlss_override = std::getenv("LICHII_DLSS");
-    const bool dlss_enabled =
+    const bool frame_gen_requested = FrameGenRequested();
+    const bool dlss_enabled = frame_gen_requested ||
         (dlss_override != nullptr && dlss_override[0] == '1') ||
         Settings::values.nvidia_dlss.GetValue();
     if (!dlss_enabled) {
@@ -865,7 +871,30 @@ void* TakeFrameGenToken() {
     if (!IsFrameGenAvailable()) {
         return nullptr;
     }
-    return const_cast<sl::FrameToken*>(state.fg_tagged.exchange(nullptr, std::memory_order_acq_rel));
+    const sl::FrameToken* const frame =
+        state.fg_tagged.exchange(nullptr, std::memory_order_acq_rel);
+    if (!frame) {
+        return nullptr;
+    }
+
+    // Manual 0.5x mode: keep one generated frame for every two DLSS-evaluated game frames.
+    // This deliberately alternates a normal present and a generated present; it is not NVIDIA's
+    // native Dynamic MFG and may have uneven frame pacing at fractional ratios.
+    const char* const value = std::getenv("LICHII_DLSS_FG_DIVISOR");
+    const u32 divisor = value && value[0] == '2' ? 2u : 1u;
+    if (divisor != state.fg_generation_divisor) {
+        state.fg_generation_divisor = divisor;
+        state.fg_generation_phase = 0;
+        LOG_INFO(Render_Vulkan,
+                 "DLSS Frame Generation manual ratio: 1 generated frame per {} rendered frame(s)",
+                 divisor);
+    }
+    const bool generate = state.fg_generation_phase == 0;
+    state.fg_generation_phase = (state.fg_generation_phase + 1) % divisor;
+    if (!generate) {
+        return nullptr;
+    }
+    return const_cast<sl::FrameToken*>(frame);
 }
 
 void FrameGenBeforePresent(void* token, u32 game_left, u32 game_top, u32 game_right,
@@ -890,15 +919,16 @@ void FrameGenBeforePresent(void* token, u32 game_left, u32 game_top, u32 game_ri
                                            ? sl::DLSSGQueueParallelismMode::eBlockPresentingClientQueue
                                            : sl::DLSSGQueueParallelismMode::eBlockNoClientQueues;
         const sl::Result result = api.dlssg_set_options(sl::ViewportHandle{0u}, options);
-        LOG_INFO(Render_Vulkan, "DLSS Frame Generation {} (result {})", want_on ? "on" : "off",
-                 static_cast<int>(result));
+        ++state.fg_mode_switches;
+        if (state.fg_mode_switches == 1 || state.fg_mode_switches % 120 == 0) {
+            LOG_INFO(Render_Vulkan, "DLSS Frame Generation {} (result {}; mode switches {})",
+                     want_on ? "on" : "off", static_cast<int>(result), state.fg_mode_switches);
+        }
         state.fg_on = want_on;
         Common::FrameGenStats::active.store(want_on, std::memory_order_relaxed);
-        state.fg_window_begin = {};
-        state.fg_window_shown = 0;
-        state.fg_window_generated = 0;
-        state.fg_window_presents = 0;
     }
+    // Include both generated and plain presents in the frame-rate statistics.
+    state.fg_present_begin = std::chrono::steady_clock::now();
     if (!token) {
         return;
     }
@@ -925,11 +955,14 @@ void FrameGenBeforePresent(void* token, u32 game_left, u32 game_top, u32 game_ri
 
 void FrameGenAfterPresent(void* token) {
     State& state = GetState();
-    if (!IsFrameGenAvailable() || !token) {
+    if (!IsFrameGenAvailable()) {
         return;
     }
     const Api& api = state.api;
-    api.pcl_set_marker(sl::PCLMarker::ePresentEnd, *static_cast<const sl::FrameToken*>(token));
+    if (token) {
+        api.pcl_set_marker(sl::PCLMarker::ePresentEnd, *static_cast<const sl::FrameToken*>(token));
+    }
+    // Count every rendered frame, including those deliberately presented without generation.
     ++state.fg_presents;
     const auto now = std::chrono::steady_clock::now();
     const auto ns = [](auto duration) {
