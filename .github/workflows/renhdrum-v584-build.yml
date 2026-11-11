@@ -10,6 +10,7 @@ on:
       - "CMakeModules/**"
       - "externals/**"
       - "dist/**"
+      - "recipes/**"
       - "cpmfile.json"
       - ".patch/**"
       - ".github/workflows/renhdrum-v584-build.yml"
@@ -147,6 +148,56 @@ jobs:
           if ($hash -ne '33c88b343fa49627cc09fcd0cee7e46f5a85e16e77f1d404e44574d42eaa74e8') {
             throw "RenHDrum v0.3.0 DLL SHA-256 mismatch: $hash"
           }
+
+          # Preserve the exact OoT cache-v54 recipe used by the previous Fritchii-HDrum package.
+          # It is extracted from the official v5.5 Windows package and both archive/file hashes are pinned.
+          $recipeZip = Join-Path $env:RUNNER_TEMP 'Fritchii-v5.5-Windows-x64.zip'
+          $recipeUrl = 'https://github.com/Frizti/Fritchii/releases/download/fritchii-v5.5/Fritchii-v5.5-Windows-x64.zip'
+          $recipeZipSha256 = '63112e7125e6174192079475b485f9633509a4a8dfb2630b5f8a96c644abf066'
+          $recipeSha256 = '85d944c8557fbeffe02af566c9c4277251ed0ab1a0f2a3ab7a626af6a877c3a1'
+          $recipePath = 'recipes/OoT v131072 (cache v54).nx2recipe'
+
+          Invoke-WebRequest -Uri $recipeUrl -OutFile $recipeZip
+          $downloadedRecipeZipHash = (Get-FileHash -Algorithm SHA256 $recipeZip).Hash.ToLowerInvariant()
+          if ($downloadedRecipeZipHash -ne $recipeZipSha256) {
+            throw "Official Fritchii v5.5 recipe archive SHA-256 mismatch: $downloadedRecipeZipHash"
+          }
+
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $recipeArchive = [System.IO.Compression.ZipFile]::OpenRead($recipeZip)
+          try {
+            $recipeEntries = @($recipeArchive.Entries | Where-Object { $_.FullName -eq $recipePath })
+            if ($recipeEntries.Count -ne 1) {
+              throw "Expected exactly one '$recipePath' in the official package; found $($recipeEntries.Count)"
+            }
+
+            $recipeDestination = Join-Path $bin $recipePath
+            $recipeDirectory = Split-Path -Parent $recipeDestination
+            New-Item -ItemType Directory -Path $recipeDirectory -Force | Out-Null
+
+            $sourceStream = $recipeEntries[0].Open()
+            try {
+              $destinationStream = [System.IO.File]::Create($recipeDestination)
+              try {
+                $sourceStream.CopyTo($destinationStream)
+              }
+              finally {
+                $destinationStream.Dispose()
+              }
+            }
+            finally {
+              $sourceStream.Dispose()
+            }
+          }
+          finally {
+            $recipeArchive.Dispose()
+          }
+
+          $copiedRecipeHash = (Get-FileHash -Algorithm SHA256 $recipeDestination).Hash.ToLowerInvariant()
+          if ($copiedRecipeHash -ne $recipeSha256) {
+            throw "OoT v131072 cache v54 recipe SHA-256 mismatch: $copiedRecipeHash"
+          }
+          Write-Host "Verified recipe: $recipePath ($copiedRecipeHash)"
 
           Remove-Item (Join-Path $bin 'eden-cli.exe') -Force -ErrorAction SilentlyContinue
           Get-ChildItem -Path $bin -Filter '*.pdb' -File -ErrorAction SilentlyContinue | Remove-Item -Force
