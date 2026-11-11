@@ -22,6 +22,8 @@
 namespace Vulkan {
 namespace {
 
+static_assert(Streamline::FRAME_GEN_INPUT_SLOT_COUNT == 4);
+
 constexpr VkFormat OUTPUT_FORMAT = VK_FORMAT_R16G16B16A16_SFLOAT;
 // Streamline clears the output before DLSS writes it.
 constexpr VkImageUsageFlags OUTPUT_USAGE = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT |
@@ -310,8 +312,9 @@ bool StreamlineDlssUpscaler::Upscale(const Inputs& in) {
     }
     hdr_input = in.hdr;
 
-    // DLSS Frame Generation's inputs, copied into the next slot of the ring.
+    // DLSS Frame Generation's inputs, copied into the next slot of the four-buffer ring.
     const FrameGenCopy* fg_copy = nullptr;
+    u32 fg_copy_slot = Streamline::FRAME_GEN_INPUT_SLOT_NONE;
     if (Streamline::IsFrameGenAvailable() && FrameGenOwnCopies() &&
         Common::FrameGenStats::user_enabled.load(std::memory_order_relaxed)) {
         if (!fg_copies[0].depth || fg_copy_extent.width != in.render_size.width ||
@@ -319,7 +322,8 @@ bool StreamlineDlssUpscaler::Upscale(const Inputs& in) {
             fg_depth_format != in.depth.format || fg_motion_format != in.motion_vectors.format) {
             CreateFrameGenCopies(in);
         }
-        fg_copy = &fg_copies[fg_copy_next++ % FRAME_GEN_COPIES];
+        fg_copy_slot = static_cast<u32>(fg_copy_next++ % FRAME_GEN_COPIES);
+        fg_copy = &fg_copies[fg_copy_slot];
     }
 
     // Keep the existing HDR controls for linear input such as Fortune's Weave. Tonemapped
@@ -348,7 +352,7 @@ bool StreamlineDlssUpscaler::Upscale(const Inputs& in) {
 
     scheduler.RequestOutsideRenderPassOperationContext();
     scheduler.Record([this, in, reset, options, options_changed, index = frame_index++, fg_copy,
-                      output_image_handle = *output_image,
+                      fg_copy_slot, output_image_handle = *output_image,
                       output_view_handle = *output_view](vk::CommandBuffer cmdbuf) {
         const Streamline::Api& api = Streamline::GetApi();
         const sl::ViewportHandle viewport{0u};
@@ -495,7 +499,15 @@ bool StreamlineDlssUpscaler::Upscale(const Inputs& in) {
                 // DLSS Frame Generation (when on) presents from this frame's depth and motion.
                 if (!fg_copy) {
                     Streamline::TagFrameGen(*frame, depth, motion, render_area, *cmdbuf,
-                                            sl::ResourceLifecycle::eOnlyValidNow);
+                                            sl::ResourceLifecycle::eOnlyValidNow,
+                                            Streamline::FRAME_GEN_INPUT_SLOT_NONE);
+                    return true;
+                }
+                // Wait only for the completion value associated with this slot, before either
+                // image is overwritten. Other ring slots can overlap DLSS-G processing.
+                if (!Streamline::WaitFrameGenInputSlot(fg_copy_slot)) {
+                    LOG_WARNING(Render_Vulkan,
+                                "DLSS Frame Generation: skipping this frame's input copy after a fence wait failure");
                     return true;
                 }
                 // Copy depth and motion (read-only for DLSS right now) into this frame's slot.
@@ -559,7 +571,7 @@ bool StreamlineDlssUpscaler::Upscale(const Inputs& in) {
                     Resource(*fg_copy->motion, *fg_copy->motion_view, in.motion_vectors.format,
                              READ, in.render_size, FG_COPY_USAGE);
                 Streamline::TagFrameGen(*frame, depth_tagged, motion_tagged, render_area, *cmdbuf,
-                                        sl::ResourceLifecycle::eValidUntilPresent);
+                                        sl::ResourceLifecycle::eValidUntilPresent, fg_copy_slot);
                 return true;
             },
             [&] {

@@ -239,7 +239,8 @@ void PresentManager::Present(Frame* frame) {
             frame->queued_at = std::chrono::steady_clock::now();
 #ifdef EGLANTINE_STREAMLINE
             // Right after this frame's commands on the worker: its DLSS evaluation's token.
-            frame->frame_gen_token = Streamline::TakeFrameGenToken(&frame->frame_gen_generations);
+            frame->frame_gen_token = Streamline::TakeFrameGenToken(
+                &frame->frame_gen_generations, &frame->frame_gen_input_slot);
 #endif
             // What ends the present thread's "present: wait for frame" (on the Vulkan worker).
             if (Common::Nx2Timeline::Active()) {
@@ -252,7 +253,8 @@ void PresentManager::Present(Frame* frame) {
     } else {
         scheduler.WaitWorker();
 #ifdef EGLANTINE_STREAMLINE
-        frame->frame_gen_token = Streamline::TakeFrameGenToken(&frame->frame_gen_generations);
+        frame->frame_gen_token = Streamline::TakeFrameGenToken(
+            &frame->frame_gen_generations, &frame->frame_gen_input_slot);
 #endif
         CopyToSwapchain(frame);
         free_queue.push_back(frame);
@@ -636,6 +638,11 @@ void PresentManager::SetImageCount() {
 }
 
 void PresentManager::DiscardFrame(Frame* frame) {
+#ifdef EGLANTINE_STREAMLINE
+    Streamline::AbandonFrameGenInputSlot(frame->frame_gen_input_slot);
+    frame->frame_gen_input_slot = Streamline::FRAME_GEN_INPUT_SLOT_NONE;
+    frame->frame_gen_token = nullptr;
+#endif
     static constexpr VkPipelineStageFlags wait_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
     const VkSemaphore render_ready = *frame->render_ready;
     const VkSubmitInfo submit_info{
@@ -878,7 +885,8 @@ void PresentManager::CopyToSwapchainImpl(Frame* frame) {
 #endif
     last_present_id = swapchain.Present(render_semaphore);
 #ifdef EGLANTINE_STREAMLINE
-    Streamline::FrameGenAfterPresent(frame_gen_token);
+    Streamline::FrameGenAfterPresent(frame_gen_token, frame->frame_gen_input_slot);
+    frame->frame_gen_input_slot = Streamline::FRAME_GEN_INPUT_SLOT_NONE;
 #endif
 }
 

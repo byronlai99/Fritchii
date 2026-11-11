@@ -48,6 +48,7 @@ struct Api {
 /// the next present. eOnlyValidNow has Streamline copy them on cmdbuf; eValidUntilPresent is for
 /// the renderer's own copies.
 void TagFrameGen(const sl::FrameToken& frame, const sl::Resource& depth, const sl::Resource& motion,
-                 const sl::Extent& area, VkCommandBuffer cmdbuf, sl::ResourceLifecycle lifecycle);
+                 const sl::Extent& area, VkCommandBuffer cmdbuf, sl::ResourceLifecycle lifecycle,
+                 u32 input_slot);
 
 } // namespace Vulkan::Streamline

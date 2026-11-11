@@ -323,6 +323,12 @@ struct State {
     std::vector<std::string> fg_device_extensions;
     // Per frame: the token of the latest DLSS evaluation, until a present takes it (worker).
     std::atomic<const sl::FrameToken*> fg_tagged{};
+    std::atomic<u32> fg_tagged_input_slot{FRAME_GEN_INPUT_SLOT_NONE};
+    // A slot stays pending from tagging until its frame is presented (fence saved) or skipped.
+    std::mutex fg_inputs_mutex;
+    std::condition_variable fg_inputs_cv;
+    std::array<bool, FRAME_GEN_INPUT_SLOT_COUNT> fg_input_pending{};
+    std::array<u64, FRAME_GEN_INPUT_SLOT_COUNT> fg_input_values{};
     // Adaptive and fixed-ratio scheduling happens on the serialized Vulkan render worker.
     FrameGenPacer fg_pacer;
     FrameGenMode fg_pacer_mode{FrameGenMode::Fixed2x};
@@ -335,11 +341,14 @@ struct State {
     // eBlockNoClientQueues: frame generation's inputs fence, from the present thread to the worker.
     VkDevice device{};
     PFN_vkWaitSemaphores wait_semaphores{};
+    PFN_vkDeviceWaitIdle device_wait_idle{};
     std::atomic<VkSemaphore> fg_inputs_fence{};
     std::atomic<u64> fg_inputs_value{};
     u64 fg_wait_timeouts{};
     // Timing for the periodic log (ns): worker fence waits, present calls, present to present.
     std::atomic<u64> fg_wait_ns{};
+    std::atomic<u64> fg_slot_waits{};
+    std::atomic<u64> fg_slot_wait_ns{};
     u64 fg_acquire_ns{};
     std::atomic<u64> fg_free_wait_ns{};
     u64 fg_present_ns{};
@@ -354,6 +363,7 @@ struct State {
     std::chrono::steady_clock::time_point fg_window_begin{};
     u64 fg_window_shown{};
     u64 fg_window_generated{};
+    u64 fg_window_generated_presents{};
     u64 fg_window_presents{};
 };
 
@@ -882,6 +892,7 @@ bool AttachDevice(VkInstance instance, VkPhysicalDevice physical, VkDevice devic
     state.attached = true;
     state.device = device;
     state.wait_semaphores = dld.vkWaitSemaphores;
+    state.device_wait_idle = dld.vkDeviceWaitIdle;
     LOG_INFO(Render_Vulkan, "NVIDIA DLSS is available through Streamline");
 
     state.fg_available = false;
@@ -968,8 +979,8 @@ private:
     std::jthread thread;
 };
 
-// DLSS-G's eBlockNoClientQueues mode requires waiting for its inputs fence before reusing
-// tagged resources on any client queue. LICHII_DLSS_FG_WAIT=0 is an opt-out for diagnostics only.
+// DLSS-G's eBlockNoClientQueues mode requires waiting before modifying an input consumed by a
+// previously presented frame. LICHII_DLSS_FG_WAIT=0 disables waits for diagnostics only.
 bool FrameGenWaitsForInputs() {
     static const bool waits = [] {
         const char* const value = std::getenv("LICHII_DLSS_FG_WAIT");
@@ -978,8 +989,72 @@ bool FrameGenWaitsForInputs() {
     return waits;
 }
 
+bool WaitFrameGenFence(State& state, VkSemaphore fence, u64 value, bool slot_wait) {
+    if (!FrameGenWaitsForInputs() || value == 0) {
+        return true;
+    }
+
+    const auto wait_begin = std::chrono::steady_clock::now();
+    VkResult wait_result = VK_ERROR_INITIALIZATION_FAILED;
+    if (fence && state.wait_semaphores) {
+        const VkSemaphoreWaitInfo wait{
+            .sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO,
+            .pNext = nullptr,
+            .flags = 0,
+            .semaphoreCount = 1,
+            .pSemaphores = &fence,
+            .pValues = &value,
+        };
+        wait_result = state.wait_semaphores(state.device, &wait, std::numeric_limits<u64>::max());
+    } else if (state.device_wait_idle) {
+        wait_result = state.device_wait_idle(state.device);
+    }
+
+    const u64 elapsed = static_cast<u64>(
+        std::chrono::duration_cast<std::chrono::nanoseconds>(
+            std::chrono::steady_clock::now() - wait_begin).count());
+    state.fg_wait_ns.fetch_add(elapsed, std::memory_order_relaxed);
+    if (slot_wait) {
+        state.fg_slot_waits.fetch_add(1, std::memory_order_relaxed);
+        state.fg_slot_wait_ns.fetch_add(elapsed, std::memory_order_relaxed);
+    }
+    if (wait_result == VK_SUCCESS || wait_result == VK_ERROR_DEVICE_LOST) {
+        return true;
+    }
+
+    if (state.fg_wait_timeouts++ == 0) {
+        LOG_ERROR(Render_Vulkan,
+                  "DLSS Frame Generation: inputs fence wait failed (VkResult {}); trying device idle",
+                  static_cast<int>(wait_result));
+    }
+    const VkResult idle_result =
+        state.device_wait_idle ? state.device_wait_idle(state.device) : wait_result;
+    if (idle_result == VK_SUCCESS || idle_result == VK_ERROR_DEVICE_LOST) {
+        return true;
+    }
+    LOG_ERROR(Render_Vulkan,
+              "DLSS Frame Generation: device-idle fallback failed (VkResult {})",
+              static_cast<int>(idle_result));
+    return false;
+}
+
+void CompleteFrameGenInputSlot(State& state, u32 slot, u64 value) {
+    if (slot >= FRAME_GEN_INPUT_SLOT_COUNT) {
+        return;
+    }
+    {
+        std::lock_guard lock{state.fg_inputs_mutex};
+        if (value != 0) {
+            state.fg_input_values[slot] = value;
+        }
+        state.fg_input_pending[slot] = false;
+    }
+    state.fg_inputs_cv.notify_all();
+}
+
 void TagFrameGen(const sl::FrameToken& frame, const sl::Resource& depth, const sl::Resource& motion,
-                 const sl::Extent& area, VkCommandBuffer cmdbuf, sl::ResourceLifecycle lifecycle) {
+                 const sl::Extent& area, VkCommandBuffer cmdbuf, sl::ResourceLifecycle lifecycle,
+                 u32 input_slot) {
     State& state = GetState();
     if (!IsFrameGenAvailable()) {
         return;
@@ -1034,35 +1109,17 @@ void TagFrameGen(const sl::FrameToken& frame, const sl::Resource& depth, const s
     api.pcl_set_marker(sl::PCLMarker::eSimulationStart, frame);
     api.pcl_set_marker(sl::PCLMarker::eSimulationEnd, frame);
     api.pcl_set_marker(sl::PCLMarker::eRenderSubmitStart, frame);
-    // With eBlockNoClientQueues frame generation keeps running on its own queues after the
-    // present: the previous frame's inputs must be consumed before this frame's copies replace
-    // them. This command buffer is submitted after the wait, so a CPU wait orders it.
-    if (const VkSemaphore fence = state.fg_inputs_fence.load(std::memory_order_acquire);
-        fence && state.wait_semaphores && FrameGenWaitsForInputs()) {
-        const auto wait_begin = std::chrono::steady_clock::now();
-        const u64 value = state.fg_inputs_value.load(std::memory_order_acquire);
-        const VkSemaphoreWaitInfo wait{
-            .sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO,
-            .pNext = nullptr,
-            .flags = 0,
-            .semaphoreCount = 1,
-            .pSemaphores = &fence,
-            .pValues = &value,
-        };
-        const VkResult wait_result =
-            state.wait_semaphores(state.device, &wait, std::numeric_limits<u64>::max());
-        if (wait_result != VK_SUCCESS) {
-            if (state.fg_wait_timeouts++ == 0) {
-                LOG_ERROR(Render_Vulkan,
-                          "DLSS Frame Generation: inputs fence wait failed (VkResult {})",
-                          static_cast<int>(wait_result));
-            }
+    // Without private ring copies, Streamline reads the game's live depth/motion resources.
+    // Preserve the conservative previous-present wait for that fallback path.
+    if (input_slot == FRAME_GEN_INPUT_SLOT_NONE && FrameGenWaitsForInputs()) {
+        u64 value = state.fg_inputs_value.load(std::memory_order_acquire);
+        const VkSemaphore fence = state.fg_inputs_fence.load(std::memory_order_acquire);
+        if (!WaitFrameGenFence(state, fence, value, false)) {
             return;
         }
-        state.fg_wait_ns.fetch_add(static_cast<u64>(std::chrono::duration_cast<std::chrono::nanoseconds>(
-                                       std::chrono::steady_clock::now() - wait_begin)
-                                       .count()),
-                                   std::memory_order_relaxed);
+        if (value != 0) {
+            state.fg_inputs_value.compare_exchange_strong(value, 0, std::memory_order_acq_rel);
+        }
     }
     // The game draws over its depth and motion next frame, before this one is presented.
     sl::ResourceTag tags[] = {
@@ -1087,7 +1144,72 @@ void TagFrameGen(const sl::FrameToken& frame, const sl::Resource& depth, const s
         }
         return;
     }
+    if (input_slot < FRAME_GEN_INPUT_SLOT_COUNT) {
+        {
+            std::lock_guard lock{state.fg_inputs_mutex};
+            state.fg_input_pending[input_slot] = true;
+        }
+        state.fg_tagged_input_slot.store(input_slot, std::memory_order_release);
+    } else {
+        state.fg_tagged_input_slot.store(FRAME_GEN_INPUT_SLOT_NONE, std::memory_order_release);
+    }
     state.fg_tagged.store(&frame, std::memory_order_release);
+}
+
+bool WaitFrameGenInputSlot(u32 slot) {
+    if (slot >= FRAME_GEN_INPUT_SLOT_COUNT) {
+        return false;
+    }
+    if (!FrameGenWaitsForInputs()) {
+        return true;
+    }
+    State& state = GetState();
+    u64 value{};
+    {
+        std::unique_lock lock{state.fg_inputs_mutex};
+        state.fg_inputs_cv.wait(lock, [&] { return !state.fg_input_pending[slot]; });
+        value = state.fg_input_values[slot];
+    }
+    if (value == 0) {
+        return true;
+    }
+    const VkSemaphore fence = state.fg_inputs_fence.load(std::memory_order_acquire);
+    if (!WaitFrameGenFence(state, fence, value, true)) {
+        return false;
+    }
+    {
+        std::lock_guard lock{state.fg_inputs_mutex};
+        if (state.fg_input_values[slot] == value) {
+            state.fg_input_values[slot] = 0;
+        }
+    }
+    return true;
+}
+
+void AbandonFrameGenInputSlot(u32 slot) {
+    if (slot >= FRAME_GEN_INPUT_SLOT_COUNT) {
+        return;
+    }
+    State& state = GetState();
+    {
+        std::lock_guard lock{state.fg_inputs_mutex};
+        if (!state.fg_input_pending[slot]) {
+            return;
+        }
+    }
+    const VkResult result =
+        state.device_wait_idle ? state.device_wait_idle(state.device) : VK_ERROR_INITIALIZATION_FAILED;
+    if (result != VK_SUCCESS && result != VK_ERROR_DEVICE_LOST) {
+        LOG_ERROR(Render_Vulkan,
+                  "DLSS Frame Generation: could not safely abandon input slot {} (VkResult {})",
+                  slot, static_cast<int>(result));
+    }
+    {
+        std::lock_guard lock{state.fg_inputs_mutex};
+        state.fg_input_pending[slot] = false;
+        state.fg_input_values[slot] = 0;
+    }
+    state.fg_inputs_cv.notify_all();
 }
 
 void NoteFrameGenAcquire(u64 ns) {
@@ -1132,19 +1254,29 @@ u32 FrameGenSwapchainImages() {
     return value ? static_cast<u32>(std::atoi(value)) : 0;
 }
 
-void* TakeFrameGenToken(u32* generations) {
+void* TakeFrameGenToken(u32* generations, u32* input_slot) {
     State& state = GetState();
     if (generations) {
         *generations = 0;
     }
+    if (input_slot) {
+        *input_slot = FRAME_GEN_INPUT_SLOT_NONE;
+    }
     if (!IsFrameGenAvailable()) {
         state.fg_pacer.Reset();
+        const u32 slot = state.fg_tagged_input_slot.exchange(
+            FRAME_GEN_INPUT_SLOT_NONE, std::memory_order_acq_rel);
+        state.fg_tagged.exchange(nullptr, std::memory_order_acq_rel);
+        CompleteFrameGenInputSlot(state, slot, 0);
         return nullptr;
     }
     const sl::FrameToken* const frame =
         state.fg_tagged.exchange(nullptr, std::memory_order_acq_rel);
+    const u32 slot = state.fg_tagged_input_slot.exchange(
+        FRAME_GEN_INPUT_SLOT_NONE, std::memory_order_acq_rel);
     if (!frame) {
         state.fg_pacer.Reset();
+        CompleteFrameGenInputSlot(state, slot, 0);
         return nullptr;
     }
 
@@ -1167,13 +1299,20 @@ void* TakeFrameGenToken(u32* generations) {
     }
 
     if (requested == 0) {
+        // This frame will be presented without interpolation, so Streamline will not consume
+        // its depth/motion copy. Release the slot instead of waiting for a fence.
+        CompleteFrameGenInputSlot(state, slot, 0);
         return nullptr;
     }
     if (generations) {
         *generations = requested;
     }
+    if (input_slot) {
+        *input_slot = slot;
+    }
     return const_cast<sl::FrameToken*>(frame);
 }
+
 
 void FrameGenBeforePresent(void* token, u32 generations, u32 game_left, u32 game_top,
                            u32 game_right, u32 game_bottom) {
@@ -1237,17 +1376,13 @@ void FrameGenBeforePresent(void* token, u32 generations, u32 game_left, u32 game
     state.fg_present_begin = std::chrono::steady_clock::now();
 }
 
-void FrameGenAfterPresent(void* token) {
+void FrameGenAfterPresent(void* token, u32 input_slot) {
     State& state = GetState();
     if (!IsFrameGenAvailable()) {
+        CompleteFrameGenInputSlot(state, input_slot, 0);
         return;
     }
     const Api& api = state.api;
-    if (token) {
-        api.pcl_set_marker(sl::PCLMarker::ePresentEnd, *static_cast<const sl::FrameToken*>(token));
-    }
-    // Count every rendered frame, including those deliberately presented without generation.
-    ++state.fg_presents;
     const auto now = std::chrono::steady_clock::now();
     const auto ns = [](auto duration) {
         return static_cast<u64>(
@@ -1258,62 +1393,121 @@ void FrameGenAfterPresent(void* token) {
         state.fg_interval_ns += ns(now - state.fg_last_present);
     }
     state.fg_last_present = now;
+
+    // Query after every host present, not only presents carrying an FG token. NVIDIA reports
+    // numFramesActuallyPresented since the previous GetState call, so skipping non-FG frames
+    // would make the FPS window double-count or misattribute delayed presents.
     sl::DLSSGState fg_state{};
+    const sl::Result state_result = api.dlssg_get_state(sl::ViewportHandle{0u}, fg_state, nullptr);
+    if (state_result != sl::Result::eOk) {
+        static std::atomic<bool> warned{};
+        if (!warned.exchange(true)) {
+            LOG_WARNING(Render_Vulkan,
+                        "DLSS Frame Generation: GetState after present failed (result {})",
+                        static_cast<int>(state_result));
+        }
+        if (token && input_slot < FRAME_GEN_INPUT_SLOT_COUNT) {
+            AbandonFrameGenInputSlot(input_slot);
+        } else {
+            CompleteFrameGenInputSlot(state, input_slot, 0);
+        }
+        if (token && input_slot >= FRAME_GEN_INPUT_SLOT_COUNT) {
+            const VkResult idle =
+                state.device_wait_idle ? state.device_wait_idle(state.device) : VK_ERROR_INITIALIZATION_FAILED;
+            if (idle != VK_SUCCESS && idle != VK_ERROR_DEVICE_LOST) {
+                LOG_ERROR(Render_Vulkan,
+                          "DLSS Frame Generation: fallback device idle failed (VkResult {})",
+                          static_cast<int>(idle));
+            }
+            state.fg_inputs_value.store(0, std::memory_order_release);
+        }
+        return;
+    }
+
     if (token) {
-        if (api.dlssg_get_state(sl::ViewportHandle{0u}, fg_state, nullptr) != sl::Result::eOk) {
-            return;
-        }
         if (fg_state.inputsProcessingCompletionFence) {
-            state.fg_inputs_value.store(fg_state.lastPresentInputsProcessingCompletionFenceValue,
-                                        std::memory_order_release);
-            state.fg_inputs_fence.store(
-                static_cast<VkSemaphore>(fg_state.inputsProcessingCompletionFence),
-                std::memory_order_release);
+            const VkSemaphore fence =
+                static_cast<VkSemaphore>(fg_state.inputsProcessingCompletionFence);
+            const u64 value = fg_state.lastPresentInputsProcessingCompletionFenceValue;
+            state.fg_inputs_value.store(value, std::memory_order_release);
+            state.fg_inputs_fence.store(fence, std::memory_order_release);
+            CompleteFrameGenInputSlot(state, input_slot, value);
+        } else if (input_slot < FRAME_GEN_INPUT_SLOT_COUNT) {
+            AbandonFrameGenInputSlot(input_slot);
+        } else {
+            const VkResult idle =
+                state.device_wait_idle ? state.device_wait_idle(state.device) : VK_ERROR_INITIALIZATION_FAILED;
+            if (idle != VK_SUCCESS && idle != VK_ERROR_DEVICE_LOST) {
+                LOG_ERROR(Render_Vulkan,
+                          "DLSS Frame Generation: missing input fence and device idle failed (VkResult {})",
+                          static_cast<int>(idle));
+            }
+            state.fg_inputs_value.store(0, std::memory_order_release);
         }
+    } else {
+        CompleteFrameGenInputSlot(state, input_slot, 0);
     }
-    // What reached the screen, for the frontend's FPS counters (one-second windows).
-    {
-        const u32 shown =
-            token ? (std::max)(fg_state.numFramesActuallyPresented, 1u) : 1u;
-        state.fg_window_shown += shown;
-        state.fg_window_generated += token && shown > 1 ? 1 : 0;
-        ++state.fg_window_presents;
-        if (state.fg_window_begin == std::chrono::steady_clock::time_point{}) {
-            state.fg_window_begin = now;
-        } else if (const auto elapsed = now - state.fg_window_begin;
-                   elapsed >= std::chrono::seconds{1}) {
-            const double seconds = std::chrono::duration<double>(elapsed).count();
-            Common::FrameGenStats::shown_fps.store(
-                static_cast<double>(state.fg_window_shown) / seconds, std::memory_order_relaxed);
-            Common::FrameGenStats::generated_share.store(
-                static_cast<double>(state.fg_window_generated) /
-                    static_cast<double>(state.fg_window_presents),
-                std::memory_order_relaxed);
-            state.fg_window_begin = now;
-            state.fg_window_shown = 0;
-            state.fg_window_generated = 0;
-            state.fg_window_presents = 0;
-        }
+
+    // What reached the screen, for the frontend FPS counters and per-second diagnostics.
+    // numFramesActuallyPresented is a delta since the previous GetState call.
+    const u32 shown = fg_state.numFramesActuallyPresented;
+    state.fg_window_shown += shown;
+    if (shown > 1) {
+        state.fg_window_generated += shown - 1;
+        ++state.fg_window_generated_presents;
     }
-    if (token && fg_state.numFramesActuallyPresented > 1) {
-        ++state.fg_generated_presents;
-    }
+    ++state.fg_window_presents;
     if (token && fg_state.status != state.fg_last_status) {
         LOG_WARNING(Render_Vulkan, "DLSS Frame Generation status {:#x}",
                     static_cast<u32>(fg_state.status));
         state.fg_last_status = fg_state.status;
     }
+    if (state.fg_window_begin == std::chrono::steady_clock::time_point{}) {
+        state.fg_window_begin = now;
+    } else if (const auto elapsed = now - state.fg_window_begin;
+               elapsed >= std::chrono::seconds{1}) {
+        const double seconds = std::chrono::duration<double>(elapsed).count();
+        const double output_fps = static_cast<double>(state.fg_window_shown) / seconds;
+        const double host_fps = static_cast<double>(state.fg_window_presents) / seconds;
+        const double generated_fps = static_cast<double>(state.fg_window_generated) / seconds;
+        const double generated_share =
+            static_cast<double>(state.fg_window_generated_presents) /
+            static_cast<double>(state.fg_window_presents);
+        Common::FrameGenStats::shown_fps.store(output_fps, std::memory_order_relaxed);
+        Common::FrameGenStats::generated_share.store(generated_share, std::memory_order_relaxed);
+
+        const u64 slot_waits = state.fg_slot_waits.exchange(0, std::memory_order_relaxed);
+        const u64 slot_wait_ns = state.fg_slot_wait_ns.exchange(0, std::memory_order_relaxed);
+        const double slot_wait_ms = static_cast<double>(slot_wait_ns) / 1e6;
+        const double slot_wait_average_ms =
+            slot_waits ? slot_wait_ms / static_cast<double>(slot_waits) : 0.0;
+        LOG_INFO(Render_Vulkan,
+                 "DLSS Frame Generation FPS: {:.1f} output ({:.1f} host + {:.1f} generated); "
+                 "{} displayed frames, {} generated presents / {}; 4-slot fence waits {} "
+                 "({:.2f} ms total, {:.2f} ms average)",
+                 output_fps, host_fps, generated_fps, state.fg_window_shown,
+                 state.fg_window_generated_presents, state.fg_window_presents, slot_waits,
+                 slot_wait_ms, slot_wait_average_ms);
+
+        state.fg_window_begin = now;
+        state.fg_window_shown = 0;
+        state.fg_window_generated = 0;
+        state.fg_window_generated_presents = 0;
+        state.fg_window_presents = 0;
+    }
+    if (fg_state.numFramesActuallyPresented > 1) {
+        ++state.fg_generated_presents;
+    }
     if (state.fg_presents % 300 == 1) {
         const u64 window = state.fg_presents == 1 ? 1 : 300;
-        const u32 last_presented = token ? fg_state.numFramesActuallyPresented : 1u;
+        const u32 last_presented = fg_state.numFramesActuallyPresented;
         const u64 wait_ns = state.fg_wait_ns.exchange(0, std::memory_order_relaxed);
         LOG_INFO(Render_Vulkan,
                  "DLSS Frame Generation: {} of {} rendered frames presented with generated ones "
                  "(last: {} presented); per frame: present call {:.2f} ms, present interval "
-                 "{:.2f} ms, worker waits (inputs fence + tagging) {:.2f} ms, render wait + acquire {:.2f} ms, renderer waits "
-                 "for a free frame {:.2f} ms",
-                 state.fg_generated_presents, state.fg_presents,
-                 last_presented,
+                 "{:.2f} ms, worker waits (inputs fence + tagging) {:.2f} ms, render wait + acquire "
+                 "{:.2f} ms, renderer waits for a free frame {:.2f} ms",
+                 state.fg_generated_presents, state.fg_presents, last_presented,
                  static_cast<double>(state.fg_present_ns) / 1e6 / static_cast<double>(window),
                  static_cast<double>(state.fg_interval_ns) / 1e6 / static_cast<double>(window),
                  static_cast<double>(wait_ns) / 1e6 / static_cast<double>(window),
@@ -1324,7 +1518,9 @@ void FrameGenAfterPresent(void* token) {
         state.fg_present_ns = 0;
         state.fg_interval_ns = 0;
     }
+    ++state.fg_presents;
 }
+
 
 void Stop() {
     State& state = GetState();
@@ -1344,7 +1540,15 @@ void Stop() {
     state.fg_max_generations = 0;
     state.fg_pacer.Reset();
     state.fg_tagged.store(nullptr, std::memory_order_relaxed);
+    state.fg_tagged_input_slot.store(FRAME_GEN_INPUT_SLOT_NONE, std::memory_order_relaxed);
     state.fg_inputs_fence.store(VK_NULL_HANDLE, std::memory_order_relaxed);
+    state.fg_inputs_value.store(0, std::memory_order_relaxed);
+    {
+        std::lock_guard lock{state.fg_inputs_mutex};
+        state.fg_input_pending.fill(false);
+        state.fg_input_values.fill(0);
+    }
+    state.fg_inputs_cv.notify_all();
     LOG_INFO(Render_Vulkan, "NVIDIA Streamline stopped (result {})", static_cast<int>(result));
 }
 

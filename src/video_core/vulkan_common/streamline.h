@@ -16,6 +16,10 @@
 
 namespace Vulkan::Streamline {
 
+/// Four rotating depth/motion copies used by DLSS Frame Generation.
+constexpr u32 FRAME_GEN_INPUT_SLOT_COUNT = 4;
+constexpr u32 FRAME_GEN_INPUT_SLOT_NONE = 0xFFFFFFFFu;
+
 /// NVIDIA's files DLSS needs, as found on this PC. Paths are empty when missing.
 struct DlssFiles {
     std::filesystem::path folder;     ///< Where the loader is, or where it should go
@@ -85,15 +89,20 @@ bool AttachDevice(VkInstance instance, VkPhysicalDevice physical, VkDevice devic
 /// through it (surface creation, before the device exists). Null otherwise.
 [[nodiscard]] void* FrameGenProcAddress(const char* name);
 
-/// Frame generation per presented frame. The present manager takes the token on the Vulkan worker
-/// right after the frame's commands (so it is the token of the DLSS evaluation in that frame, or
-/// null without one), then wraps the frame's vkQueuePresentKHR with it.
-[[nodiscard]] void* TakeFrameGenToken(u32* generations);
+/// Wait before reusing one of the four depth/motion input-copy slots. The wait is limited to
+/// the completion value last associated with this exact slot.
+[[nodiscard]] bool WaitFrameGenInputSlot(u32 slot);
+/// Safely releases a slot when its queued present is discarded.
+void AbandonFrameGenInputSlot(u32 slot);
+
+/// Frame generation per presented frame. The present manager takes the token and its input slot
+/// on the Vulkan worker right after the frame's commands, then wraps vkQueuePresentKHR with them.
+[[nodiscard]] void* TakeFrameGenToken(u32* generations, u32* input_slot);
 /// game_* is the rectangle the game image covers in the backbuffer: frame generation runs inside it
 /// (a little inset) and copies the rest as is (else, scaled to fullscreen, it smeared the edge row).
 void FrameGenBeforePresent(void* token, u32 generations, u32 game_left, u32 game_top,
                            u32 game_right, u32 game_bottom);
-void FrameGenAfterPresent(void* token);
+void FrameGenAfterPresent(void* token, u32 input_slot);
 /// Time the present thread spent acquiring the swapchain image (for the frame generation log).
 void NoteFrameGenAcquire(u64 ns);
 /// Time the renderer waited for a free present frame (for the frame generation log).
