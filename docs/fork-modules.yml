@@ -213,6 +213,22 @@ integration_failure_ledger:
     prevention:
       - "Scan all target-baseline C++ sources, not just module-specific changed files, for C4456/C4457/C4458."
       - "Check method parameters against members of nested implementation classes."
+  - id: F-007-vulkan-precompiled-index-name-hiding
+    evidence:
+      workflow_run: 43058500053
+      workflow_run_url: https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43058500053
+      tested_commit: 996f7f0821c4200ddf6b897364d1fd922af7cc0a
+      file: src/video_core/renderer_vulkan/vk_pipeline_cache.cpp
+      line: 5186
+      stage: Build
+    status: fixed_in_current_branch
+    symptoms:
+      - "C4456: loop variable index was redeclared in CreatePrecompiledGraphicsPipeline after const auto index = KeptIndex()."
+    resolution:
+      - "Renamed the loop variable and its array accesses to shader_index; the cache index object is unchanged."
+    prevention:
+      - "Inspect the full containing function for earlier declarations before reusing common local names such as index."
+      - "Search all target-baseline C++ sources for C4456/C4457/C4458, not only module-specific files."
   - id: F-004-package-contents-regression
     evidence:
       context: historical_v5x_packaging_iteration
@@ -268,7 +284,7 @@ last_static_review:
     - "Added a mandatory pre-build static review gate to the maintenance workflow."
   requires_ci_validation:
     - "Full Windows x64 MSVC compile and link for yuzu and yuzu-cmd."
-    - "Confirm the SendReceive C4458 fix compiles and the corrected /wd4505 flag removes D9014 from the MSVC command output."
+    - "Confirm the SendReceive C4458 fix and Vulkan shader_index C4456 fix compile, and /wd4505 removes D9014 from MSVC output."
     - "Confirm SDL3 HD Rumble patches apply to the exact fetched SDL3 source and patched functions link."
     - "Confirm the Windows artifact contains lichii.exe, renhdrum.dll, Qt runtime dependencies and embedded zh_CN translation resources."
     - "Inspect final archive and confirm eden-cli.exe, vc_redist* and *.pdb are absent."
