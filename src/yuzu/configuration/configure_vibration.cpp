@@ -7,6 +7,7 @@
 #include "hid_core/hid_types.h"
 #include "ui_configure_vibration.h"
 #include "yuzu/configuration/configure_vibration.h"
+#include "yuzu/configuration/controller_haptics/configure_hd_rumble.h"
 
 ConfigureVibration::ConfigureVibration(QWidget* parent, Core::HID::HIDCore& hid_core_)
     : QDialog(parent), ui(std::make_unique<Ui::ConfigureVibration>()), hid_core{hid_core_} {
@@ -44,6 +45,10 @@ ConfigureVibration::ConfigureVibration(QWidget* parent, Core::HID::HIDCore& hid_
     if (!Settings::IsConfiguringGlobal()) {
         ui->checkBoxAccurateVibration->setDisabled(true);
     }
+
+    AddHdRumbleSettingsButton(
+        this, ui->verticalLayout, tr("HD Rumble..."),
+        tr("HD Rumble for Pro Controller / Joy-Con and DualSense haptics (RenHDrum)."));
 
     RetranslateUI();
 }
