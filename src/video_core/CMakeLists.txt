@@ -602,6 +602,8 @@ if (ENABLE_NVIDIA_DLSS)
         renderer_vulkan/vk_streamline_dlss.cpp
         renderer_vulkan/vk_streamline_dlss.h
         vulkan_common/streamline.cpp
+        vulkan_common/streamline_frame_gen_pacer.cpp
+        vulkan_common/streamline_frame_gen_pacer.h
         vulkan_common/streamline.h
         vulkan_common/streamline_api.h
     )
