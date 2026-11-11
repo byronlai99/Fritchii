@@ -79,7 +79,38 @@ else()
         helpers/joycon_protocol/rumble.cpp
         helpers/joycon_protocol/rumble.h)
 
-    target_link_libraries(input_common PRIVATE SDL3::SDL3)
+    add_library(input_common_renhdrum STATIC
+        renhdrum/renhdrum_pad.cpp
+        renhdrum/renhdrum_pad.h
+    )
+    target_include_directories(input_common_renhdrum
+        PUBLIC ${PROJECT_SOURCE_DIR}/src
+    )
+    # SDL3 types are exposed by renhdrum_pad.h, so SDL3 must propagate to consumers.
+    target_link_libraries(input_common_renhdrum PRIVATE common PUBLIC SDL3::SDL3)
+    if (MSVC)
+        target_compile_options(input_common_renhdrum PRIVATE
+            /we4242
+            /we4254
+            /we4800
+        )
+    else()
+        target_compile_options(input_common_renhdrum PRIVATE
+            $<$<COMPILE_LANGUAGE:C,CXX>:-Wconversion>
+        )
+    endif()
+    if (ENABLE_RENHDRUM)
+        target_compile_definitions(input_common_renhdrum PRIVATE ENABLE_RENHDRUM)
+        target_include_directories(input_common_renhdrum PRIVATE
+            ${PROJECT_SOURCE_DIR}/externals/renhdrum
+        )
+        if (RENHDRUM_SDL_PATCHES)
+            target_compile_definitions(input_common_renhdrum PRIVATE RENHDRUM_SDL_HDRUMBLE)
+        endif()
+    endif()
+    create_target_directory_groups(input_common_renhdrum)
+
+    target_link_libraries(input_common PRIVATE SDL3::SDL3 input_common_renhdrum)
     target_compile_definitions(input_common PRIVATE HAVE_SDL3)
 endif()
 
