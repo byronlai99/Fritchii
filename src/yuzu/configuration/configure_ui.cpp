@@ -224,21 +224,12 @@ void ConfigureUi::RetranslateUI() {
 }
 
 void ConfigureUi::InitializeLanguageComboBox() {
+    // System locale, English and Simplified Chinese are the only offered choices.
     ui->language_combobox->addItem(tr("<System>"), QString{});
     ui->language_combobox->addItem(tr("English"), QStringLiteral("en"));
-    QDirIterator it(QStringLiteral(":/languages"), QDirIterator::NoIteratorFlags);
-    while (it.hasNext()) {
-        QString locale = it.next();
-        locale.truncate(locale.lastIndexOf(QLatin1Char{'.'}));
-        locale.remove(0, locale.lastIndexOf(QLatin1Char{'/'}) + 1);
-        const QString lang = QLocale::languageToString(QLocale(locale).language());
-        const QString country = QLocale::territoryToString(QLocale(locale).territory());
-        ui->language_combobox->addItem(QStringLiteral("%1 (%2)").arg(lang, country), locale);
-    }
+    ui->language_combobox->addItem(tr("简体中文"), QStringLiteral("zh_CN"));
 
-    // Unlike other configuration changes, interface language changes need to be reflected on the
-    // interface immediately. This is done by passing a signal to the main window, and then
-    // retranslating when passing back.
+    // Interface language changes are reflected immediately.
     connect(ui->language_combobox, qOverload<int>(&QComboBox::currentIndexChanged), this,
             &ConfigureUi::OnLanguageChanged);
 }
