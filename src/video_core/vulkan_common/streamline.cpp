@@ -53,7 +53,6 @@ using Version = std::array<u32, 4>;
 
 enum class FrameGenMode : u32 {
     Fixed2x,
-    Half,
     Auto,
 };
 
@@ -63,16 +62,11 @@ FrameGenMode ConfiguredFrameGenMode() {
         if (mode == "auto") {
             return FrameGenMode::Auto;
         }
-        if (mode == "0.5x" || mode == "half") {
-            return FrameGenMode::Half;
-        }
         if (mode == "2x" || mode == "double") {
             return FrameGenMode::Fixed2x;
         }
-    }
-    // Backward compatibility with the earlier manual divisor setting.
-    const char* const divisor = std::getenv("LICHII_DLSS_FG_DIVISOR");
-    return divisor && divisor[0] == '2' ? FrameGenMode::Half : FrameGenMode::Fixed2x;
+    // Auto is the default; unrecognized or legacy modes safely fall back to Auto.
+    return FrameGenMode::Auto;
 }
 
 f32 FrameGenTargetRate() {
@@ -333,7 +327,6 @@ struct State {
     FrameGenPacer fg_pacer;
     FrameGenMode fg_pacer_mode{FrameGenMode::Fixed2x};
     u32 fg_max_generations{};
-    u32 fg_generation_phase{};
     // Present-thread state: currently applied DLSS-G multiplier.
     u32 fg_current_generations{};
     u32 fg_mode_switches{};
@@ -1152,30 +1145,21 @@ void* TakeFrameGenToken(u32* generations) {
         state.fg_tagged.exchange(nullptr, std::memory_order_acq_rel);
     if (!frame) {
         state.fg_pacer.Reset();
-        state.fg_generation_phase = 0;
         return nullptr;
     }
 
     const FrameGenMode mode = ConfiguredFrameGenMode();
     if (mode != state.fg_pacer_mode) {
         state.fg_pacer_mode = mode;
-        state.fg_generation_phase = 0;
         state.fg_pacer.Reset();
         LOG_INFO(Render_Vulkan, "DLSS Frame Generation scheduling mode changed to {}",
-                 mode == FrameGenMode::Auto ? "Auto" :
-                 mode == FrameGenMode::Half ? "0.5x" : "2x");
+                 mode == FrameGenMode::Auto ? "Auto" : "2x");
     }
 
     u32 requested = 0;
     switch (mode) {
     case FrameGenMode::Fixed2x:
         requested = std::min(1u, state.fg_max_generations);
-        break;
-    case FrameGenMode::Half:
-        if (state.fg_generation_phase == 0) {
-            requested = std::min(1u, state.fg_max_generations);
-        }
-        state.fg_generation_phase = (state.fg_generation_phase + 1) % 2;
         break;
     case FrameGenMode::Auto:
         requested = state.fg_pacer.Plan(state.fg_max_generations, FrameGenTargetRate());
