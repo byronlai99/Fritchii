@@ -312,3 +312,13 @@ pre_build_static_review:
     - external_workflow_portability_comparison
     - historical_failure_ledger_review
     - final_archive_content_audit
+
+  - id: F-008-msvc-c4458-service-manager-shadow
+    status: fixed-awaiting-ci
+    introduced_by_run: 43065581977
+    source_file: src/core/core.cpp
+    source_line: 253
+    diagnostic: "C4458: declaration of service_manager hides Core::System::Impl::service_manager"
+    cause: "RefreshTime local reference shadows the Impl member; /we4458 promotes it to an error."
+    fix_commit: 9e053b5a7af47e4c8281da9ecf99de60f5f70bb2
+    fix: "Rename the local reference to current_service_manager and update its three GetService uses."
