@@ -1,5 +1,15 @@
 # Eden Build Documentation
 
+## Fritchii-HDrum fork maintenance
+
+For recurring upstream upgrades and our optional fork modules, start here:
+
+- **[Current module work branch: feature/v5.8.4-renhdrum-zh-cn](https://github.com/byronlai99/Fritchii-HDrum/tree/feature/v5.8.4-renhdrum-zh-cn)**
+- **[Fork module manifest](./fork-modules.yml)**: enabled modules, source references, target files and validation checks.
+- **[Fork module integration workflow](./FORK_MODULE_INTEGRATION_WORKFLOW.md)**: the repeatable procedure for each upstream update.
+
+The module work branch is separate from the repository's stable default branch, `fix/v5.6-msvc-c4458-packet-shadow`.
+
 Are you just a casual user? Take a look at our [User Handbook](./user) then!
 
 To contribute to this fork, see [CONTRIBUTING.md](../CONTRIBUTING.md).
