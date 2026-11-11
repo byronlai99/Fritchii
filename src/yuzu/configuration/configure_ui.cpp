@@ -177,8 +177,9 @@ void ConfigureUi::RequestGameListUpdate() {
 void ConfigureUi::SetConfiguration() {
     ui->theme_combobox->setCurrentIndex(
         ui->theme_combobox->findData(QString::fromStdString(UISettings::values.theme)));
-    ui->language_combobox->setCurrentIndex(ui->language_combobox->findData(
-        QString::fromStdString(UISettings::values.language.GetValue())));
+    const QString language = QString::fromStdString(UISettings::values.language.GetValue());
+    const int language_index = ui->language_combobox->findData(language);
+    ui->language_combobox->setCurrentIndex(language_index >= 0 ? language_index : 0);
     ui->show_add_ons->setChecked(UISettings::values.show_add_ons.GetValue());
     ui->show_size->setChecked(UISettings::values.show_size.GetValue());
     ui->show_types->setChecked(UISettings::values.show_types.GetValue());
