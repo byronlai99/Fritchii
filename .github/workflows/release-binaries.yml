@@ -15,6 +15,7 @@ on:
       - feature/renhdrum-v0.3.0-v5.5
       - fix/v5.6-msvc-c4458-packet-shadow
       - feature/dlss-frame-generation-v5.6
+      - feature/dlss-frame-generation-fractional
     paths:
       - "src/**"
       - "!src/tests/**"
@@ -43,7 +44,7 @@ jobs:
       contents: write
     steps:
       - name: Prepare release tag
-        if: (github.event_name == 'push' && github.ref_name != 'feature/dlss-frame-generation-v5.6') || inputs.publish_release
+        if: (github.event_name == 'push' && github.ref_name != 'feature/dlss-frame-generation-v5.6' && github.ref_name != 'feature/dlss-frame-generation-fractional') || inputs.publish_release
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -189,7 +190,7 @@ jobs:
   release:
     name: Publish release
     needs: build
-    if: (github.event_name == 'push' && github.ref_name != 'feature/dlss-frame-generation-v5.6') || inputs.publish_release
+    if: (github.event_name == 'push' && github.ref_name != 'feature/dlss-frame-generation-v5.6' && github.ref_name != 'feature/dlss-frame-generation-fractional') || inputs.publish_release
     runs-on: ubuntu-24.04
     permissions:
       contents: write
