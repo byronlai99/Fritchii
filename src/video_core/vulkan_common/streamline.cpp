@@ -1457,7 +1457,7 @@ void FrameGenAfterPresent(void* token, u32 input_slot) {
 
     // What reached the screen, for the frontend FPS counters and per-second diagnostics.
     // numFramesActuallyPresented is a delta since the previous GetState call.
-    const u32 shown = (std::max)(fg_state.numFramesActuallyPresented, 1u);
+    const u32 shown = fg_state.numFramesActuallyPresented;
     state.fg_window_shown += shown;
     if (shown > 1) {
         state.fg_window_generated += shown - 1;
