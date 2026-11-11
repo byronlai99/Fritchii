@@ -144,8 +144,6 @@ add_executable(yuzu
     configuration/configure_ui.cpp
     configuration/configure_ui.h
     configuration/configure_ui.ui
-    configuration/configure_hd_rumble.cpp
-    configuration/configure_hd_rumble.h
     configuration/configure_vibration.cpp
     configuration/configure_vibration.h
     configuration/configure_vibration.ui
@@ -269,6 +267,23 @@ add_executable(yuzu
 
 set_target_properties(yuzu PROPERTIES OUTPUT_NAME "lichii")
 
+# RenHDrum's settings dialog is kept in its own Qt module. The main vibration dialog only
+# provides the translated button and delegates the dialog launch to this target.
+if (TARGET input_common_renhdrum)
+    add_library(hd_rumble_config_ui STATIC
+        configuration/controller_haptics/configure_hd_rumble.cpp
+        configuration/controller_haptics/configure_hd_rumble.h
+    )
+    set_target_properties(hd_rumble_config_ui PROPERTIES AUTOMOC ON)
+    target_include_directories(hd_rumble_config_ui PUBLIC ${PROJECT_SOURCE_DIR}/src)
+    target_link_libraries(hd_rumble_config_ui
+        PUBLIC input_common_renhdrum
+        PRIVATE common Qt6::Widgets
+    )
+    target_link_libraries(yuzu PRIVATE hd_rumble_config_ui)
+endif()
+
+
 # Shipped next to the executable: the NX2 switches a GUI launch cannot set another way. Read at
 # startup (LoadNx2Switches in main.cpp); a user copy in %APPDATA%\eden overrides it.
 add_custom_command(TARGET yuzu POST_BUILD
@@ -318,6 +333,10 @@ if (ENABLE_QT_TRANSLATION)
     # Update source TS file if enabled
     if (GENERATE_QT_TRANSLATION)
         get_target_property(SRCS yuzu SOURCES)
+        # Include sources from the standalone HD Rumble dialog target in lupdate.
+        if (TARGET hd_rumble_config_ui)
+            list(APPEND SRCS ${CMAKE_CURRENT_SOURCE_DIR}/configuration/controller_haptics/configure_hd_rumble.cpp)
+        endif()
         # these calls to qt_create_translation also creates a rule to generate en.qm which conflicts with providing english plurals
         # so we have to set a OUTPUT_LOCATION so that we don't have multiple rules to generate en.qm
         set_source_files_properties(${YUZU_QT_LANGUAGES}/en.ts PROPERTIES OUTPUT_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/translations")

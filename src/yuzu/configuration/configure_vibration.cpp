@@ -7,10 +7,7 @@
 #include "hid_core/hid_types.h"
 #include "ui_configure_vibration.h"
 #include "yuzu/configuration/configure_vibration.h"
-#include "input_common/drivers/renhdrum_pad.h"
-#include "yuzu/configuration/configure_hd_rumble.h"
-
-#include <QPushButton>
+#include "yuzu/configuration/controller_haptics/configure_hd_rumble.h"
 
 ConfigureVibration::ConfigureVibration(QWidget* parent, Core::HID::HIDCore& hid_core_)
     : QDialog(parent), ui(std::make_unique<Ui::ConfigureVibration>()), hid_core{hid_core_} {
@@ -49,17 +46,9 @@ ConfigureVibration::ConfigureVibration(QWidget* parent, Core::HID::HIDCore& hid_
         ui->checkBoxAccurateVibration->setDisabled(true);
     }
 
-    auto* hd_rumble_button = new QPushButton(tr("HD Rumble..."));
-    hd_rumble_button->setToolTip(
+    AddHdRumbleSettingsButton(
+        this, ui->verticalLayout, tr("HD Rumble..."),
         tr("HD Rumble for Pro Controller / Joy-Con and DualSense haptics (RenHDrum)."));
-    connect(hd_rumble_button, &QPushButton::clicked, this, [this] {
-        ConfigureHdRumble dialog(this);
-        if (dialog.exec() == QDialog::Accepted) {
-            dialog.ApplyConfiguration();
-        }
-    });
-    ui->verticalLayout->addWidget(hd_rumble_button);
-    hd_rumble_button->setVisible(InputCommon::IsRenHDrumBuilt());
 
     RetranslateUI();
 }

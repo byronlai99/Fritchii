@@ -57,8 +57,6 @@ else()
     target_sources(input_common PRIVATE
         drivers/joycon.cpp
         drivers/joycon.h
-        drivers/renhdrum_pad.cpp
-        drivers/renhdrum_pad.h
         drivers/sdl_driver.cpp
         drivers/sdl_driver.h
         helpers/joycon_driver.cpp
@@ -81,7 +79,37 @@ else()
         helpers/joycon_protocol/rumble.cpp
         helpers/joycon_protocol/rumble.h)
 
-    target_link_libraries(input_common PRIVATE SDL3::SDL3)
+    add_library(input_common_renhdrum STATIC
+        renhdrum/renhdrum_pad.cpp
+        renhdrum/renhdrum_pad.h
+    )
+    target_include_directories(input_common_renhdrum
+        PUBLIC ${PROJECT_SOURCE_DIR}/src
+    )
+    target_link_libraries(input_common_renhdrum PRIVATE common SDL3::SDL3)
+    if (MSVC)
+        target_compile_options(input_common_renhdrum PRIVATE
+            /we4242
+            /we4254
+            /we4800
+        )
+    else()
+        target_compile_options(input_common_renhdrum PRIVATE
+            $<$<COMPILE_LANGUAGE:C,CXX>:-Wconversion>
+        )
+    endif()
+    if (ENABLE_RENHDRUM)
+        target_compile_definitions(input_common_renhdrum PRIVATE ENABLE_RENHDRUM)
+        target_include_directories(input_common_renhdrum PRIVATE
+            ${PROJECT_SOURCE_DIR}/externals/renhdrum
+        )
+        if (RENHDRUM_SDL_PATCHES)
+            target_compile_definitions(input_common_renhdrum PRIVATE RENHDRUM_SDL_HDRUMBLE)
+        endif()
+    endif()
+    create_target_directory_groups(input_common_renhdrum)
+
+    target_link_libraries(input_common PRIVATE SDL3::SDL3 input_common_renhdrum)
     target_compile_definitions(input_common PRIVATE HAVE_SDL3)
 endif()
 
@@ -97,10 +125,3 @@ endif()
 create_target_directory_groups(input_common)
 target_link_libraries(input_common PUBLIC hid_core PRIVATE common Boost::headers)
 
-if (ENABLE_RENHDRUM AND NOT ANDROID)
-    target_compile_definitions(input_common PRIVATE ENABLE_RENHDRUM)
-    target_include_directories(input_common PRIVATE ${PROJECT_SOURCE_DIR}/externals/renhdrum)
-    if (RENHDRUM_SDL_PATCHES)
-        target_compile_definitions(input_common PRIVATE RENHDRUM_SDL_HDRUMBLE)
-    endif()
-endif()

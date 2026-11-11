@@ -12,10 +12,18 @@ class QListWidget;
 class QSlider;
 class QSpinBox;
 class QStackedWidget;
+class QVBoxLayout;
+class QString;
+class QWidget;
 
 /// Settings for RenHDrum: HD Rumble on Switch Pro Controller / Joy-Con and the DualSense voice
 /// coil haptics. The SDL driver reads them on every vibration, so connected controllers pick up
 /// a change as soon as the dialog is accepted.
+/// Adds the optional HD Rumble settings entry to the standard vibration dialog.
+/// Button text/tool tip are supplied by the caller to keep its translation context.
+void AddHdRumbleSettingsButton(QWidget* parent, QVBoxLayout* layout, const QString& text,
+                               const QString& tool_tip);
+
 class ConfigureHdRumble : public QDialog {
     Q_OBJECT
 

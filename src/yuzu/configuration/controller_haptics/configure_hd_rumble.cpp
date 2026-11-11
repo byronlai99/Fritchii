@@ -20,8 +20,8 @@
 #include <QVBoxLayout>
 
 #include "common/settings.h"
-#include "input_common/drivers/renhdrum_pad.h"
-#include "yuzu/configuration/configure_hd_rumble.h"
+#include "input_common/renhdrum/renhdrum_pad.h"
+#include "yuzu/configuration/controller_haptics/configure_hd_rumble.h"
 
 namespace {
 
@@ -32,6 +32,20 @@ QLabel* MakeNote(const QString& text) {
     return label;
 }
 } // namespace
+
+void AddHdRumbleSettingsButton(QWidget* parent, QVBoxLayout* layout, const QString& text,
+                               const QString& tool_tip) {
+    auto* button = new QPushButton(text, parent);
+    button->setToolTip(tool_tip);
+    QObject::connect(button, &QPushButton::clicked, parent, [parent] {
+        ConfigureHdRumble dialog(parent);
+        if (dialog.exec() == QDialog::Accepted) {
+            dialog.ApplyConfiguration();
+        }
+    });
+    layout->addWidget(button);
+    button->setVisible(InputCommon::IsRenHDrumBuilt());
+}
 
 ConfigureHdRumble::ConfigureHdRumble(QWidget* parent) : QDialog(parent) {
     setWindowTitle(tr("HD Rumble"));

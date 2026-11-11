@@ -14,7 +14,7 @@
 #include "common/settings.h"
 #include "common/thread.h"
 #include "common/vector_math.h"
-#include "input_common/drivers/renhdrum_pad.h"
+#include "input_common/renhdrum/renhdrum_pad.h"
 #include "input_common/drivers/sdl_driver.h"
 
 namespace InputCommon {
