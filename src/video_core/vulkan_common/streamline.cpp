@@ -975,14 +975,17 @@ void FrameGenAfterPresent(void* token) {
     }
     state.fg_last_present = now;
     sl::DLSSGState fg_state{};
-    if (api.dlssg_get_state(sl::ViewportHandle{0u}, fg_state, nullptr) != sl::Result::eOk) {
-        return;
-    }
-    if (fg_state.inputsProcessingCompletionFence) {
-        state.fg_inputs_value.store(fg_state.lastPresentInputsProcessingCompletionFenceValue,
-                                    std::memory_order_release);
-        state.fg_inputs_fence.store(static_cast<VkSemaphore>(fg_state.inputsProcessingCompletionFence),
-                                    std::memory_order_release);
+    if (token) {
+        if (api.dlssg_get_state(sl::ViewportHandle{0u}, fg_state, nullptr) != sl::Result::eOk) {
+            return;
+        }
+        if (fg_state.inputsProcessingCompletionFence) {
+            state.fg_inputs_value.store(fg_state.lastPresentInputsProcessingCompletionFenceValue,
+                                        std::memory_order_release);
+            state.fg_inputs_fence.store(
+                static_cast<VkSemaphore>(fg_state.inputsProcessingCompletionFence),
+                std::memory_order_release);
+        }
     }
     // What reached the screen, for the frontend's FPS counters (one-second windows).
     {
@@ -1011,13 +1014,14 @@ void FrameGenAfterPresent(void* token) {
     if (token && fg_state.numFramesActuallyPresented > 1) {
         ++state.fg_generated_presents;
     }
-    if (fg_state.status != state.fg_last_status) {
+    if (token && fg_state.status != state.fg_last_status) {
         LOG_WARNING(Render_Vulkan, "DLSS Frame Generation status {:#x}",
                     static_cast<u32>(fg_state.status));
         state.fg_last_status = fg_state.status;
     }
     if (state.fg_presents % 300 == 1) {
         const u64 window = state.fg_presents == 1 ? 1 : 300;
+        const u32 last_presented = token ? fg_state.numFramesActuallyPresented : 1u;
         const u64 wait_ns = state.fg_wait_ns.exchange(0, std::memory_order_relaxed);
         LOG_INFO(Render_Vulkan,
                  "DLSS Frame Generation: {} of {} rendered frames presented with generated ones "
@@ -1025,7 +1029,7 @@ void FrameGenAfterPresent(void* token) {
                  "{:.2f} ms, worker waits (inputs fence + tagging) {:.2f} ms, render wait + acquire {:.2f} ms, renderer waits "
                  "for a free frame {:.2f} ms",
                  state.fg_generated_presents, state.fg_presents,
-                 fg_state.numFramesActuallyPresented,
+                 last_presented,
                  static_cast<double>(state.fg_present_ns) / 1e6 / static_cast<double>(window),
                  static_cast<double>(state.fg_interval_ns) / 1e6 / static_cast<double>(window),
                  static_cast<double>(wait_ns) / 1e6 / static_cast<double>(window),
