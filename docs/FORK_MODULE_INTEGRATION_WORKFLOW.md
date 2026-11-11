@@ -75,6 +75,7 @@ Before packaging:
 - Confirm the intended executable exists.
 - Confirm the RenHDrum runtime DLL is present and its hash/version is correct.
 - Confirm Simplified Chinese translation resources are included.
+- Include the immutable `recipes/OoT v131072 (cache v54).nx2recipe` file. The build restores it from the official Fritchii v5.5 Windows package, verifies the source archive SHA-256 (`63112e7125e6174192079475b485f9633509a4a8dfb2630b5f8a96c644abf066`), extracts the single matching recipe entry, and verifies the recipe SHA-256 (`85d944c8557fbeffe02af566c9c4277251ed0ab1a0f2a3ab7a626af6a877c3a1`). Do not regenerate or update this recipe unless the user explicitly requests it.
 - Exclude `eden-cli.exe`, `vc_redist*`, and `*.pdb` from the package.
 - Upload a short-retention GitHub Actions artifact. Do not create a GitHub Release unless the user explicitly asks.
 
@@ -135,6 +136,7 @@ The current fork intentionally differs in a few places:
 - `ENABLE_RENHDRUM=ON` and `RENHDRUM_SDL_PATCHES=ON` enable the controller integration.
 - `ENABLE_QT_TRANSLATION=ON` builds the fork's Simplified Chinese catalog.
 - The fork uploads a test artifact only and removes `eden-cli.exe`, `vc_redist*`, and `*.pdb`, following the fork's package policy rather than upstream's release package.
+- The test package restores the exact OoT cache-v54 recipe from the official Fritchii v5.5 Windows release using pinned source-archive and recipe hashes, then places it at `build/release/bin/recipes/OoT v131072 (cache v54).nx2recipe` so it is included under `recipes/` in the uploaded artifact.
 - Windows deployment uses the upstream command `windeployqt --release --no-translations`. This skips Qt's separately deployed translation catalogs; it does not remove the application's own zh_CN catalog compiled into its Qt resource.
 
 Do not change an intentional module-specific divergence merely to make the YAML look identical to upstream. Record the reason and verify that it selects the required dependency path.
@@ -170,7 +172,7 @@ A successful CMake configure is not proof that the source is MSVC-clean or that 
 5. **Settings semantics:** check global vs per-game behavior, load/save/cancel/default flows, and old config compatibility. Keep `vibration_enabled`, `enable_accurate_vibrations`, and `hd_rumble_enabled` distinct. A new default must not silently overwrite an existing user's stored choice. Check all new RenHDrum options in the Fritchii per-game tuning/reconcile list when they are intended to be tuned.
 6. **Translation pipeline:** confirm `zh_CN.ts` is compiled into the application's Qt resource and loaded at runtime. Separately decide whether Qt's external translation files are needed. `windeployqt --no-translations` skips translations deployed by windeployqt, but does not strip an application translation already embedded in its Qt resource; verify both paths rather than treating the flag as proof that the app's Chinese catalog is missing.
 7. **UI and interaction:** check Qt parent ownership, signal/slot connections, accepted/cancelled dialog persistence, slider/combobox index ranges, and that any config UI target is neither omitted nor duplicate-compiled.
-8. **Package contract:** check executable name, runtime DLL, Qt runtime files, translations, recipe/config files, and required assets. Exclude `eden-cli.exe`, `vc_redist*`, and `*.pdb` as defined by the manifest.
+8. **Package contract:** check executable name, runtime DLL, Qt runtime files, translations, recipe/config files, and required assets. Confirm `recipes/OoT v131072 (cache v54).nx2recipe` is present with SHA-256 `85d944c8557fbeffe02af566c9c4277251ed0ab1a0f2a3ab7a626af6a877c3a1`. The packaging step must also verify the pinned official v5.5 source archive hash before extraction. Exclude `eden-cli.exe`, `vc_redist*`, and `*.pdb` as defined by the manifest.
 9. **Only then run CI:** use one test-artifact build. After CI passes, inspect the artifact contents before handing it to the user. Do not claim hardware behavior is verified without real controller testing.
 
 Record each finding as **fixed before build**, **known non-blocking**, or **requires CI/hardware validation**. Do not knowingly leave a statically identifiable compile or packaging issue for the next Actions run.
