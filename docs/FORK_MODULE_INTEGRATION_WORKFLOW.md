@@ -105,6 +105,42 @@ A user request to add or remove a module overrides this list for that task, and 
 
 The manifest currently records upstream `fritchii-v5.8.4` as the baseline. The first 5.8.4 port still requires a fresh successful Actions run and hands-on controller/UI testing; a previous run failed because the port referenced `Settings::nx2_active_mode`, which was absent from that base. That NX2-only reference has been removed from the v5.8.4 RenHDrum path.
 
+## Upgrade failure ledger (carry this forward to every version)
+
+This ledger is part of the upgrade procedure, not a one-time report. When a new upstream version or module is integrated, review every entry below, add any new failure before making the next build attempt, and keep confirmed failures separate from risks that still need validation.
+
+### Workflow portability rule
+
+A module author's GitHub Actions workflow is evidence of how that author builds their own project; it is not automatically compatible with this fork. Do not copy an external workflow wholesale. Extract and reconcile only the prerequisites that the module actually needs, then express them in the fork's own build workflow.
+
+For every integration, compare and record the external workflow against our target build for:
+
+- Runner OS and architecture.
+- Compiler/toolchain and warning policy (our release target is Windows x64 MSVC, not an assumed GCC, Clang, MinGW, or PGO build).
+- CMake generator, build configuration, options, target names, and dependency versions.
+- Qt, SDL3, CPM/fetched source revisions, patches, and any generated resources.
+- Output executable name, runtime DLL placement, deployment command, and artifact directory.
+
+A successful configure step, or a green build in the module author's different environment, does not prove that our MSVC targets compile, link, or package correctly. Keep our fork-owned workflow as the authoritative integration test and build the actual deliverable targets.
+
+### Confirmed and historical failures
+
+| ID | Evidence / stage | Symptom | Cause / resolution | Prevention |
+| --- | --- | --- | --- | --- |
+| F-001: MSVC C4457/C4458 name hiding | Actions run 43043541561, commit a7fe6fdaae4e6c46118454726ba2d4dea69a3c33; Configure passed, Build failed | C4458 for local state hiding a class member in kepler_compute.cpp:1664 and maxwell_3d.cpp:2825; C4457 for local count hiding a function parameter in maxwell_3d.cpp:2377 and :2381 | Ported/local code triggered MSVC name-hiding diagnostics under the fork's build policy. Renamed the affected locals to bypass_state, dispatch_count, unbounded_count, and draw_state. Do not weaken the warning policy to hide these errors. | Before every build, scan all changed and newly added C++ files for C4456/C4457/C4458 and other warnings promoted to errors. Inspect enclosing parameters, class members, and base-class members, not just the exact prior failure lines. |
+| F-002: base-version API mismatch | Earlier v5.8.4 RenHDrum integration attempt; recorded in the current baseline note and subsequent source fixes | Code referenced Settings::nx2_active_mode, which is absent from the v5.8.4 base; a RenHDrum NX2-mode function reference was also not part of the selected v0.3.0 integration API | Removed the NX2-only dependency from this v5.8.4 path, including the unused runtime symbol lookup. This is a version compatibility issue, not a reason to add unrelated NX2 settings to the base. | For every imported symbol, verify it exists in the exact target tag's headers and implementation. For dynamic DLL APIs, verify exported symbols against the selected DLL release; never infer API availability from another branch or module author's fork. |
+| F-003: external workflow does not match the fork build | Recurring integration risk observed across module ports; individual external workflow files vary by project and version | A module's own CI may use a different OS, compiler, dependency pin, CMake option set, or artifact layout. Its passing workflow may not exercise our Windows x64 MSVC application targets. | Do not transplant external jobs or assume their CI result covers this fork. Convert required setup into our fork-owned workflow and validate the actual yuzu and yuzu-cmd targets. | Complete the workflow comparison checklist above before editing CI. Record the exact runner, compiler, Qt/SDL3 versions, configure options, build targets, and artifact path for each upgrade. |
+| F-004: package contents drift | Historical packaging iteration reported an archive containing only two files; the exact originating run/log is not retained in this ledger | The produced archive did not contain the expected full application package. | Root cause is not asserted here because the originating run evidence is unavailable. Treat it as a regression symptom, not a diagnosed cause. | Inspect the final archive listing, not just the upload-artifact step. Verify executable, required Qt/runtime files, RenHDrum DLL, translation resources, and recipe/assets; also verify eden-cli.exe, vc_redist*, and *.pdb are absent. |
+
+### Recurring dependency and packaging checks (risk until proven by CI)
+
+- SDL3 patch drift: RenHDrum's custom SDL3 patches are tied to a specific SDL3 source revision. Check patch application against the exact CPM-resolved source and verify the patched declarations/definitions are available to the final link. Do not count a successful CMake configure as proof.
+- Runtime API drift: compare required and optional RenHDrum symbols with both the selected header and the actual v0.3.0 DLL exports; check x64 architecture and SHA-256.
+- Translation deployment: distinguish the application's own compiled/embedded zh_CN Qt resource from Qt's separately deployed translation files. The windeployqt --no-translations option skips translations deployed by windeployqt; it does not remove an application translation already compiled into the executable's Qt resource. Verify the generated resource and runtime language selection independently, then decide whether external Qt translation files are needed.
+- Artifact layout drift: verify the actual output directory and executable name from the target CMake configuration before packaging. Never assume another project's output path or copy step applies here.
+
+For each new failure, append an entry with the run URL/ID, tested commit, failing stage, exact diagnostic or missing file, root cause (or explicitly unknown), fix commit, and a prevention check. Do not erase old entries when a new upstream version is started.
+
 ## Pre-build static review gate (must run before Actions)
 
 A successful CMake configure is not proof that the source is MSVC-clean or that the runtime integration is complete. Before requesting a Windows build:
