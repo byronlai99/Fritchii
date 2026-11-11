@@ -169,7 +169,7 @@ jobs:
             $recipeFileName = 'OoT v131072 (cache v54).nx2recipe'
             $recipeEntries = @(
               $recipeArchive.Entries |
-                Where-Object { $_.FullName.Replace('\\', '/').Split('/')[-1] -eq $recipeFileName }
+                Where-Object { $_.FullName.Split('/')[-1] -eq $recipeFileName }
             )
             if ($recipeEntries.Count -ne 1) {
               throw "Expected exactly one '$recipeFileName' in the official package; found $($recipeEntries.Count)"
