@@ -9213,6 +9213,50 @@ p, li { white-space: pre-wrap; }
         <source>Favorites</source>
         <translation>收藏</translation>
     </message>
+    <message>
+        <source>AUTO</source>
+        <translation>自动</translation>
+    </message>
+    <message>
+        <source>2X</source>
+        <translation>2倍</translation>
+    </message>
+    <message>
+        <source>FRAME GEN %1</source>
+        <translation>帧生成 %1</translation>
+    </message>
+    <message>
+        <source>FRAME GEN OFF</source>
+        <translation>帧生成 关闭</translation>
+    </message>
+    <message>
+        <source>DLSS Frame Generation</source>
+        <translation>DLSS 帧生成</translation>
+    </message>
+    <message>
+        <source>DLSS Frame Generation is off</source>
+        <translation>DLSS 帧生成已关闭</translation>
+    </message>
+    <message>
+        <source>DLSS Frame Generation 2x is on</source>
+        <translation>DLSS 2倍帧生成已开启</translation>
+    </message>
+    <message>
+        <source>Auto: adaptive DLSS-G frame pacing, targeting 60 FPS by default. Set LICHII_DLSS_FG_TARGET to change the target.</source>
+        <translation>自动：动态调整 DLSS-G 补帧节奏，默认目标为 60 FPS。设置 LICHII_DLSS_FG_TARGET 可更改目标。</translation>
+    </message>
+    <message>
+        <source>Frame Generation %1 is requested for the next game start. Click to cycle Auto, 2x, and off.</source>
+        <translation>已请求在下次启动游戏时启用 %1 帧生成。点击可依次切换自动、2倍和关闭。</translation>
+    </message>
+    <message>
+        <source>Enable for the next game start. Requires NVIDIA DLSS and Streamline Frame Gen plugins.</source>
+        <translation>在下次启动游戏时启用。需要 NVIDIA DLSS 和 Streamline Frame Gen 插件。</translation>
+    </message>
+    <message>
+        <source>Frame Generation will be enabled the next time the game starts. Restart the game now?</source>
+        <translation>下次启动游戏时将启用帧生成。现在重新启动游戏吗？</translation>
+    </message>
 </context>
 <context>
     <name>QtAmiiboSettingsDialog</name>
