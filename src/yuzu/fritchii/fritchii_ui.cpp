@@ -322,6 +322,19 @@ std::string FrameGenEnv() {
     return value ? value : "";
 }
 
+u32 FrameGenDivisor() {
+    const char* const value = std::getenv("LICHII_DLSS_FG_DIVISOR");
+    return value && value[0] == '2' ? 2u : 1u;
+}
+
+void SetFrameGenDivisor(u32 divisor) {
+#ifdef _WIN32
+    _putenv_s("LICHII_DLSS_FG_DIVISOR", divisor == 2 ? "2" : "1");
+#else
+    setenv("LICHII_DLSS_FG_DIVISOR", divisor == 2 ? "2" : "1", 1);
+#endif
+}
+
 void SetFrameGenEnv(bool enabled) {
 #ifdef _WIN32
     _putenv_s("LICHII_DLSS_FG", enabled ? "1" : "");
@@ -332,7 +345,7 @@ void SetFrameGenEnv(bool enabled) {
         setenv("LICHII_DLSS", "1", 1);
     } else {
         unsetenv("LICHII_DLSS_FG");
-        unsetenv("LICHII_DLSS");
+        unsetenv("LICHII_DLSS", 1);
     }
 #endif
 }
@@ -350,15 +363,23 @@ QPushButton* MakeFrameGenButton(QWidget* parent, GraphicsHooks hooks) {
         const bool user_on = Common::FrameGenStats::user_enabled.load(std::memory_order_relaxed);
         const bool next_start = FrameGenEnv() == "1";
         const bool on = available ? user_on : next_start;
+        const u32 divisor = FrameGenDivisor();
+        const QString ratio = divisor == 2 ? QObject::tr("0.5X") : QObject::tr("2X");
         button->setChecked(on);
-        button->setText(on ? QObject::tr("FRAME GEN 2X") : QObject::tr("FRAME GEN OFF"));
+        button->setText(on ? QObject::tr("FRAME GEN %1").arg(ratio)
+                           : QObject::tr("FRAME GEN OFF"));
         if (available) {
-            button->setToolTip(on ? QObject::tr("DLSS Frame Generation 2x is on (active while the window has focus)")
-                                  : QObject::tr("DLSS Frame Generation 2x is off"));
+            button->setToolTip(
+                on ? (divisor == 2
+                          ? QObject::tr("Manual 0.5x: one generated frame for every two rendered frames")
+                          : QObject::tr("DLSS Frame Generation 2x is on"))
+                   : QObject::tr("DLSS Frame Generation is off"));
         } else {
-            button->setToolTip(next_start
-                ? QObject::tr("Frame Generation is requested for the next game start. NVIDIA DLSS and the Streamline Frame Gen plugins are required.")
-                : QObject::tr("Enable for the next game start. Requires NVIDIA DLSS, RTX 40-series or newer, and Streamline Frame Gen plugins."));
+            button->setToolTip(
+                next_start
+                    ? QObject::tr("Frame Generation %1 is requested for the next game start. Click to cycle 2x, 0.5x, and off.")
+                          .arg(ratio)
+                    : QObject::tr("Enable for the next game start. Requires NVIDIA DLSS and Streamline Frame Gen plugins."));
         }
     };
     update();
@@ -368,19 +389,26 @@ QPushButton* MakeFrameGenButton(QWidget* parent, GraphicsHooks hooks) {
     timer->start(1000);
 
     QObject::connect(button, &QPushButton::clicked, button, [button, hooks, update] {
-        if (Common::FrameGenStats::available.load(std::memory_order_relaxed)) {
-            const bool turn_on =
-                !Common::FrameGenStats::user_enabled.load(std::memory_order_relaxed);
-            Common::FrameGenStats::user_enabled.store(turn_on, std::memory_order_relaxed);
-            SetFrameGenEnv(turn_on);
-            update();
-            return;
+        const bool available = Common::FrameGenStats::available.load(std::memory_order_relaxed);
+        const bool on = available
+                            ? Common::FrameGenStats::user_enabled.load(std::memory_order_relaxed)
+                            : FrameGenEnv() == "1";
+        const u32 divisor = FrameGenDivisor();
+
+        // The status-bar button cycles: 2x -> 0.5x -> off -> 2x.
+        if (!on) {
+            SetFrameGenDivisor(1);
+            SetFrameGenEnv(true);
+            Common::FrameGenStats::user_enabled.store(true, std::memory_order_relaxed);
+        } else if (divisor == 1) {
+            SetFrameGenDivisor(2);
+        } else {
+            SetFrameGenEnv(false);
+            Common::FrameGenStats::user_enabled.store(false, std::memory_order_relaxed);
         }
 
-        const bool turn_on = FrameGenEnv() != "1";
-        SetFrameGenEnv(turn_on);
-        Common::FrameGenStats::user_enabled.store(turn_on, std::memory_order_relaxed);
-        if (turn_on && hooks.game_running && hooks.game_running() && hooks.restart_game) {
+        if (!available && FrameGenEnv() == "1" && hooks.game_running &&
+            hooks.game_running() && hooks.restart_game) {
             const auto answer = QMessageBox::question(
                 button->window(), QObject::tr("DLSS Frame Generation"),
                 QObject::tr("Frame Generation will be enabled the next time the game starts. Restart the game now?"),
