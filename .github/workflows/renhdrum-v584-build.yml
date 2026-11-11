@@ -1,0 +1,165 @@
+name: v5.8.4 RenHDrum Windows test build
+
+on:
+  push:
+    branches:
+      - feature/v5.8.4-renhdrum-zh-cn
+    paths:
+      - "src/**"
+      - "CMakeLists.txt"
+      - "CMakeModules/**"
+      - "externals/**"
+      - "dist/**"
+      - "cpmfile.json"
+      - ".patch/**"
+      - ".github/workflows/renhdrum-v584-build.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: renhdrum-v584-build-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  windows-x64-msvc:
+    name: Windows x64 MSVC (test artifact only)
+    runs-on: windows-2022
+    env:
+      SCCACHE_DIR: ${{ github.workspace }}/.sccache
+      SCCACHE_CACHE_SIZE: 3G
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v5
+
+      - name: Set up MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: "6.8.3"
+          host: windows
+          target: desktop
+          arch: win64_msvc2022_64
+          modules: qtcharts
+          cache: true
+
+      - name: Install sccache
+        shell: pwsh
+        run: |
+          $zip = Join-Path $env:RUNNER_TEMP 'sccache.zip'
+          Invoke-WebRequest -OutFile $zip https://github.com/mozilla/sccache/releases/download/v0.19.0/sccache-v0.19.0-x86_64-pc-windows-msvc.zip
+          Expand-Archive $zip -DestinationPath (Join-Path $env:RUNNER_TEMP 'sccache')
+          $bin = (Get-ChildItem -Recurse -Filter sccache.exe (Join-Path $env:RUNNER_TEMP 'sccache')).DirectoryName
+          $bin | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
+
+      - name: Install Vulkan SDK
+        shell: pwsh
+        run: ./tools/windows/install-vulkan-sdk.ps1
+
+      - name: Verify Vulkan tools
+        shell: pwsh
+        run: glslangValidator --version
+
+      - name: Restore CPM downloads
+        id: cpm-cache
+        uses: actions/cache/restore@v5
+        with:
+          path: .cache/cpm
+          key: cpm-windows-x86_64-v5.8.4-renhdrum-${{ hashFiles('cpmfile.json', 'CMakeLists.txt', 'CMakeModules/CPM*.cmake', 'externals/**/CMakeLists.txt', 'src/**/CMakeLists.txt') }}
+          restore-keys: |
+            cpm-windows-x86_64-v5.8.4-renhdrum-
+
+      - name: Restore compiler objects
+        id: compiler-cache
+        uses: actions/cache/restore@v5
+        with:
+          path: .sccache
+          key: objects-windows-x86_64-v5.8.4-renhdrum-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            objects-windows-x86_64-v5.8.4-renhdrum-${{ github.sha }}-
+            objects-windows-x86_64-v5.8.4-renhdrum-
+
+      - name: Configure Windows
+        shell: bash
+        run: >-
+          cmake -S . -B build/release -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DBUILD_TESTING=OFF
+          -DYUZU_TESTS=OFF
+          -DYUZU_CMD=ON
+          -DYUZU_ROOM=OFF
+          -DYUZU_ROOM_STANDALONE=OFF
+          -DYUZU_USE_BUNDLED_QT=OFF
+          -DYUZU_USE_BUNDLED_SDL3=OFF
+          -DENABLE_QT_TRANSLATION=ON
+          -DENABLE_RENHDRUM=ON
+          -DRENHDRUM_SDL_PATCHES=ON
+          -DENABLE_UPDATE_CHECKER=ON
+          -DLICHII_BUILD_TAG=feature-v5.8.4-renhdrum-zh-cn
+          -DLICHII_BUILD_PLATFORM=windows-x86_64
+          -DUSE_DISCORD_PRESENCE=OFF
+          -DCMAKE_C_COMPILER_LAUNCHER=sccache
+          -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
+
+      - name: Save CPM downloads
+        if: steps.cpm-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v5
+        with:
+          path: .cache/cpm
+          key: ${{ steps.cpm-cache.outputs.cache-primary-key }}
+
+      - name: Build
+        shell: bash
+        run: |
+          sccache --zero-stats
+          cmake --build build/release --target yuzu yuzu-cmd --parallel
+          sccache --show-stats
+
+      - name: Stop sccache
+        if: always() && steps.compiler-cache.outcome == 'success'
+        shell: pwsh
+        run: sccache --stop-server
+
+      - name: Save compiler objects
+        if: always() && steps.compiler-cache.outcome == 'success'
+        uses: actions/cache/save@v5
+        with:
+          path: .sccache
+          key: ${{ steps.compiler-cache.outputs.cache-primary-key }}
+
+      - name: Package test binary
+        shell: pwsh
+        run: |
+          $bin = (Resolve-Path 'build/release/bin').Path
+          if (-not (Test-Path (Join-Path $bin 'lichii.exe'))) {
+            throw 'lichii.exe was not produced'
+          }
+          windeployqt --release --no-translations (Join-Path $bin 'lichii.exe')
+
+          $dll = Join-Path $bin 'renhdrum.dll'
+          Invoke-WebRequest -Uri 'https://github.com/trzz1214/RenHDrum/releases/download/v0.3.0/renhdrum.dll' -OutFile $dll
+          $hash = (Get-FileHash -Algorithm SHA256 $dll).Hash.ToLowerInvariant()
+          if ($hash -ne '33c88b343fa49627cc09fcd0cee7e46f5a85e16e77f1d404e44574d42eaa74e8') {
+            throw "RenHDrum v0.3.0 DLL SHA-256 mismatch: $hash"
+          }
+
+          Remove-Item (Join-Path $bin 'eden-cli.exe') -Force -ErrorAction SilentlyContinue
+          Get-ChildItem -Path $bin -Filter '*.pdb' -File -ErrorAction SilentlyContinue | Remove-Item -Force
+          Get-ChildItem -Path $bin -Force |
+            Where-Object { $_.Name -like 'vc_redist*' } |
+            Remove-Item -Recurse -Force
+          Get-ChildItem $bin | Select-Object Name, Length
+          if (-not (Test-Path $dll)) {
+            throw 'renhdrum.dll is missing from the test package'
+          }
+
+      - name: Upload test artifact (no GitHub Release)
+        uses: actions/upload-artifact@v7
+        with:
+          name: Fritchii-v5.8.4-RenHDrum-zh-CN-Windows-x64-${{ github.sha }}
+          path: build/release/bin/
+          if-no-files-found: error
+          retention-days: 7
