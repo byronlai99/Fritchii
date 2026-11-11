@@ -8549,6 +8549,34 @@ Would you like to bypass this and exit anyway?</source>
         <source>Null</source>
         <translation>空</translation>
     </message>
+    <message>
+        <source>Delete Shader Cache</source>
+        <translation>删除着色器缓存</translation>
+    </message>
+    <message>
+        <source>Stop the game first.</source>
+        <translation>请先停止游戏。</translation>
+    </message>
+    <message>
+        <source>Delete OoT's shader cache?</source>
+        <translation>确定要删除《时之笛》的着色器缓存吗？</translation>
+    </message>
+    <message>
+        <source>Delete this game's shader cache?</source>
+        <translation>确定要删除此游戏的着色器缓存吗？</translation>
+    </message>
+    <message>
+        <source>Only if the game crashes or looks wrong because of it. The shaders are prepared again on the next start.</source>
+        <translation>只有在游戏因着色器缓存而崩溃或画面显示异常时才需要删除。下次启动游戏时会重新准备着色器。</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation>删除</translation>
+    </message>
+    <message>
+        <source>the game</source>
+        <translation>游戏</translation>
+    </message>
 </context>
 <context>
     <name>MigrationWorker</name>
@@ -9489,6 +9517,226 @@ p, li { white-space: pre-wrap; }
         <location filename="../../src/qt_common/game_list/game_list_p.h" line="376"/>
         <source>Favorites</source>
         <translation>收藏</translation>
+    </message>
+    <message>
+        <source>&amp;Game</source>
+        <translation>游戏(&amp;G)</translation>
+    </message>
+    <message>
+        <source>Ad&amp;vanced</source>
+        <translation>高级(&amp;A)</translation>
+    </message>
+    <message>
+        <source>&amp;Export Log...</source>
+        <translation>导出日志(&amp;E)...</translation>
+    </message>
+    <message>
+        <source>What's &amp;New</source>
+        <translation>更新内容(&amp;N)</translation>
+    </message>
+    <message>
+        <source>&amp;Delete Shader Cache...</source>
+        <translation>删除着色器缓存(&amp;D)...</translation>
+    </message>
+    <message>
+        <source>Fritchii &amp;Discord</source>
+        <translation>Fritchii Discord(&amp;D)</translation>
+    </message>
+    <message>
+        <source>D&amp;onate</source>
+        <translation>捐赠(&amp;O)</translation>
+    </message>
+    <message>
+        <source>Open &amp;Recent</source>
+        <translation>最近打开(&amp;R)</translation>
+    </message>
+    <message>
+        <source>Open &amp;Folder</source>
+        <translation>打开文件夹(&amp;F)</translation>
+    </message>
+    <message>
+        <source>Game &amp;List</source>
+        <translation>游戏列表(&amp;L)</translation>
+    </message>
+    <message>
+        <source>&amp;Icon Size</source>
+        <translation>图标大小(&amp;I)</translation>
+    </message>
+    <message>
+        <source>&amp;Window Size</source>
+        <translation>窗口大小(&amp;W)</translation>
+    </message>
+    <message>
+        <source>Create &amp;Shortcut</source>
+        <translation>创建快捷方式(&amp;S)</translation>
+    </message>
+    <message>
+        <source>&amp;Open Game...</source>
+        <translation>打开游戏(&amp;O)...</translation>
+    </message>
+    <message>
+        <source>Open &amp;Extracted Game...</source>
+        <translation>打开已解包游戏(&amp;E)...</translation>
+    </message>
+    <message>
+        <source>&amp;Install Update or DLC...</source>
+        <translation>安装更新或 DLC(&amp;I)...</translation>
+    </message>
+    <message>
+        <source>&amp;Settings...</source>
+        <translation>设置(&amp;S)...</translation>
+    </message>
+    <message>
+        <source>Game &amp;Settings...</source>
+        <translation>游戏设置(&amp;S)...</translation>
+    </message>
+    <message>
+        <source>&amp;Data</source>
+        <translation>数据(&amp;D)</translation>
+    </message>
+    <message>
+        <source>&amp;NAND</source>
+        <translation>NAND(&amp;N)</translation>
+    </message>
+    <message>
+        <source>&amp;SD Card</source>
+        <translation>SD 卡(&amp;S)</translation>
+    </message>
+    <message>
+        <source>&amp;Mods</source>
+        <translation>模组(&amp;M)</translation>
+    </message>
+    <message>
+        <source>Open &amp;Log Folder</source>
+        <translation>打开日志文件夹(&amp;L)</translation>
+    </message>
+    <message>
+        <source>&amp;720p</source>
+        <translation>&amp;720p</translation>
+    </message>
+    <message>
+        <source>&amp;900p</source>
+        <translation>&amp;900p</translation>
+    </message>
+    <message>
+        <source>&amp;1080p</source>
+        <translation>&amp;1080p</translation>
+    </message>
+    <message>
+        <source>&amp;List</source>
+        <translation>列表(&amp;L)</translation>
+    </message>
+    <message>
+        <source>&amp;Grid</source>
+        <translation>网格(&amp;G)</translation>
+    </message>
+    <message>
+        <source>&amp;Carousel</source>
+        <translation>轮播(&amp;C)</translation>
+    </message>
+    <message>
+        <source>Show Game &amp;Names</source>
+        <translation>显示游戏名称(&amp;N)</translation>
+    </message>
+    <message>
+        <source>&amp;Performance Overlay</source>
+        <translation>性能监控叠加层(&amp;P)</translation>
+    </message>
+    <message>
+        <source>&amp;Status Bar</source>
+        <translation>状态栏(&amp;S)</translation>
+    </message>
+    <message>
+        <source>Search &amp;Bar</source>
+        <translation>搜索栏(&amp;B)</translation>
+    </message>
+    <message>
+        <source>Single &amp;Window</source>
+        <translation>单窗口模式(&amp;W)</translation>
+    </message>
+    <message>
+        <source>&amp;Overlay Display Applet</source>
+        <translation>屏幕叠加小程序(&amp;O)</translation>
+    </message>
+    <message>
+        <source>&amp;Data Manager...</source>
+        <translation>数据管理器(&amp;D)...</translation>
+    </message>
+    <message>
+        <source>Take &amp;Screenshot</source>
+        <translation>截取屏幕截图(&amp;S)</translation>
+    </message>
+    <message>
+        <source>&amp;Load or Remove Amiibo...</source>
+        <translation>载入或移除 Amiibo(&amp;L)...</translation>
+    </message>
+    <message>
+        <source>From &amp;Folder...</source>
+        <translation>从文件夹(&amp;F)...</translation>
+    </message>
+    <message>
+        <source>From &amp;ZIP...</source>
+        <translation>从 ZIP 文件(&amp;Z)...</translation>
+    </message>
+    <message>
+        <source>&amp;About Fritchii-HDrum</source>
+        <translation>关于 Fritchii-HDrum(&amp;A)</translation>
+    </message>
+    <message>
+        <source>&amp;Open-Source Components</source>
+        <translation>开源组件(&amp;O)</translation>
+    </message>
+    <message>
+        <source>GRAPHICS</source>
+        <translation>图形设置</translation>
+    </message>
+    <message>
+        <source>&amp;Renderer</source>
+        <translation>渲染器(&amp;R)</translation>
+    </message>
+    <message>
+        <source>GPU &amp;Accuracy</source>
+        <translation>GPU 精度(&amp;A)</translation>
+    </message>
+    <message>
+        <source>Upscaling &amp;Filter</source>
+        <translation>升频滤镜(&amp;F)</translation>
+    </message>
+    <message>
+        <source>Anti-&amp;Aliasing</source>
+        <translation>抗锯齿(&amp;A)</translation>
+    </message>
+    <message>
+        <source>&amp;Effects</source>
+        <translation>特效(&amp;E)</translation>
+    </message>
+    <message>
+        <source>Off</source>
+        <translation>关闭</translation>
+    </message>
+    <message>
+        <source>Configure Effects...</source>
+        <translation>配置特效...</translation>
+    </message>
+    <message>
+        <source>More Settings...</source>
+        <translation>更多设置...</translation>
+    </message>
+    <message>
+        <source>What's New</source>
+        <translation>更新内容</translation>
+    </message>
+    <message>
+        <source>What's new in %1</source>
+        <translation>%1 的更新内容</translation>
+    </message>
+    <message>
+        <source>No notes for this version yet.</source>
+        <translation>此版本暂时没有更新说明。</translation>
+    </message>
+    <message>
+        <source>Got it</source>
+        <translation>知道了</translation>
     </message>
 </context>
 <context>
@@ -11361,6 +11609,133 @@ While this is on, games can't open their web pages (some manuals and logins). Yo
     <message>
         <source>NVIDIA DLSS is ready. It is used the next time a game starts.</source>
         <translation>NVIDIA DLSS 已准备就绪。将在下次启动游戏时使用。</translation>
+    </message>
+</context>
+<context>
+    <name>GameControls</name>
+    <message>
+        <source>Pause</source>
+        <translation>暂停</translation>
+    </message>
+    <message>
+        <source>Restart</source>
+        <translation>重新开始</translation>
+    </message>
+    <message>
+        <source>Stop</source>
+        <translation>停止</translation>
+    </message>
+    <message>
+        <source>Fullscreen</source>
+        <translation>全屏</translation>
+    </message>
+    <message>
+        <source>Menu</source>
+        <translation>菜单</translation>
+    </message>
+    <message>
+        <source>Continue</source>
+        <translation>继续</translation>
+    </message>
+    <message>
+        <source>Leave fullscreen</source>
+        <translation>退出全屏</translation>
+    </message>
+</context>
+<context>
+    <name>Home</name>
+    <message>
+        <source>Library</source>
+        <translation>游戏库</translation>
+    </message>
+    <message>
+        <source>Settings</source>
+        <translation>设置</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>帮助</translation>
+    </message>
+    <message>
+        <source>Menu</source>
+        <translation>菜单</translation>
+    </message>
+    <message>
+        <source>Fritchii Discord</source>
+        <translation>Fritchii Discord</translation>
+    </message>
+    <message>
+        <source>Donate</source>
+        <translation>捐赠</translation>
+    </message>
+    <message>
+        <source>Game Settings...</source>
+        <translation>游戏设置...</translation>
+    </message>
+    <message>
+        <source>Delete Shader Cache...</source>
+        <translation>删除着色器缓存...</translation>
+    </message>
+    <message>
+        <source>Play</source>
+        <translation>开始游戏</translation>
+    </message>
+    <message>
+        <source>Add your games</source>
+        <translation>添加游戏</translation>
+    </message>
+    <message>
+        <source>Add Folder</source>
+        <translation>添加文件夹</translation>
+    </message>
+    <message>
+        <source>All games</source>
+        <translation>全部游戏</translation>
+    </message>
+    <message>
+        <source>Add folder</source>
+        <translation>添加文件夹</translation>
+    </message>
+</context>
+<context>
+    <name>PrecompileGate</name>
+    <message>
+        <source>Preparing shaders %1%</source>
+        <translation>正在准备着色器 %1%</translation>
+    </message>
+    <message>
+        <source>Preparing shaders</source>
+        <translation>正在准备着色器</translation>
+    </message>
+    <message>
+        <source>This happens once, so %1 runs smoothly from the start.</source>
+        <translation>此过程只需进行一次，让 %1 从一开始就能流畅运行。</translation>
+    </message>
+    <message>
+        <source>Play now</source>
+        <translation>立即开始游戏</translation>
+    </message>
+    <message>
+        <source>Getting ready</source>
+        <translation>正在准备</translation>
+    </message>
+    <message>
+        <source>%1 / %2</source>
+        <translation>%1 / %2</translation>
+    </message>
+    <message>
+        <source>Less than a minute left</source>
+        <translation>不到一分钟</translation>
+    </message>
+    <message>
+        <source>About %1 h %2 min left</source>
+        <translation>预计还剩 %1 小时 %2 分钟</translation>
+    </message>
+    <message numerus="yes">
+        <source>About %n min left</source>
+        <translation>
+            <numerusform>约剩余 %n 分钟</numerusform>
+        </translation>
     </message>
 </context>
 </TS>
