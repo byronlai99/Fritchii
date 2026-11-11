@@ -45,6 +45,8 @@ std::vector<BasicSetting*> TunedSettings(Values& settings) {
         // every graphics pipeline skipped as "for another device" (2026-11-09, RX 9070 XT log).
         &settings.dyna_state,                 // EDS2
         &settings.vertex_input_dynamic_state, // On
+        &settings.hd_rumble_gain,              // RenHDrum intensity
+        &settings.hd_rumble_low_boost,         // RenHDrum weak rumble boost
     };
 }
 
