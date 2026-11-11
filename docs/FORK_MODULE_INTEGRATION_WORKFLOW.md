@@ -183,3 +183,43 @@ Record each finding as **fixed before build**, **known non-blocking**, or **requ
 - **Cause:** `RefreshTime` declared a local reference with the same identifier as the class member. MSVC /we4458 promoted this shadowing warning to an error.
 - **Fix:** Rename only the local reference to `current_service_manager` and update its three `GetService` uses. No service lookup order or runtime behavior changed.
 - **Status:** Fixed in commit `9e053b5a7af47e4c8281da9ecf99de60f5f70bb2`; awaiting CI verification.
+
+## Baseline-first upgrade gate (mandatory from the next upstream update)
+
+Before re-applying any fork module, establish that the exact upstream tag can be built by our supported toolchain:
+
+1. Preserve the pristine upstream tag/commit on an untouched reference branch.
+2. Create an isolated baseline-test branch from that tag. Before the first run, edit only its GitHub Actions workflow matrix to remove every job except **Windows x64 MSVC**. Do not change C++ source, CMake source, dependencies, or module code in this first test.
+3. Run the Windows x64 MSVC workflow and record every compiler error and relevant malformed warning flag. A cancelled non-Windows matrix job is not a build failure; report the Windows MSVC job's own conclusion separately from the overall workflow conclusion.
+4. Fix upstream-source build errors on a separate MSVC-fix branch. Keep the pristine tag and the workflow-only baseline test branch unchanged. Re-run until the complete MSVC build, link, and package stages pass.
+5. Only then create the module-integration branch and port RenHDrum, Chinese UI, and other enabled modules. Run the fork-owned Windows x64 MSVC workflow again.
+
+Never combine upstream-baseline errors and module-integration errors in one diagnosis. Every ledger entry must say whether it originated in pristine upstream source, the baseline workflow adaptation, or fork-module integration.
+
+## Recent workflow audit (2026-11-11)
+
+The following runs were inspected. Repeated errors are linked to their existing ledger item instead of being counted as new defects:
+
+| Run | Tested source / branch | Result | Confirmed errors / classification |
+| --- | --- | --- | --- |
+| [#9 / 43048515194](https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43048515194) | Integration commit 0f9bf1c4409c92785ba59201ba6bc10db3ecc1dd | Failed | C4458 packet (F-006); C4457 count and C4458 state (same name-hiding family as F-001); repeated D9014 invalid /w4505 (F-005). |
+| [#17 / 43049341434](https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43049341434) | Integration commit 2177f5d8e9deed6a1b2976ba428c755010922c18 | Failed | C4458 packet in nx2_video_decoder.cpp:236 (F-006); repeated D9014 (F-005). |
+| [#18 / 43058482286](https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43058482286) | Integration commit 738d32856a | Failed | C4456 index in vk_pipeline_cache.cpp:5186 (F-007); repeated D9014 (F-005). |
+| [#19 / 43058492202](https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43058492202) | Integration branch | Cancelled | Cancelled run; no additional compiler diagnostic is counted. |
+| [#20 / 43058500053](https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43058500053) | Integration commit 996f7f0821c4200ddf6b897364d1fd922af7cc0a | Failed | C4456 index in vk_pipeline_cache.cpp:5186 (same F-007 issue as #18). D9014 was no longer present in this log. |
+| [#21 / 43065581977](https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43065581977) | Integration commit 4835fe1d2ac861e173f39c367cf9ce0bfc97e965 | Failed | C4458 service_manager in core.cpp:253 (F-008). D9014 was absent. |
+| [Upstream v5.8.4 / 43068107673](https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43068107673) | Pristine official tag 4f5c53149b7e17d1c24445f68d79a83a3b2a17f9 | Windows MSVC job failed; other matrix jobs were cancelled | Four C4459 diagnostics in frizti_settings.cpp (new F-009) and repeated D9014 from the upstream /w4505 typo (F-005). The overall run was cancelled, but its Windows MSVC job itself completed with failure. |
+| [#22 / 43070225601](https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43070225601) | Integration commit 9e053b5a7af47e4c8281da9ecf99de60f5f70bb2 | In progress at last inspection | Build step was still running; its log was not yet available. Do not mark F-008 verified or infer success until the run completes. |
+
+Run #9 also showed the older F-001 count/state diagnostics again; these are duplicate sightings of that already recorded code family, not a new root cause. Runs #18 and #20 both showed the same F-007 diagnostic before its source rename was carried into a later build. Do not treat cancelled runs as compiler failures.
+
+### F-009: pristine v5.8.4 MSVC C4459 in frizti_settings.cpp
+
+- **Workflow run:** [43068107673](https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43068107673); Windows x64 MSVC job 130688435891.
+- **Baseline:** pristine official fritchii-v5.8.4 tag, commit 4f5c53149b7e17d1c24445f68d79a83a3b2a17f9; no fork module changes.
+- **File / lines:** src/common/frizti_settings.cpp:25, 136, 147, 155.
+- **Diagnostics:** four C4459: declaration of 'values' hides global declaration errors. The hidden declaration is Settings::values in settings.h:1075.
+- **Cause:** upstream function parameters/local declarations named values shadow the global settings object under the strict /we4459 warning policy.
+- **Status:** Open in the pristine upstream baseline. No source fix has been applied to the clean reference branch. Repair on a dedicated MSVC-fix branch by renaming only the conflicting locals/parameters and updating their local uses; preserve /we4459.
+- **Related pre-existing defect:** the same job repeated D9014 because upstream v5.8.4 still passes malformed /w4505; this belongs to F-005, not a second new diagnostic family.
+- **Prevention:** preflight all baseline C++ sources for C4456/C4457/C4458/C4459 and inspect the generated compiler command for valid MSVC warning switches before the first baseline build.
