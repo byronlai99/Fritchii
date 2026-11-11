@@ -269,7 +269,7 @@ integration_failure_ledger:
       tested_commit: 4f5c53149b7e17d1c24445f68d79a83a3b2a17f9
       stage: Build
       source_origin: pristine_upstream
-    status: open_upstream_baseline_error
+    status: confirmed_pristine_upstream_error_already_fixed_in_active_integration_branch
     symptoms:
       - "C4459 at src/common/frizti_settings.cpp:25: TunedSettings parameter values hides Settings::values."
       - "C4459 at src/common/frizti_settings.cpp:136: FixDockedController parameter values hides Settings::values."
@@ -280,8 +280,9 @@ integration_failure_ledger:
       - "The pristine v5.8.4 source has local parameters/declarations named values that shadow the global Settings::values object."
       - "The fork's strict /we4459 setting promotes these MSVC name-hiding diagnostics to errors."
     resolution:
-      - "Not yet fixed. Preserve the pristine reference branch and fix the source only on a dedicated MSVC-fix branch."
-      - "Rename only the conflicting locals/parameters and their local uses; do not suppress C4459 or weaken the warning policy."
+      - "The active integration branch already carries the equivalent local-name fix from commit fd79995f08f1acd6f23adf867538698c5ead8f29; it uses settings for the TunedSettings/FixDockedController parameters and result for GlobalValues/PerGameValues map locals."
+      - "The pristine upstream reference remains unchanged. On a future baseline-first upgrade, apply/verify the fix only on a dedicated MSVC-fix branch after first reducing the workflow matrix to Windows x64 MSVC."
+      - "Do not suppress C4459 or weaken the warning policy."
     prevention:
       - "Before the first build of each upstream tag, scan the full target source for C4456/C4457/C4458/C4459 and all configured /we diagnostics."
       - "Record whether each issue comes from pristine upstream, workflow adaptation, or fork-module integration."
