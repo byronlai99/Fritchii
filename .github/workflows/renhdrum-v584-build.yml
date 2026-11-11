@@ -166,9 +166,13 @@ jobs:
           Add-Type -AssemblyName System.IO.Compression.FileSystem
           $recipeArchive = [System.IO.Compression.ZipFile]::OpenRead($recipeZip)
           try {
-            $recipeEntries = @($recipeArchive.Entries | Where-Object { $_.FullName -eq $recipePath })
+            $recipeFileName = 'OoT v131072 (cache v54).nx2recipe'
+            $recipeEntries = @(
+              $recipeArchive.Entries |
+                Where-Object { $_.FullName.Replace('\\', '/').Split('/')[-1] -eq $recipeFileName }
+            )
             if ($recipeEntries.Count -ne 1) {
-              throw "Expected exactly one '$recipePath' in the official package; found $($recipeEntries.Count)"
+              throw "Expected exactly one '$recipeFileName' in the official package; found $($recipeEntries.Count)"
             }
 
             $recipeDestination = Join-Path $bin $recipePath
