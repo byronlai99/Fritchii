@@ -31,6 +31,7 @@
 #include "video_core/vulkan_common/streamline.h"
 #include "video_core/vulkan_common/streamline_api.h"
 #include "video_core/vulkan_common/streamline_frame_gen_pacer.h"
+#include "video_core/vulkan_common/streamline_frame_gen_input_slots.h"
 
 #include <sl_security.h>
 
@@ -68,12 +69,8 @@ struct State {
     // Per frame: the token of the latest DLSS evaluation, until a present takes it (worker).
     std::atomic<const sl::FrameToken*> fg_tagged{};
     std::atomic<u32> fg_tagged_input_slot{FRAME_GEN_INPUT_SLOT_NONE};
-    // A slot stays pending from tagging until its frame is presented (fence saved) or skipped.
-    std::mutex fg_inputs_mutex;
-    std::condition_variable fg_inputs_cv;
-    std::array<bool, FRAME_GEN_INPUT_SLOT_COUNT> fg_input_pending{};
-    std::array<VkSemaphore, FRAME_GEN_INPUT_SLOT_COUNT> fg_input_fences{};
-    std::array<u64, FRAME_GEN_INPUT_SLOT_COUNT> fg_input_values{};
+    // Tracks the four depth/motion-copy slots until Streamline finishes reading them.
+    FrameGenInputSlots fg_input_slots;
     // Adaptive and fixed-ratio scheduling happens on the serialized Vulkan render worker.
     FrameGenPacer fg_pacer;
     FrameGenMode fg_pacer_mode{FrameGenMode::Fixed2x};
@@ -784,16 +781,7 @@ bool WaitFrameGenFence(State& state, VkSemaphore fence, u64 value, bool slot_wai
 }
 
 void CompleteFrameGenInputSlot(State& state, u32 slot, VkSemaphore fence, u64 value) {
-    if (slot >= FRAME_GEN_INPUT_SLOT_COUNT) {
-        return;
-    }
-    {
-        std::lock_guard lock{state.fg_inputs_mutex};
-        state.fg_input_fences[slot] = value != 0 ? fence : VK_NULL_HANDLE;
-        state.fg_input_values[slot] = value;
-        state.fg_input_pending[slot] = false;
-    }
-    state.fg_inputs_cv.notify_all();
+    state.fg_input_slots.Complete(slot, fence, value);
 }
 
 void TagFrameGen(const sl::FrameToken& frame, const sl::Resource& depth, const sl::Resource& motion,
@@ -889,10 +877,7 @@ void TagFrameGen(const sl::FrameToken& frame, const sl::Resource& depth, const s
         return;
     }
     if (input_slot < FRAME_GEN_INPUT_SLOT_COUNT) {
-        {
-            std::lock_guard lock{state.fg_inputs_mutex};
-            state.fg_input_pending[input_slot] = true;
-        }
+        state.fg_input_slots.MarkPending(input_slot);
         state.fg_tagged_input_slot.store(input_slot, std::memory_order_release);
     } else {
         state.fg_tagged_input_slot.store(FRAME_GEN_INPUT_SLOT_NONE, std::memory_order_release);
@@ -908,13 +893,10 @@ bool WaitFrameGenInputSlot(u32 slot) {
         return true;
     }
     State& state = GetState();
-    u64 value{};
     VkSemaphore fence{};
-    {
-        std::unique_lock lock{state.fg_inputs_mutex};
-        state.fg_inputs_cv.wait(lock, [&] { return !state.fg_input_pending[slot]; });
-        value = state.fg_input_values[slot];
-        fence = state.fg_input_fences[slot];
+    u64 value{};
+    if (!state.fg_input_slots.WaitForCompletion(slot, fence, value)) {
+        return false;
     }
     if (value == 0) {
         return true;
@@ -922,13 +904,7 @@ bool WaitFrameGenInputSlot(u32 slot) {
     if (!WaitFrameGenFence(state, fence, value, true)) {
         return false;
     }
-    {
-        std::lock_guard lock{state.fg_inputs_mutex};
-        if (state.fg_input_values[slot] == value) {
-            state.fg_input_values[slot] = 0;
-            state.fg_input_fences[slot] = VK_NULL_HANDLE;
-        }
-    }
+    state.fg_input_slots.ClearCompletionIfMatches(slot, value);
     return true;
 }
 
@@ -937,11 +913,8 @@ void AbandonFrameGenInputSlot(u32 slot) {
         return;
     }
     State& state = GetState();
-    {
-        std::lock_guard lock{state.fg_inputs_mutex};
-        if (!state.fg_input_pending[slot]) {
-            return;
-        }
+    if (!state.fg_input_slots.IsPending(slot)) {
+        return;
     }
     const VkResult result =
         state.device_wait_idle ? state.device_wait_idle(state.device) : VK_ERROR_INITIALIZATION_FAILED;
@@ -950,13 +923,7 @@ void AbandonFrameGenInputSlot(u32 slot) {
                   "DLSS Frame Generation: could not safely abandon input slot {} (VkResult {})",
                   slot, static_cast<int>(result));
     }
-    {
-        std::lock_guard lock{state.fg_inputs_mutex};
-        state.fg_input_pending[slot] = false;
-        state.fg_input_values[slot] = 0;
-        state.fg_input_fences[slot] = VK_NULL_HANDLE;
-    }
-    state.fg_inputs_cv.notify_all();
+    state.fg_input_slots.AbandonPending(slot);
 }
 
 void NoteFrameGenAcquire(u64 ns) {
@@ -1293,13 +1260,7 @@ void Stop() {
     state.fg_tagged_input_slot.store(FRAME_GEN_INPUT_SLOT_NONE, std::memory_order_relaxed);
     state.fg_inputs_fence.store(VK_NULL_HANDLE, std::memory_order_relaxed);
     state.fg_inputs_value.store(0, std::memory_order_relaxed);
-    {
-        std::lock_guard lock{state.fg_inputs_mutex};
-        state.fg_input_pending.fill(false);
-        state.fg_input_fences.fill(VK_NULL_HANDLE);
-        state.fg_input_values.fill(0);
-    }
-    state.fg_inputs_cv.notify_all();
+    state.fg_input_slots.Reset();
     LOG_INFO(Render_Vulkan, "NVIDIA Streamline stopped (result {})", static_cast<int>(result));
 }
 
