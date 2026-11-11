@@ -126,6 +126,14 @@ build_policy:
     - vc_redist*
     - "*.pdb"
   artifact_retention_days: 7
+  required_assets:
+    - path: "recipes/OoT v131072 (cache v54).nx2recipe"
+      source_release: Frizti/Fritchii@fritchii-v5.5
+      source_url: https://github.com/Frizti/Fritchii/releases/download/fritchii-v5.5/Fritchii-v5.5-Windows-x64.zip
+      source_archive_sha256: 63112e7125e6174192079475b485f9633509a4a8dfb2630b5f8a96c644abf066
+      file_sha256: 85d944c8557fbeffe02af566c9c4277251ed0ab1a0f2a3ab7a626af6a877c3a1
+      update_policy: "Immutable; do not regenerate or replace unless the user explicitly requests it."
+      packaging: "Extract the single matching recipe entry into build/release/bin/recipes/ after verifying both hashes."
 
 # Historical integration failures and recurring workflow portability checks.
 # Do not delete old entries when moving to a newer upstream tag.
