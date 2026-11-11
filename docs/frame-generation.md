@@ -18,6 +18,8 @@ The five supplied files were inspected and all are PE32+ AMD64 binaries. They ar
 
 ## Enabling
 
-Enable the existing **NVIDIA DLSS** setting first, then enable **FRAME GEN 2X** in the status bar. The status-bar switch can request Frame Generation for the next game start, or toggle it while a compatible game session is running. Frame Generation only operates while the emulator window is focused, as required by NVIDIA.
+Enable the existing **NVIDIA DLSS** setting first, then use the **FRAME GEN** button in the status bar. It cycles through **AUTO**, **2X**, and **OFF**, in that order. The first enable defaults to **AUTO**, which adaptively schedules generated frames toward 60 FPS; **2X** requests one generated frame for each rendered frame.
 
-The optional launch variable is `LICHII_DLSS_FG=1`. The default remains off. If the GPU, Vulkan optical-flow queue, Streamline plugin, or required entry points are unavailable, the emulator keeps the ordinary DLSS path and logs why Frame Generation was skipped.
+The status-bar switch can request Frame Generation for the next game start, or change the mode while a compatible game session is running. Frame Generation only operates while the emulator window is focused, as required by NVIDIA.
+
+The optional launch variable is `LICHII_DLSS_FG=1`. Frame Generation remains off by default until enabled from the status bar. If the GPU, Vulkan optical-flow queue, Streamline plugin, or required entry points are unavailable, the emulator keeps the ordinary DLSS path and logs why Frame Generation was skipped.
