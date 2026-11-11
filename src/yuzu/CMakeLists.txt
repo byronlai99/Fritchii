@@ -505,7 +505,15 @@ if (WIN32 AND NOT YUZU_USE_BUNDLED_QT)
          CONTENT "[Paths]\nPrefix=.\nPlugins=plugins\n")
     if (WINDEPLOYQT_EXECUTABLE)
         set(YUZU_EXE_DIR "$<TARGET_FILE_DIR:yuzu>")
-        add_custom_command(TARGET yuzu POST_BUILD COMMAND ${WINDEPLOYQT_EXECUTABLE} "$<TARGET_FILE:yuzu>" --dir "${YUZU_EXE_DIR}" --libdir "${YUZU_EXE_DIR}" --plugindir "${YUZU_EXE_DIR}/plugins" --no-compiler-runtime --no-opengl-sw --no-system-d3d-compiler --no-translations --verbose 0)
+        # The Chinese catalogs are compiled into the Qt resource by qt_add_translation.
+        # Keep windeployqt from copying unrelated system translation catalogs, but never suppress
+        # Qt translation deployment for Fritchii's embedded language resources.
+        add_custom_command(TARGET yuzu POST_BUILD
+            COMMAND ${WINDEPLOYQT_EXECUTABLE} "$<TARGET_FILE:yuzu>"
+                --dir "${YUZU_EXE_DIR}"
+                --libdir "${YUZU_EXE_DIR}"
+                --plugindir "${YUZU_EXE_DIR}/plugins"
+                --no-compiler-runtime --no-opengl-sw --no-system-d3d-compiler --verbose 0)
     else()
         message(WARNING "windeployqt not found: copy the Qt DLLs next to the executable yourself")
     endif()
