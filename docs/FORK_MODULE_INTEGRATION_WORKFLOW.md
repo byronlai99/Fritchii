@@ -172,3 +172,14 @@ A successful CMake configure is not proof that the source is MSVC-clean or that 
 9. **Only then run CI:** use one test-artifact build. After CI passes, inspect the artifact contents before handing it to the user. Do not claim hardware behavior is verified without real controller testing.
 
 Record each finding as **fixed before build**, **known non-blocking**, or **requires CI/hardware validation**. Do not knowingly leave a statically identifiable compile or packaging issue for the next Actions run.
+
+
+### F-008: MSVC C4458 in RefreshTime (service_manager)
+
+- **Workflow run:** [#21](https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43065581977)
+- **Affected commit:** `4835fe1d2ac861e173f39c367cf9ce0bfc97e965`
+- **File / line:** `src/core/core.cpp:253`
+- **Diagnostic:** `error C4458: declaration of 'service_manager' hides class member`; the hidden member is `Core::System::Impl::service_manager` at line 656.
+- **Cause:** `RefreshTime` declared a local reference with the same identifier as the class member. MSVC /we4458 promoted this shadowing warning to an error.
+- **Fix:** Rename only the local reference to `current_service_manager` and update its three `GetService` uses. No service lookup order or runtime behavior changed.
+- **Status:** Fixed in commit `9e053b5a7af47e4c8281da9ecf99de60f5f70bb2`; awaiting CI verification.
