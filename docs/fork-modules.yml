@@ -1,0 +1,119 @@
+# Fritchii-HDrum fork module manifest
+# Source of truth for modules to re-apply after an upstream Fritchii update.
+# To add a module: append an entry with a unique id and enabled: true.
+# To stop applying a module: set enabled: false (do not delete its history casually).
+schema_version: 1
+last_updated: 2026-11-11
+
+baseline:
+  upstream_repository: Frizti/Fritchii
+  upstream_tag: fritchii-v5.8.4
+  upstream_commit: 4f5c53149b7e17d1c24445f68d79a83a3b2a17f9
+  fork_repository: byronlai99/Fritchii-HDrum
+  working_branch: feature/v5.8.4-renhdrum-zh-cn
+
+modules:
+  - id: renhdrum
+    enabled: true
+    name: RenHDrum controller haptics and HD Rumble
+    version: 0.3.0
+    source:
+      repository: trzz1214/RenHDrum
+      release: https://github.com/trzz1214/RenHDrum/releases/tag/v0.3.0
+    integration:
+      cmake_options:
+        - ENABLE_RENHDRUM=ON
+        - RENHDRUM_SDL_PATCHES=ON
+      runtime_file: renhdrum.dll
+      files:
+        - CMakeLists.txt
+        - cpmfile.json
+        - externals/CMakeLists.txt
+        - externals/renhdrum/renhdrum.h
+        - .patch/sdl3-hdrumble/
+        - src/input_common/CMakeLists.txt
+        - src/input_common/drivers/sdl_driver.cpp
+        - src/input_common/drivers/sdl_driver.h
+        - src/input_common/renhdrum/
+        - src/yuzu/CMakeLists.txt
+        - src/yuzu/configuration/controller_haptics/
+        - src/yuzu/configuration/configure_vibration.cpp
+        - dist/languages/zh_CN.ts
+      migration_notes:
+        - "Check the target SDL3 version before applying the SDL3 HD Rumble patches; adapt patch context rather than forcing old patches."
+        - "NX2-only Settings::nx2_active_mode is not present in the v5.8.4 baseline. Do not copy that reference unless the new upstream base provides the symbol/API."
+        - "Verify runtime DLL version and SHA-256 before packaging."
+    validation:
+      - "Build with ENABLE_RENHDRUM=ON and RENHDRUM_SDL_PATCHES=ON."
+      - "Confirm renhdrum.dll is next to lichii.exe in the test package."
+      - "Test Switch Pro Controller/Joy-Con HD Rumble and DualSense haptics where hardware is available."
+
+  - id: chinese-ui
+    enabled: true
+    name: Simplified Chinese interface
+    source:
+      translation_file: dist/languages/zh_CN.ts
+    integration:
+      files:
+        - dist/languages/zh_CN.ts
+      migration_notes:
+        - "Reconcile new and changed UI strings against the current upstream translation catalog."
+        - "Do not overwrite newer upstream translations; retain our RenHDrum-specific Chinese strings."
+    validation:
+      - "Confirm Simplified Chinese is present in the language selector."
+      - "Launch the app in Simplified Chinese and inspect the main UI and RenHDrum settings."
+
+  - id: accurate-vibration-default
+    enabled: true
+    name: Enable Accurate Vibration by default
+    integration:
+      setting:
+        file: src/common/settings.h
+        key: enable_accurate_vibrations
+        default: true
+      migration_notes:
+        - "This is separate from vibration_enabled and RenHDrum hd_rumble_enabled."
+        - "Check whether the new upstream changed the setting type, persistence, or UI label before applying the default."
+        - "A default change does not necessarily overwrite an existing user's saved false value; inspect migration behavior and do not silently force-reset user configuration."
+    validation:
+      - "Check the fresh-profile default is enabled."
+      - "Check the Controls UI reflects the enabled state."
+
+  - id: controls-ui-pr36
+    enabled: true
+    name: Controls settings layout and controller preview fixes
+    source:
+      pull_request: https://github.com/Frizti/Fritchii/pull/36
+      head_commit: 483996c742ba82facfef8967304fa1c0921378db
+    integration:
+      files:
+        - src/yuzu/configuration/configure_dialog.cpp
+        - src/yuzu/configuration/configure_input_player.ui
+        - src/yuzu/configuration/configure_input_player_widget.cpp
+        - src/yuzu/fritchii/style.qss
+      expected_changes:
+        - "Settings dialog default size: 1080x700."
+        - "Device selector minimumContentsLength: 20."
+        - "Controller preview scales to the available widget area."
+        - "Controls-only compact styling for mapping buttons, group boxes, labels, combo boxes, and player tabs."
+      migration_notes:
+        - "Inspect current upstream UI changes first; skip or adapt any parts already fixed upstream."
+        - "Preserve existing Fritchii styling and keep compact rules scoped to ConfigureInput and ConfigureInputPlayer."
+    validation:
+      - "Open Controls settings at normal and compact window sizes."
+      - "Verify left and right controls, controller preview, all player tabs, and profile buttons remain visible."
+
+# Build and packaging policy (not an optional feature module).
+build_policy:
+  platform: Windows x64
+  toolchain: MSVC
+  pgo: false
+  release_artifact_only: true
+  publish_github_release: false
+  cmake_options:
+    - ENABLE_QT_TRANSLATION=ON
+  package_excludes:
+    - eden-cli.exe
+    - vc_redist*
+    - "*.pdb"
+  artifact_retention_days: 7
