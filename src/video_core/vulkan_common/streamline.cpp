@@ -7,6 +7,7 @@
 #include <array>
 #include <atomic>
 #include <chrono>
+#include <cmath>
 #include <condition_variable>
 #include <mutex>
 #include <limits>
@@ -49,6 +50,269 @@ constexpr u32 MIN_DLSS_MAJOR = 310;
 
 using Version = std::array<u32, 4>;
 
+
+enum class FrameGenMode : u32 {
+    Fixed2x,
+    Half,
+    Auto,
+};
+
+FrameGenMode ConfiguredFrameGenMode() {
+    if (const char* const value = std::getenv("LICHII_DLSS_FG_MODE")) {
+        const std::string_view mode{value};
+        if (mode == "auto") {
+            return FrameGenMode::Auto;
+        }
+        if (mode == "0.5x" || mode == "half") {
+            return FrameGenMode::Half;
+        }
+        if (mode == "2x" || mode == "double") {
+            return FrameGenMode::Fixed2x;
+        }
+    }
+    // Backward compatibility with the earlier manual divisor setting.
+    const char* const divisor = std::getenv("LICHII_DLSS_FG_DIVISOR");
+    return divisor && divisor[0] == '2' ? FrameGenMode::Half : FrameGenMode::Fixed2x;
+}
+
+f32 FrameGenTargetRate() {
+    // Custom Auto pacing target for Vulkan; 60 FPS is the initial default.
+    const char* const value = std::getenv("LICHII_DLSS_FG_TARGET");
+    if (!value || !*value) {
+        return 60.0f;
+    }
+    char* end{};
+    const f32 parsed = std::strtof(value, &end);
+    return end != value && std::isfinite(parsed) && parsed >= 20.0f && parsed <= 360.0f
+               ? parsed
+               : 60.0f;
+}
+
+// Lichii-style adaptive output-rate controller. DLSS-G remains the generator; this class only
+// chooses how many generated frames accompany each rendered frame.
+class FrameGenPacer {
+public:
+    [[nodiscard]] u32 Plan(u32 capacity, f32 target_rate) {
+        if (capacity == 0 || target_rate <= 0.0f) {
+            Reset();
+            return 0;
+        }
+
+        const Clock::time_point now = Clock::now();
+        const u32 previous_generations = std::exchange(issued_generations, 0u);
+        if (!last_frame) {
+            last_frame = now;
+            return 0;
+        }
+
+        const Clock::duration interval = now - *last_frame;
+        const f32 interval_seconds = std::chrono::duration<f32>(interval).count();
+        last_frame = now;
+        if (interval_seconds <= 0.0f) {
+            Stabilize(now);
+            return 0;
+        }
+
+        if (smoothed_interval > 0.0f) {
+            f32 burst_threshold = BURST_CADENCE_RATIO / smoothed_interval;
+            burst_threshold = std::max(burst_threshold, target_rate * BURST_TARGET_RATIO);
+            if (1.0f / interval_seconds > burst_threshold) {
+                DeferEvaluations(interval);
+                output_credit = 0.0f;
+                return 0;
+            }
+        }
+
+        if (interval_seconds > 1.0f / MINIMUM_BASE_RATE) {
+            Stabilize(now);
+            return 0;
+        }
+
+        smoothed_interval = smoothed_interval > 0.0f
+                                ? smoothed_interval +
+                                      (interval_seconds - smoothed_interval) * INTERVAL_SMOOTHING
+                                : interval_seconds;
+
+        if (previous_generations == 0) {
+            const f32 measured = 1.0f / smoothed_interval;
+            unloaded_base_rate =
+                unloaded_base_rate > 0.0f
+                    ? unloaded_base_rate + (measured - unloaded_base_rate) * INTERVAL_SMOOTHING
+                    : measured;
+        }
+
+        if (stable_until) {
+            if (now < *stable_until) {
+                return 0;
+            }
+            stable_until.reset();
+        }
+
+        UpdateLimit(now, 1.0f / smoothed_interval, target_rate, capacity);
+
+        const u32 allowed = std::min(limit, capacity);
+        const f32 desired_outputs = smoothed_interval * target_rate;
+        if (allowed == 0 || desired_outputs <= 1.0f) {
+            output_credit = 0.0f;
+            return 0;
+        }
+
+        output_credit += desired_outputs;
+        const u32 outputs = std::max<u32>(
+            1u, static_cast<u32>(std::floor(output_credit + CREDIT_EPSILON)));
+        const u32 generations = std::min(outputs - 1, allowed);
+
+        output_credit -= static_cast<f32>(generations + 1);
+        if (output_credit < 0.0f) {
+            output_credit = 0.0f;
+        } else if (generations == allowed && output_credit >= 1.0f) {
+            output_credit = std::fmod(output_credit, 1.0f);
+        }
+
+        issued_generations = generations;
+        return generations;
+    }
+
+    void Reset() {
+        last_frame.reset();
+        stable_until.reset();
+        probe_until.reset();
+        next_probe.reset();
+        deficit_since.reset();
+        smoothed_interval = 0.0f;
+        output_credit = 0.0f;
+        probe_base_rate = 0.0f;
+        unloaded_base_rate = 0.0f;
+        issued_generations = 0;
+        probe_previous_limit = 0;
+        limit = 0;
+        probe_failures = 0;
+    }
+
+private:
+    using Clock = std::chrono::steady_clock;
+
+    static constexpr f32 INTERVAL_SMOOTHING = 0.25f;
+    static constexpr f32 MINIMUM_BASE_RATE = 10.0f;
+    static constexpr f32 BURST_CADENCE_RATIO = 3.0f;
+    static constexpr f32 BURST_TARGET_RATIO = 2.0f;
+    static constexpr f32 PROBE_THROUGHPUT_TOLERANCE = 0.95f;
+    static constexpr f32 PROBE_BASE_COLLAPSE_RATIO = 0.70f;
+    static constexpr f32 PROBE_MARGINAL_GAIN = 1.15f;
+    static constexpr f32 TARGET_SATISFIED_RATIO = 0.95f;
+    static constexpr f32 UNLOADED_BASE_RETENTION = 0.75f;
+    static constexpr f32 CREDIT_EPSILON = 1.0e-4f;
+    static constexpr u32 MAX_PROBE_FAILURES = 4;
+
+    static constexpr auto STABILIZATION_DURATION = std::chrono::seconds(1);
+    static constexpr auto PROBE_DURATION = std::chrono::seconds(1);
+    static constexpr auto DEFICIT_DURATION = std::chrono::seconds(1);
+    static constexpr auto PROBE_STEP_DELAY = std::chrono::milliseconds(250);
+
+    [[nodiscard]] static Clock::duration ProbeBackoff(u32 failures) {
+        switch (failures) {
+        case 1:
+            return std::chrono::seconds(5);
+        case 2:
+            return std::chrono::seconds(15);
+        case 3:
+            return std::chrono::seconds(30);
+        default:
+            return std::chrono::seconds(60);
+        }
+    }
+
+    void UpdateLimit(Clock::time_point now, f32 base_rate, f32 target_rate, u32 capacity) {
+        limit = std::min(limit, capacity);
+
+        if (probe_until) {
+            if (now < *probe_until) {
+                return;
+            }
+            probe_until.reset();
+            output_credit = 0.0f;
+
+            const f32 previous_output =
+                std::min(target_rate, probe_base_rate * static_cast<f32>(probe_previous_limit + 1));
+            const f32 current_output =
+                std::min(target_rate, base_rate * static_cast<f32>(limit + 1));
+
+            const bool throughput_regressed =
+                current_output < previous_output * PROBE_THROUGHPUT_TOLERANCE;
+            const bool collapsed_for_marginal_gain =
+                base_rate < probe_base_rate * PROBE_BASE_COLLAPSE_RATIO &&
+                current_output < previous_output * PROBE_MARGINAL_GAIN;
+            const bool emulation_slowed = unloaded_base_rate > 0.0f &&
+                                          base_rate < unloaded_base_rate * UNLOADED_BASE_RETENTION;
+
+            if (throughput_regressed || collapsed_for_marginal_gain || emulation_slowed) {
+                limit = probe_previous_limit;
+                probe_failures = std::min(probe_failures + 1, MAX_PROBE_FAILURES);
+                next_probe = now + ProbeBackoff(probe_failures);
+                deficit_since.reset();
+                return;
+            }
+
+            probe_failures = 0;
+            next_probe = now + PROBE_STEP_DELAY;
+        }
+
+        if (base_rate * static_cast<f32>(limit + 1) >= target_rate * TARGET_SATISFIED_RATIO ||
+            limit >= capacity) {
+            deficit_since.reset();
+            return;
+        }
+        if (!deficit_since) {
+            deficit_since = now;
+            return;
+        }
+        if (now - *deficit_since < DEFICIT_DURATION || (next_probe && now < *next_probe)) {
+            return;
+        }
+
+        probe_previous_limit = limit;
+        probe_base_rate = base_rate;
+        ++limit;
+        probe_until = now + PROBE_DURATION;
+        deficit_since.reset();
+        output_credit = 0.0f;
+    }
+
+    void DeferEvaluations(Clock::duration amount) {
+        const auto defer = [amount](std::optional<Clock::time_point>& deadline) {
+            if (deadline) {
+                *deadline += amount;
+            }
+        };
+        defer(stable_until);
+        defer(probe_until);
+        defer(next_probe);
+        deficit_since.reset();
+    }
+
+    void Stabilize(Clock::time_point now) {
+        stable_until = now + STABILIZATION_DURATION;
+        probe_until.reset();
+        deficit_since.reset();
+        smoothed_interval = 0.0f;
+        output_credit = 0.0f;
+    }
+
+    std::optional<Clock::time_point> last_frame;
+    std::optional<Clock::time_point> stable_until;
+    std::optional<Clock::time_point> probe_until;
+    std::optional<Clock::time_point> next_probe;
+    std::optional<Clock::time_point> deficit_since;
+    f32 smoothed_interval{};
+    f32 output_credit{};
+    f32 probe_base_rate{};
+    f32 unloaded_base_rate{};
+    u32 issued_generations{};
+    u32 probe_previous_limit{};
+    u32 limit{};
+    u32 probe_failures{};
+};
+
 struct State {
     HMODULE module{};
     Api api{};
@@ -65,10 +329,13 @@ struct State {
     std::vector<std::string> fg_device_extensions;
     // Per frame: the token of the latest DLSS evaluation, until a present takes it (worker).
     std::atomic<const sl::FrameToken*> fg_tagged{};
-    // Manual fractional generation: divisor 1 = 2x, divisor 2 = one generated frame per
-    // two rendered frames. Accessed by the serialized Vulkan render/present worker.
-    u32 fg_generation_divisor{1};
+    // Adaptive and fixed-ratio scheduling happens on the serialized Vulkan render worker.
+    FrameGenPacer fg_pacer;
+    FrameGenMode fg_pacer_mode{FrameGenMode::Fixed2x};
+    u32 fg_max_generations{};
     u32 fg_generation_phase{};
+    // Present-thread state: currently applied DLSS-G multiplier.
+    u32 fg_current_generations{};
     u32 fg_mode_switches{};
     bool fg_reflex_set{}; ///< Worker
     bool fg_reflex_on{};  ///< Worker: Reflex set for the player's frame generation switch on
@@ -447,6 +714,8 @@ bool Start() {
     state.fg_wanted = false;
     state.fg_queues = {};
     state.fg_device_extensions.clear();
+    state.fg_max_generations = 0;
+    state.fg_pacer.Reset();
     if (want_fg) {
         sl::FeatureRequirements fg{};
         if (const sl::Result result = api.get_feature_requirements(sl::kFeatureDLSS_G, fg);
@@ -539,6 +808,8 @@ void DropFrameGen(const char* reason) {
     state.fg_wanted = false;
     state.fg_queues = {};
     state.fg_device_extensions.clear();
+    state.fg_max_generations = 0;
+    state.fg_pacer.Reset();
 }
 
 void* FrameGenProcAddress(const char* name) {
@@ -647,8 +918,10 @@ bool AttachDevice(VkInstance instance, VkPhysicalDevice physical, VkDevice devic
             sl::DLSSGState fg_state{};
             sl::DLSSGOptions probe{};
             api.dlssg_get_state(sl::ViewportHandle{0u}, fg_state, &probe);
-            state.fg_available = true;
-            Common::FrameGenStats::available.store(true, std::memory_order_relaxed);
+            state.fg_max_generations = fg_state.numFramesToGenerateMax;
+            state.fg_pacer.Reset();
+            state.fg_available = fg_state.numFramesToGenerateMax > 0;
+            Common::FrameGenStats::available.store(state.fg_available, std::memory_order_relaxed);
             LOG_INFO(Render_Vulkan,
                      "DLSS Frame Generation is available: up to {} generated frames per rendered "
                      "one, optical flow queue family {} index {}",
@@ -866,66 +1139,93 @@ u32 FrameGenSwapchainImages() {
     return value ? static_cast<u32>(std::atoi(value)) : 0;
 }
 
-void* TakeFrameGenToken() {
+void* TakeFrameGenToken(u32* generations) {
     State& state = GetState();
+    if (generations) {
+        *generations = 0;
+    }
     if (!IsFrameGenAvailable()) {
+        state.fg_pacer.Reset();
         return nullptr;
     }
     const sl::FrameToken* const frame =
         state.fg_tagged.exchange(nullptr, std::memory_order_acq_rel);
     if (!frame) {
+        state.fg_pacer.Reset();
+        state.fg_generation_phase = 0;
         return nullptr;
     }
 
-    // Manual 0.5x mode: keep one generated frame for every two DLSS-evaluated game frames.
-    // This deliberately alternates a normal present and a generated present; it is not NVIDIA's
-    // native Dynamic MFG and may have uneven frame pacing at fractional ratios.
-    const char* const value = std::getenv("LICHII_DLSS_FG_DIVISOR");
-    const u32 divisor = value && value[0] == '2' ? 2u : 1u;
-    if (divisor != state.fg_generation_divisor) {
-        state.fg_generation_divisor = divisor;
+    const FrameGenMode mode = ConfiguredFrameGenMode();
+    if (mode != state.fg_pacer_mode) {
+        state.fg_pacer_mode = mode;
         state.fg_generation_phase = 0;
-        LOG_INFO(Render_Vulkan,
-                 "DLSS Frame Generation manual ratio: 1 generated frame per {} rendered frame(s)",
-                 divisor);
+        state.fg_pacer.Reset();
+        LOG_INFO(Render_Vulkan, "DLSS Frame Generation scheduling mode changed to {}",
+                 mode == FrameGenMode::Auto ? "Auto" :
+                 mode == FrameGenMode::Half ? "0.5x" : "2x");
     }
-    const bool generate = state.fg_generation_phase == 0;
-    state.fg_generation_phase = (state.fg_generation_phase + 1) % divisor;
-    if (!generate) {
+
+    u32 requested = 0;
+    switch (mode) {
+    case FrameGenMode::Fixed2x:
+        requested = std::min(1u, state.fg_max_generations);
+        break;
+    case FrameGenMode::Half:
+        if (state.fg_generation_phase == 0) {
+            requested = std::min(1u, state.fg_max_generations);
+        }
+        state.fg_generation_phase = (state.fg_generation_phase + 1) % 2;
+        break;
+    case FrameGenMode::Auto:
+        requested = state.fg_pacer.Plan(state.fg_max_generations, FrameGenTargetRate());
+        break;
+    }
+
+    if (requested == 0) {
         return nullptr;
+    }
+    if (generations) {
+        *generations = requested;
     }
     return const_cast<sl::FrameToken*>(frame);
 }
 
-void FrameGenBeforePresent(void* token, u32 game_left, u32 game_top, u32 game_right,
-                           u32 game_bottom) {
+void FrameGenBeforePresent(void* token, u32 generations, u32 game_left, u32 game_top,
+                           u32 game_right, u32 game_bottom) {
     State& state = GetState();
     if (!IsFrameGenAvailable()) {
         return;
     }
     const Api& api = state.api;
-    const bool want_on = token != nullptr;
-    if (want_on != state.fg_on) {
-        // Off for frames without a DLSS evaluation (menus, loading): nothing to generate from.
+    const u32 requested = token ? std::min(generations, state.fg_max_generations) : 0u;
+    const bool want_on = requested > 0;
+    if (want_on != state.fg_on || (want_on && requested != state.fg_current_generations)) {
+        // Apply the selected count on the presenting thread just before Present(). Vulkan uses
+        // our own pacer instead of Streamline's native eDynamic mode, which is D3D12-only.
         sl::DLSSGOptions options{};
         options.mode = want_on ? sl::DLSSGMode::eOn : sl::DLSSGMode::eOff;
-        options.numFramesToGenerate = 1;
+        options.numFramesToGenerate = want_on ? requested : 1u;
         options.flags = sl::DLSSGFlags::eRetainResourcesWhenOff;
-        // The default blocks the presenting queue (the emulator's only graphics queue) until
-        // frame generation finishes: the real frame rate halved (50 -> 26 fps). LICHII_DLSS_FG_BLOCK=1
-        // goes back to it.
         const char* const block = std::getenv("LICHII_DLSS_FG_BLOCK");
         options.queueParallelismMode = block && block[0] == '1'
                                            ? sl::DLSSGQueueParallelismMode::eBlockPresentingClientQueue
                                            : sl::DLSSGQueueParallelismMode::eBlockNoClientQueues;
         const sl::Result result = api.dlssg_set_options(sl::ViewportHandle{0u}, options);
         ++state.fg_mode_switches;
-        if (state.fg_mode_switches == 1 || state.fg_mode_switches % 120 == 0) {
-            LOG_INFO(Render_Vulkan, "DLSS Frame Generation {} (result {}; mode switches {})",
-                     want_on ? "on" : "off", static_cast<int>(result), state.fg_mode_switches);
+        if (result == sl::Result::eOk) {
+            state.fg_on = want_on;
+            state.fg_current_generations = requested;
+            Common::FrameGenStats::active.store(want_on, std::memory_order_relaxed);
+            LOG_INFO(Render_Vulkan,
+                     "DLSS Frame Generation {} ({} generated frame(s), result {}, changes {})",
+                     want_on ? "on" : "off", requested, static_cast<int>(result),
+                     state.fg_mode_switches);
+        } else {
+            LOG_WARNING(Render_Vulkan,
+                        "DLSS Frame Generation option update to {} frame(s) failed (result {})",
+                        requested, static_cast<int>(result));
         }
-        state.fg_on = want_on;
-        Common::FrameGenStats::active.store(want_on, std::memory_order_relaxed);
     }
     // Include both generated and plain presents in the frame-rate statistics.
     state.fg_present_begin = std::chrono::steady_clock::now();
@@ -1056,6 +1356,9 @@ void Stop() {
     state.fg_available = false;
     state.fg_reflex_set = false;
     state.fg_on = false;
+    state.fg_current_generations = 0;
+    state.fg_max_generations = 0;
+    state.fg_pacer.Reset();
     state.fg_tagged.store(nullptr, std::memory_order_relaxed);
     state.fg_inputs_fence.store(VK_NULL_HANDLE, std::memory_order_relaxed);
     LOG_INFO(Render_Vulkan, "NVIDIA Streamline stopped (result {})", static_cast<int>(result));

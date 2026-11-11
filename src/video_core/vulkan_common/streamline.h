@@ -88,11 +88,11 @@ bool AttachDevice(VkInstance instance, VkPhysicalDevice physical, VkDevice devic
 /// Frame generation per presented frame. The present manager takes the token on the Vulkan worker
 /// right after the frame's commands (so it is the token of the DLSS evaluation in that frame, or
 /// null without one), then wraps the frame's vkQueuePresentKHR with it.
-[[nodiscard]] void* TakeFrameGenToken();
+[[nodiscard]] void* TakeFrameGenToken(u32* generations);
 /// game_* is the rectangle the game image covers in the backbuffer: frame generation runs inside it
 /// (a little inset) and copies the rest as is (else, scaled to fullscreen, it smeared the edge row).
-void FrameGenBeforePresent(void* token, u32 game_left, u32 game_top, u32 game_right,
-                           u32 game_bottom);
+void FrameGenBeforePresent(void* token, u32 generations, u32 game_left, u32 game_top,
+                           u32 game_right, u32 game_bottom);
 void FrameGenAfterPresent(void* token);
 /// Time the present thread spent acquiring the swapchain image (for the frame generation log).
 void NoteFrameGenAcquire(u64 ns);

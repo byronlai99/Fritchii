@@ -239,7 +239,7 @@ void PresentManager::Present(Frame* frame) {
             frame->queued_at = std::chrono::steady_clock::now();
 #ifdef EGLANTINE_STREAMLINE
             // Right after this frame's commands on the worker: its DLSS evaluation's token.
-            frame->frame_gen_token = Streamline::TakeFrameGenToken();
+            frame->frame_gen_token = Streamline::TakeFrameGenToken(&frame->frame_gen_generations);
 #endif
             // What ends the present thread's "present: wait for frame" (on the Vulkan worker).
             if (Common::Nx2Timeline::Active()) {
@@ -252,7 +252,7 @@ void PresentManager::Present(Frame* frame) {
     } else {
         scheduler.WaitWorker();
 #ifdef EGLANTINE_STREAMLINE
-        frame->frame_gen_token = Streamline::TakeFrameGenToken();
+        frame->frame_gen_token = Streamline::TakeFrameGenToken(&frame->frame_gen_generations);
 #endif
         CopyToSwapchain(frame);
         free_queue.push_back(frame);
@@ -872,8 +872,9 @@ void PresentManager::CopyToSwapchainImpl(Frame* frame) {
     // Present
 #ifdef EGLANTINE_STREAMLINE
     void* const frame_gen_token = std::exchange(frame->frame_gen_token, nullptr);
-    Streamline::FrameGenBeforePresent(frame_gen_token, frame->game_left, frame->game_top,
-                                      frame->game_right, frame->game_bottom);
+    Streamline::FrameGenBeforePresent(frame_gen_token, frame->frame_gen_generations,
+                                      frame->game_left, frame->game_top, frame->game_right,
+                                      frame->game_bottom);
 #endif
     last_present_id = swapchain.Present(render_semaphore);
 #ifdef EGLANTINE_STREAMLINE
