@@ -65,6 +65,7 @@ FrameGenMode ConfiguredFrameGenMode() {
         if (mode == "2x" || mode == "double") {
             return FrameGenMode::Fixed2x;
         }
+    }
     // Auto is the default; unrecognized or legacy modes safely fall back to Auto.
     return FrameGenMode::Auto;
 }
