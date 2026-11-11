@@ -324,7 +324,6 @@ std::string FrameGenEnv() {
 
 enum class FrameGenMode {
     Fixed2x,
-    Half,
     Auto,
 };
 
@@ -335,23 +334,18 @@ FrameGenMode CurrentFrameGenMode() {
         if (mode == "auto") {
             return FrameGenMode::Auto;
         }
-        if (mode == "0.5x" || mode == "half") {
-            return FrameGenMode::Half;
-        }
         if (mode == "2x" || mode == "double") {
             return FrameGenMode::Fixed2x;
         }
     }
-    const char* const divisor = std::getenv("LICHII_DLSS_FG_DIVISOR");
-    return divisor && divisor[0] == '2' ? FrameGenMode::Half : FrameGenMode::Fixed2x;
+    // Auto is the safe default; legacy half-speed values are intentionally ignored.
+    return FrameGenMode::Auto;
 }
 
 QString FrameGenModeName(FrameGenMode mode) {
     switch (mode) {
     case FrameGenMode::Auto:
         return QObject::tr("AUTO");
-    case FrameGenMode::Half:
-        return QObject::tr("0.5X");
     case FrameGenMode::Fixed2x:
     default:
         return QObject::tr("2X");
@@ -359,16 +353,13 @@ QString FrameGenModeName(FrameGenMode mode) {
 }
 
 void SetFrameGenMode(FrameGenMode mode) {
-    const char* value = mode == FrameGenMode::Auto ? "auto"
-                        : mode == FrameGenMode::Half ? "0.5x"
-                                                     : "2x";
-    const char* divisor = mode == FrameGenMode::Half ? "2" : "1";
+    const char* value = mode == FrameGenMode::Auto ? "auto" : "2x";
 #ifdef _WIN32
     _putenv_s("LICHII_DLSS_FG_MODE", value);
-    _putenv_s("LICHII_DLSS_FG_DIVISOR", divisor);
+    _putenv_s("LICHII_DLSS_FG_DIVISOR", "");
 #else
     setenv("LICHII_DLSS_FG_MODE", value, 1);
-    setenv("LICHII_DLSS_FG_DIVISOR", divisor, 1);
+    unsetenv("LICHII_DLSS_FG_DIVISOR");
 #endif
 }
 
@@ -410,9 +401,6 @@ QPushButton* MakeFrameGenButton(QWidget* parent, GraphicsHooks hooks) {
             case FrameGenMode::Auto:
                 tooltip = QObject::tr("Auto: adaptive DLSS-G frame pacing, targeting 60 FPS by default. Set LICHII_DLSS_FG_TARGET to change the target.");
                 break;
-            case FrameGenMode::Half:
-                tooltip = QObject::tr("Manual 0.5x: one generated frame for every two rendered frames");
-                break;
             case FrameGenMode::Fixed2x:
             default:
                 tooltip = QObject::tr("DLSS Frame Generation 2x is on");
@@ -422,7 +410,7 @@ QPushButton* MakeFrameGenButton(QWidget* parent, GraphicsHooks hooks) {
         } else {
             button->setToolTip(
                 next_start
-                    ? QObject::tr("Frame Generation %1 is requested for the next game start. Click to cycle 2x, 0.5x, Auto, and off.")
+                    ? QObject::tr("Frame Generation %1 is requested for the next game start. Click to cycle Auto, 2x, and off.")
                           .arg(FrameGenModeName(mode))
                     : QObject::tr("Enable for the next game start. Requires NVIDIA DLSS and Streamline Frame Gen plugins."));
         }
@@ -441,13 +429,11 @@ QPushButton* MakeFrameGenButton(QWidget* parent, GraphicsHooks hooks) {
         const FrameGenMode mode = CurrentFrameGenMode();
 
         if (!on) {
-            SetFrameGenMode(FrameGenMode::Fixed2x);
+            SetFrameGenMode(FrameGenMode::Auto);
             SetFrameGenEnv(true);
             Common::FrameGenStats::user_enabled.store(true, std::memory_order_relaxed);
-        } else if (mode == FrameGenMode::Fixed2x) {
-            SetFrameGenMode(FrameGenMode::Half);
-        } else if (mode == FrameGenMode::Half) {
-            SetFrameGenMode(FrameGenMode::Auto);
+        } else if (mode == FrameGenMode::Auto) {
+            SetFrameGenMode(FrameGenMode::Fixed2x);
         } else {
             SetFrameGenEnv(false);
             Common::FrameGenStats::user_enabled.store(false, std::memory_order_relaxed);
