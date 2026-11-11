@@ -4,6 +4,15 @@ This document defines how to re-apply the enabled Fritchii-HDrum modules wheneve
 
 The machine-readable module list is `docs/fork-modules.yml`. **That manifest is the source of truth** for which modules are active. Do not rely on chat history or memory alone.
 
+## Current branch pointer (check this first)
+
+- **Current module work branch:** [`feature/v5.8.4-renhdrum-zh-cn`](https://github.com/byronlai99/Fritchii-HDrum/tree/feature/v5.8.4-renhdrum-zh-cn)
+- **Purpose:** carries the v5.8.4 port of the enabled module set and the maintenance workflow/manifest.
+- **Upstream base:** `Frizti/Fritchii` tag `fritchii-v5.8.4` (`4f5c53149b7e17d1c24445f68d79a83a3b2a17f9`).
+- **Stable default branch:** `fix/v5.6-msvc-c4458-packet-shadow`. This is separate and must not be used as the base for v5.8.4 module work.
+
+When continuing this project, read `active_module_branch` in `docs/fork-modules.yml` first. Use that exact branch directly; do not spend time enumerating branches or guessing from branch names. When a new upstream version gets its own integration branch, update this pointer and the manifest's `baseline.working_branch` together.
+
 ## Trigger phrase
 
 When the user says **"套入我们的优化模块"**, **"移植我们的 fork 模块"**, or an equivalent instruction, interpret it as:
