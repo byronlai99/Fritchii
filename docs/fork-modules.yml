@@ -133,6 +133,7 @@ integration_failure_ledger:
   - id: F-001-msvc-c4457-c4458-name-hiding
     evidence:
       workflow_run: 43043541561
+      workflow_run_url: https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43043541561
       tested_commit: a7fe6fdaae4e6c46118454726ba2d4dea69a3c33
       stage: Build
       configure_result: passed
@@ -177,6 +178,7 @@ integration_failure_ledger:
   - id: F-005-msvc-d9014-invalid-w4-value
     evidence:
       workflow_run: 43043541561
+      workflow_run_url: https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43043541561
       stage: Build
     status: non_blocking_root_cause_unconfirmed
     symptoms:
