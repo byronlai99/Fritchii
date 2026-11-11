@@ -190,6 +190,7 @@ constexpr std::pair<const char*, const char*> BuiltinSwitches[] = {
     {"EDEN_NX2_SEM_FAST", "2"},
     // Experimental Fritchii-HDrum: request DLSS Frame Generation by default. The player's
     // environment or nx2_switches.txt can still override either value.
+    {"LICHII_DLSS", "1"},
     {"LICHII_DLSS_FG", "1"},
     {"LICHII_DLSS_FG_DIVISOR", "1"},
 };
