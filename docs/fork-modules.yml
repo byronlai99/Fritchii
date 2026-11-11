@@ -127,6 +127,83 @@ build_policy:
     - "*.pdb"
   artifact_retention_days: 7
 
+# Historical integration failures and recurring workflow portability checks.
+# Do not delete old entries when moving to a newer upstream tag.
+integration_failure_ledger:
+  - id: F-001-msvc-c4457-c4458-name-hiding
+    evidence:
+      workflow_run: 43043541561
+      tested_commit: a7fe6fdaae4e6c46118454726ba2d4dea69a3c33
+      stage: Build
+      configure_result: passed
+    status: fixed_in_current_branch
+    symptoms:
+      - "C4458: state hid a class member in src/video_core/engines/kepler_compute.cpp:1664."
+      - "C4458: state hid a class member in src/video_core/engines/maxwell_3d.cpp:2825."
+      - "C4457: count hid a function parameter in src/video_core/engines/maxwell_3d.cpp:2377 and :2381."
+    resolution:
+      - "Renamed state locals to bypass_state and draw_state."
+      - "Renamed count locals to dispatch_count and unbounded_count."
+      - "Kept the MSVC warning policy intact; fixed the source names instead of suppressing diagnostics."
+    prevention:
+      - "Scan every changed/new C++ file for C4456, C4457, C4458 and all target warnings promoted to errors."
+      - "Inspect function parameters, class members, and base-class members for name collisions."
+  - id: F-002-v584-nx2-api-version-skew
+    evidence:
+      baseline: fritchii-v5.8.4
+      module: RenHDrum v0.3.0
+    status: fixed_in_current_branch
+    symptoms:
+      - "Settings::nx2_active_mode was referenced although it is absent from the v5.8.4 baseline."
+      - "The NX2-mode RenHDrum symbol was not part of the selected v0.3.0 integration API."
+    resolution:
+      - "Removed the NX2-only setting dependency from the v5.8.4 RenHDrum path."
+      - "Removed the unused NX2-mode runtime symbol lookup."
+    prevention:
+      - "Check every imported type, setting, function, and DLL export against the exact target tag and selected runtime release."
+      - "Never carry API assumptions from another branch or module-author fork without verifying the target source."
+  - id: F-003-external-workflow-portability
+    evidence:
+      context: recurring_cross_project_integration_risk
+    status: mandatory_preflight_control
+    symptoms:
+      - "External module workflows may use a different OS, architecture, compiler, warning policy, CMake options, dependency pin, or artifact layout."
+      - "A passing external workflow or successful CMake configure does not prove our Windows x64 MSVC yuzu and yuzu-cmd targets compile and link."
+    resolution:
+      - "Do not copy external GitHub Actions workflows wholesale."
+      - "Translate only required dependencies/setup into the fork-owned workflow and test the actual release targets."
+    prevention:
+      - "Record runner, compiler, generator, Qt/SDL3/CPM versions, CMake options, targets, and artifact path for each upgrade."
+  - id: F-004-package-contents-regression
+    evidence:
+      context: historical_v5x_packaging_iteration
+      detail: "A previously reported archive contained only two files; the originating run/log is not currently retained here."
+    status: historical_symptom_root_cause_unconfirmed
+    symptoms:
+      - "The uploaded archive did not contain the expected complete application package."
+    resolution:
+      - "Do not assign a root cause without the originating run evidence."
+    prevention:
+      - "Inspect the final archive contents, not only the artifact-upload step."
+      - "Verify executable, Qt/runtime dependencies, RenHDrum DLL, translations, recipes/assets, and required files."
+      - "Verify eden-cli.exe, vc_redist*, and *.pdb are absent."
+
+workflow_portability_policy:
+  authoritative_workflow: .github/workflows/renhdrum-v584-build.yml
+  rule: "External module workflows are reference material only; the fork-owned MSVC workflow is authoritative."
+  compare_before_porting:
+    - runner_os_and_architecture
+    - compiler_toolchain_and_warning_policy
+    - cmake_generator_configuration_options_and_targets
+    - qt_sdl3_cpm_versions_and_source_patches
+    - generated_resources_and_translation_pipeline
+    - executable_runtime_dll_and_artifact_layout
+  recurring_dependency_checks:
+    - "Apply SDL3 patches to the exact CPM-resolved source revision and verify patched symbols are available to the final link."
+    - "Verify RenHDrum required/optional symbols against the selected header and actual DLL exports."
+    - "Verify app-embedded zh_CN Qt resources separately from Qt translation files deployed by windeployqt."
+    - "Inspect the archive itself for required and excluded files."
+
 # Last full static review for the current 5.8.4 integration branch.
 # Status describes source inspection only; it is not a successful CI build.
 last_static_review:
@@ -136,7 +213,7 @@ last_static_review:
     - "MSVC C4457/C4458 local/member shadowing in kepler_compute.cpp and maxwell_3d.cpp."
     - "Removed unavailable/unused NX2 Settings and RenHDrum API references from the v5.8.4 target."
     - "Renamed potential MSVC shadowing locals in the RenHDrum driver."
-    - "Preserved Qt translations in Windows windeployqt post-build step."
+    - "Kept the application zh_CN translation in the Qt resource pipeline; deployment of Qt external translation files is checked separately."
     - "Added RenHDrum gain and low-boost settings to OoT tuned settings; bumped Frizti tuning revision to 13."
     - "Added a mandatory pre-build static review gate to the maintenance workflow."
   requires_ci_validation:
@@ -165,3 +242,6 @@ pre_build_static_review:
     - qt_translation_generation_and_deployment
     - ui_dialog_accept_cancel_and_widget_ownership
     - package_contents_and_exclusions
+    - external_workflow_portability_comparison
+    - historical_failure_ledger_review
+    - final_archive_content_audit
