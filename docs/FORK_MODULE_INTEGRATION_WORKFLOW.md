@@ -78,7 +78,7 @@ Do this for every upstream tag, even when the upstream release notes do not ment
 **Required translation-port checklist:**
 
 1. Start from the current fork's complete `dist/languages/zh_CN.ts`, not an older upstream copy. Compare the new upstream `dist/languages/zh_CN.ts` and every changed/new `.ui` and source file against it. Merge newly added or changed source strings by context; never replace the fork catalog wholesale or discard existing fork-only entries (RenHDrum, DLSS/FG, Fritchii menus, migration text, and other local UI).
-2. Re-scan all changed C++ and Qt UI code for visible text: menu/action labels, submenus, button labels, tab names, tooltips/hover popups, status text, QMessageBox/QDialog/QProgressDialog text, error/recovery messages, update/About dialogs, and strings assembled dynamically. Do not limit the review to `.ui` files or upstream translation diffs.
+2. Re-scan all changed C++ and Qt UI code for visible text: menu/action labels, submenus, button labels, tab names, tooltips/hover popups, status text, QMessageBox/QDialog/QProgressDialog text, error/recovery messages, update/About dialogs, and strings assembled dynamically. Do not limit the review to `.ui` files or upstream translation diffs. The Fritchii Saves window uses `QObject::tr()`, so every Saves dialog title, button, label, prompt, and result message belongs in the existing `QObject` translation context; its Help-menu action belongs in `FritchiiUi`.
 3. Keep translation contexts exact. Typical contexts in this fork include:
    - Qt Designer forms: the class/context generated for the corresponding `.ui` file (for example `MainWindow`).
    - `QObject::tr(...)`: `QObject`.
@@ -184,7 +184,7 @@ Do not change an intentional module-specific divergence merely to make the YAML 
 ### Recurring dependency and packaging checks (risk until proven by CI)
 
 - SDL3 patch drift: RenHDrum's custom SDL3 patches are tied to a specific SDL3 source revision. Check patch application against the exact CPM-resolved source and verify the patched declarations/definitions are available to the final link. Do not count a successful CMake configure as proof.
-- Runtime API drift: compare required and optional RenHDrum symbols with both the selected header and the actual v0.3.0 DLL exports; check x64 architecture and SHA-256.
+- Runtime API drift: compare required and optional RenHDrum symbols with both the selected header and the actual v0.3.1 DLL exports; check x64 architecture and pinned SHA-256 `ff397c9e51a976ce8efad625c289589d38e36bf209860d8a87dc91fc17e748f7`.
 - Translation deployment: follow the upstream v5.8.4 Windows command `windeployqt --release --no-translations`; verify the application's own compiled/embedded zh_CN Qt resource and runtime language selection independently from Qt's separately deployed translation files.
 - Artifact layout drift: verify the actual output directory and executable name from the target CMake configuration before packaging. Never assume another project's output path or copy step applies here.
 
@@ -283,3 +283,12 @@ Run #22 artifact metadata: Fritchii-v5.8.4-RenHDrum-zh-CN-Windows-x64-9e053b5a7a
   `QObject::tr("Fritchii will use its own profile. Your old emulator " "data has not been changed.")`.
 - **Status:** Corrected in the follow-up source patch; awaiting confirmation from the next Windows x64 MSVC build.
 
+
+
+### Fork release packaging policy
+
+- Every Windows x64 MSVC package build produces both `.zip` and `.7z` archives from the same validated `build/release/bin` directory.
+- Run 7-Zip integrity tests against both archives before uploading the workflow artifact.
+- Push-triggered builds remain test-artifact only. A manually dispatched build publishes only when `publish_release=true`; the input defaults to `false`.
+- Every published build is a GitHub **pre-release**, tagged `v5.8.4-preview.<run number>`. Do not publish a stable Release from this integration workflow.
+- Attach both the ZIP and 7z archives to the same pre-release. Preserve the package manifest: include `lichii.exe`, `renhdrum.dll`, the embedded Simplified Chinese catalog and the pinned OoT cache-v54 recipe; exclude `eden-cli.exe`, `vc_redist*` and `*.pdb`.

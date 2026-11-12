@@ -25,15 +25,16 @@ modules:
   - id: renhdrum
     enabled: true
     name: RenHDrum controller haptics and HD Rumble
-    version: 0.3.0
+    version: 0.3.1
     source:
       repository: trzz1214/RenHDrum
-      release: https://github.com/trzz1214/RenHDrum/releases/tag/v0.3.0
+      release: https://github.com/trzz1214/RenHDrum/releases/tag/v0.3.1
     integration:
       cmake_options:
         - ENABLE_RENHDRUM=ON
         - RENHDRUM_SDL_PATCHES=ON
       runtime_file: renhdrum.dll
+      runtime_sha256: ff397c9e51a976ce8efad625c289589d38e36bf209860d8a87dc91fc17e748f7
       files:
         - CMakeLists.txt
         - cpmfile.json
@@ -118,7 +119,12 @@ build_policy:
   toolchain: MSVC
   pgo: false
   release_artifact_only: true
-  publish_github_release: false
+  publish_github_release: workflow_dispatch
+  publish_release_input_default: false
+  release_channel: prerelease
+  release_formats:
+    - zip
+    - 7z
   cmake_options:
     - ENABLE_QT_TRANSLATION=ON
   package_excludes:

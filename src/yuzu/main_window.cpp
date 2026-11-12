@@ -1309,9 +1309,11 @@ void MainWindow::InitializeWidgets() {
             [this](const QPoint& menu_location) {
                 QMenu context_menu;
 
-                for (auto const& pair : ConfigurationShared::use_docked_mode_texts_map) {
-                    context_menu.addAction(pair.second, [this, &pair] {
-                        if (pair.first != Settings::values.use_docked_mode.GetValue()) {
+                for (const auto& pair : ConfigurationShared::use_docked_mode_texts_map) {
+                    const QString mode_text =
+                        pair.first == Settings::ConsoleMode::Docked ? tr("Docked") : tr("Handheld");
+                    context_menu.addAction(mode_text, [this, mode = pair.first] {
+                        if (mode != Settings::values.use_docked_mode.GetValue()) {
                             OnToggleDockedMode();
                         }
                     });
@@ -5470,8 +5472,9 @@ void MainWindow::SetOotHighRefresh(bool on) {
 void MainWindow::UpdateDockedButton() {
     const auto console_mode = Settings::values.use_docked_mode.GetValue();
     dock_status_button->setChecked(Settings::IsDockedMode());
-    dock_status_button->setText(
-        ConfigurationShared::use_docked_mode_texts_map.find(console_mode)->second.toUpper());
+    const QString mode_text =
+        console_mode == Settings::ConsoleMode::Docked ? tr("Docked") : tr("Handheld");
+    dock_status_button->setText(mode_text.toUpper());
 }
 
 void MainWindow::UpdateAPIText() {

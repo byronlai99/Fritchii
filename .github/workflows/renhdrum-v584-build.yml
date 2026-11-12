@@ -15,6 +15,12 @@ on:
       - ".patch/**"
       - ".github/workflows/renhdrum-v584-build.yml"
   workflow_dispatch:
+    inputs:
+      publish_release:
+        description: Publish this build as a GitHub pre-release with ZIP and 7z assets
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -25,8 +31,10 @@ concurrency:
 
 jobs:
   windows-x64-msvc:
-    name: Windows x64 MSVC (test artifact only)
+    name: Windows x64 MSVC
     runs-on: windows-2022
+    permissions:
+      contents: write
     env:
       SCCACHE_DIR: ${{ github.workspace }}/.sccache
       SCCACHE_CACHE_SIZE: 3G
@@ -145,10 +153,10 @@ jobs:
           Remove-Item (Join-Path $bin 'translations') -Recurse -Force -ErrorAction SilentlyContinue
 
           $dll = Join-Path $bin 'renhdrum.dll'
-          Invoke-WebRequest -Uri 'https://github.com/trzz1214/RenHDrum/releases/download/v0.3.0/renhdrum.dll' -OutFile $dll
+          Invoke-WebRequest -Uri 'https://github.com/trzz1214/RenHDrum/releases/download/v0.3.1/renhdrum.dll' -OutFile $dll
           $hash = (Get-FileHash -Algorithm SHA256 $dll).Hash.ToLowerInvariant()
-          if ($hash -ne '33c88b343fa49627cc09fcd0cee7e46f5a85e16e77f1d404e44574d42eaa74e8') {
-            throw "RenHDrum v0.3.0 DLL SHA-256 mismatch: $hash"
+          if ($hash -ne 'ff397c9e51a976ce8efad625c289589d38e36bf209860d8a87dc91fc17e748f7') {
+            throw "RenHDrum v0.3.1 DLL SHA-256 mismatch: $hash"
           }
 
           # Preserve the exact OoT cache-v54 recipe used by the previous Fritchii-HDrum package.
@@ -215,10 +223,75 @@ jobs:
             throw 'renhdrum.dll is missing from the test package'
           }
 
-      - name: Upload test artifact (no GitHub Release)
+      - name: Create and verify ZIP and 7z packages
+        shell: pwsh
+        run: |
+          $sevenZip = Join-Path $env:ProgramFiles '7-Zip\7z.exe'
+          if (-not (Test-Path $sevenZip)) {
+            choco install 7zip.install --yes --no-progress
+          }
+          if (-not (Test-Path $sevenZip)) {
+            throw '7-Zip was not found after installation'
+          }
+
+          $bin = (Resolve-Path 'build/release/bin').Path
+          $packageDir = Join-Path $env:GITHUB_WORKSPACE 'build/release/packages'
+          New-Item -ItemType Directory -Force -Path $packageDir | Out-Null
+          $base = 'Fritchii-v5.8.4-RenHDrum-zh-CN-Windows-x64'
+          $zip = Join-Path $packageDir "$base.zip"
+          $archive7z = Join-Path $packageDir "$base.7z"
+
+          Push-Location $bin
+          try {
+            & $sevenZip a -tzip -mx=9 $zip '.\*'
+            if ($LASTEXITCODE -ne 0) { throw "ZIP creation failed: $LASTEXITCODE" }
+            & $sevenZip a -t7z -mx=9 $archive7z '.\*'
+            if ($LASTEXITCODE -ne 0) { throw "7z creation failed: $LASTEXITCODE" }
+          } finally {
+            Pop-Location
+          }
+
+          & $sevenZip t $zip
+          if ($LASTEXITCODE -ne 0) { throw "ZIP integrity test failed: $LASTEXITCODE" }
+          & $sevenZip t $archive7z
+          if ($LASTEXITCODE -ne 0) { throw "7z integrity test failed: $LASTEXITCODE" }
+
+          Get-ChildItem $packageDir | Select-Object Name, Length
+          if (-not (Test-Path $zip) -or -not (Test-Path $archive7z)) {
+            throw 'Both ZIP and 7z packages must exist'
+          }
+
+      - name: Upload ZIP and 7z test artifacts
         uses: actions/upload-artifact@v7
         with:
           name: Fritchii-v5.8.4-RenHDrum-zh-CN-Windows-x64-${{ github.sha }}
-          path: build/release/bin/
+          path: build/release/packages/
           if-no-files-found: error
           retention-days: 7
+
+      - name: Publish GitHub pre-release
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_release }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          package_dir="${GITHUB_WORKSPACE}/build/release/packages"
+          base="Fritchii-v5.8.4-RenHDrum-zh-CN-Windows-x64"
+          zip="${package_dir}/${base}.zip"
+          archive7z="${package_dir}/${base}.7z"
+          tag="v5.8.4-preview.${GITHUB_RUN_NUMBER}"
+          title="Fritchii-HDrum v5.8.4 Preview ${GITHUB_RUN_NUMBER}"
+          notes="Windows x64 MSVC preview build. Both ZIP and 7z contain the same validated package. This is a pre-release, not a stable release."
+
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$tag" "$zip" "$archive7z" --repo "$GITHUB_REPOSITORY" --clobber
+            gh release edit "$tag" --repo "$GITHUB_REPOSITORY" --title "$title" --notes "$notes" --prerelease
+          else
+            gh release create "$tag" "$zip" "$archive7z" \
+              --repo "$GITHUB_REPOSITORY" \
+              --target "$GITHUB_SHA" \
+              --title "$title" \
+              --notes "$notes" \
+              --prerelease
+          fi

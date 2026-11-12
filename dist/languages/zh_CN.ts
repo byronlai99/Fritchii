@@ -9913,6 +9913,138 @@ Close any emulator or program using it, then start Fritchii again.</source>
         <source>Start without it</source>
         <translation>跳过迁移并启动</translation>
     </message>
+    <message>
+        <source>Done: the saves of 1 game were copied.</source>
+        <translation>已复制 1 个游戏的存档。</translation>
+    </message>
+    <message>
+        <source>Done: the saves of %1 games were copied.</source>
+        <translation>已复制 %1 个游戏的存档。</translation>
+    </message>
+    <message>
+        <source>
+
+The saves that were there before are backed up in:
+%1</source>
+        <translation>
+
+原有存档已备份至：
+%1</translation>
+    </message>
+    <message>
+        <source>Saves</source>
+        <translation>存档</translation>
+    </message>
+    <message>
+        <source>Open backup</source>
+        <translation>打开备份目录</translation>
+    </message>
+    <message>
+        <source>Close the game first.</source>
+        <translation>请先关闭游戏。</translation>
+    </message>
+    <message>
+        <source>That didn't work:
+%1</source>
+        <translation>操作失败：
+%1</translation>
+    </message>
+    <message>
+        <source>
+
+The saves there now are backed up first, in:
+%1</source>
+        <translation>
+
+当前存档会先备份至：
+%1</translation>
+    </message>
+    <message>
+        <source>Export...</source>
+        <translation>导出...</translation>
+    </message>
+    <message>
+        <source>Your saves to a .zip file</source>
+        <translation>将存档导出为 .zip 文件</translation>
+    </message>
+    <message>
+        <source>Fritchii has no saves yet.</source>
+        <translation>Fritchii 尚无存档。</translation>
+    </message>
+    <message>
+        <source>Fritchii saves %1.zip</source>
+        <translation>Fritchii 存档 %1.zip</translation>
+    </message>
+    <message>
+        <source>Export saves</source>
+        <translation>导出存档</translation>
+    </message>
+    <message>
+        <source>Zip files (*.zip)</source>
+        <translation>ZIP 文件 (*.zip)</translation>
+    </message>
+    <message>
+        <source>Could not write %1</source>
+        <translation>无法写入 %1</translation>
+    </message>
+    <message>
+        <source>Saves exported to:
+%1</source>
+        <translation>存档已导出至：
+%1</translation>
+    </message>
+    <message>
+        <source>Import...</source>
+        <translation>导入...</translation>
+    </message>
+    <message>
+        <source>Saves from a .zip file</source>
+        <translation>从 .zip 文件导入存档</translation>
+    </message>
+    <message>
+        <source>Import saves</source>
+        <translation>导入存档</translation>
+    </message>
+    <message>
+        <source>Import these saves into Fritchii? The games' saves in Fritchii are replaced.</source>
+        <translation>要将这些存档导入 Fritchii 吗？Fritchii 中现有游戏存档将被替换。</translation>
+    </message>
+    <message>
+        <source>Copy saves from</source>
+        <translation>复制存档：从</translation>
+    </message>
+    <message>
+        <source>to</source>
+        <translation>到</translation>
+    </message>
+    <message>
+        <source>%1 has no saves.</source>
+        <translation>%1 没有存档。</translation>
+    </message>
+    <message>
+        <source>Copy the saves from %1 to %2? The games' saves in %2 are replaced.</source>
+        <translation>要将存档从 %1 复制到 %2 吗？%2 中现有游戏存档将被替换。</translation>
+    </message>
+    <message>
+        <source> Close %1 first.</source>
+        <translation>请先关闭 %1。</translation>
+    </message>
+    <message>
+        <source>Fix</source>
+        <translation>修复</translation>
+    </message>
+    <message>
+        <source>Saves that don't show up in the game</source>
+        <translation>游戏中未显示的存档</translation>
+    </message>
+    <message>
+        <source>Move the saves that don't show up into your Fritchii profile?</source>
+        <translation>要将未显示的存档移入你的 Fritchii 用户配置吗？</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>关闭</translation>
+    </message>
 </context>
 <context>
     <name>QtAmiiboSettingsDialog</name>
