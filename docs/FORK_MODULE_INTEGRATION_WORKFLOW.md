@@ -47,6 +47,42 @@ The exact files, source references, build flags, migration notes, and validation
 - Record the upstream repository, tag, commit SHA, fork branch, and date in the manifest or update notes.
 - Keep the existing stable branch unchanged.
 
+### 1A. Read upstream release notes and turn them into a porting checklist (mandatory)
+
+Before touching source code, read the complete release notes for the exact target tag and follow their linked PRs/commits when a note describes behavior that is not self-explanatory. Do not treat the release notes as a substitute for source comparison: notes summarize user-visible changes, while API, build, translation, and edge-case changes may be recorded only in the source diff.
+
+For each release-note bullet, add one row to the upgrade review with:
+- the exact upstream note / linked source change;
+- affected file, behavior, setting, data path, dependency, or UI;
+- classification: **Preserve upstream**, **Re-apply fork module**, **Adapt to new API**, **Already equivalent upstream**, or **Manual validation**;
+- the action and acceptance check;
+- whether Chinese translation, profile migration, settings persistence, and packaging are affected.
+
+Map release-note topics to the modules and maintenance checks below. One release-note item may touch several areas; do not force each item into only one module.
+
+| Release-note topic | Required review / port action | Existing fork area |
+| --- | --- | --- |
+| Controller, SDL, vibration, haptics, device discovery, or input settings | Compare SDL3 version and patched source, controller APIs, runtime ABI/DLL exports, input UI, settings persistence, and supported controller paths. Re-apply only the missing RenHDrum integration. | `renhdrum`, `accurate-vibration-default`, controller hardware checks |
+| Controls page, controller preview, device selector, mapping layout | Compare the new UI geometry and styling against upstream. Keep only the still-needed compact layout and preview changes; do not duplicate an upstream fix. | `controls-ui-pr36` |
+| Settings defaults, per-game tuning, memory profile, or settings reapplication | Check default vs saved values, global vs per-game scopes, tuning revision, and whether the new release intentionally reapplies defaults. Preserve RenHDrum gain/low-boost tuning and user overrides. | `accurate-vibration-default`, RenHDrum tuning, upstream settings |
+| DLSS / graphics quality / per-game options | Preserve upstream per-game override and “use global” behavior. Verify config serialization, global fallback, game-specific persistence, and translated labels/help text. Do not re-implement upstream features as a fork module. | Upstream behavior + `chinese-ui` |
+| Saves, profile location, migration, import/export, backup, repair | Verify destination profile path, save-copy target, backup-before-write behavior, recovery/fix workflow, and no data loss. Review migration messages and every associated translation. | Upstream profile/storage behavior + `chinese-ui` |
+| Language, menus, dialogs, tooltips, first-run prompts | Reconcile all changed/new source strings and exact Qt translation contexts, even if the release notes do not mention localization. | `chinese-ui` |
+| Qt, SDL3, Vulkan, compiler, dependencies, CMake, packaging, or updater | Compare upstream workflow and dependency pins; port only the supported Windows x64 MSVC requirements and preserve the fork's runtime DLL, translations, recipe, exclusions, and archive checks. | Build workflow / package contract |
+
+**Example: v5.8.4 release-note review (already incorporated; keep as regression checks on future tags).**
+
+Source: [Fritchii v5.8.4 release notes](https://github.com/Frizti/Fritchii/releases/tag/fritchii-v5.8.4), published 2026-11-11.
+
+| v5.8.4 upstream change | What the next upgrade must preserve / re-check | Classification |
+| --- | --- | --- |
+| Saves copied through the Saves window now land in Fritchii's own profile; Saves always backs up first, reports the backup path, and offers an Open backup action; the Fix action repairs previously orphaned saves after creating a backup. | Compare the save-copy destination and import/fix code against the new profile root. Check backup is created before copy/import/fix, the path is shown before and after, the backup can be opened, and copied saves appear in the active Fritchii profile. Reconcile all Saves UI strings in the `QObject` context. | Preserve upstream; manual save-data validation |
+| Switch 2 games use the 12 GB memory layout while running and restore the previous setting after the game exits; the UI label is “12GB DRAM (Switch 2)” and it is no longer classified as OoT-only. | Preserve temporary runtime switching and restoration. Check setting labels, warning text, OoT/per-game tuning classification, and that the feature is not accidentally forced for Switch 1 games. | Preserve upstream; settings/tuning regression test |
+| DLSS quality and preset are available per game under Game Settings > Graphics, with “use global” behavior. | Preserve the per-game override, global fallback, serialization, and UI behavior. Ensure the Chinese catalog includes any changed labels, descriptions, and tooltips. | Preserve upstream; Chinese UI reconciliation |
+| Fritchii tuned settings are applied once again with the update, after which users may change them. | Inspect the tuning revision and one-time reapply mechanism. Ensure fork-specific RenHDrum gain/low-boost fields remain in OoT tuning, and do not silently reapply defaults on every launch or erase later user edits. | Adapt upstream tuning revision; re-apply fork-specific tuning |
+
+At the end of each review, maintain a short **release-note → action matrix** in the PR/upgrade notes or manifest. This is the hand-off checklist for the next maintainer; record “no action” explicitly when a note is unrelated. Release-note wording alone is not proof of implementation: verify the actual code and test the behavior.
+
 ### 2. Reconcile modules against upstream
 
 Process enabled modules one at a time, in manifest order.
@@ -94,6 +130,38 @@ Do this for every upstream tag, even when the upstream release notes do not ment
 8. After a successful build, perform a UI spot-check in Chinese for both the classic and Fritchii layouts: Settings > Advanced; all Help/File/Game menu entries; Library/Settings/Help hover tooltips; About; first-run migration; and any newly changed upstream screens. Record anything that still needs real runtime confirmation.
 
 **Do not mark Chinese UI as complete based only on a populated TS file.** The source context must match, `lrelease` must succeed, the catalog must be embedded, and the relevant UI surfaces must be checked.
+
+### 3B. Preserve Fritchii's dedicated profile root and first-run migration
+
+Treat the data-directory migration as a compatibility and data-safety contract, not just a first-launch dialog. Review it on every upstream update that touches paths, saves, keys, settings, imports, or profile management.
+
+**Current path contract (Windows):**
+- The normal application profile is `%APPDATA%\\fritchii`.
+- A portable `user` directory beside the executable still takes priority when present.
+- Legacy profile discovery includes `%APPDATA%\\eden` and `%APPDATA%\\lichii`; the code also recognizes older emulator profile roots (Citron, Sudachi, Suyu, and Yuzu).
+- On non-Windows systems, check the current XDG data/config/cache locations and retain portable-mode behavior rather than copying Windows paths literally.
+
+**Migration behavior to preserve:**
+1. First launch detects eligible legacy profiles and offers import. Profile selection must use the intended source profile; when both Eden and Lichii exist, confirm the newest-save selection logic still chooses the expected profile.
+2. The normal first-run **Copy** path imports settings/configuration, saves and keys, and user-selected mods. Preserve source data. Existing Fritchii data must not be silently merged over or deleted; explicit later imports must retain the established backup behavior.
+3. Caches, logs, crash dumps, and screenshots are not copied as part of the profile migration. Shader preparation therefore happens again on the first game launch after migration. Do not copy old shader/cache data merely to avoid this expected one-time work.
+4. NAND and SDMC are large. Copy them only when the free-space check allows it; otherwise preserve the link/shared-folder behavior and clearly tell the user to keep the old folder. Verify both the copied and linked cases.
+5. Imported configuration may contain absolute paths. Re-map paths inside imported configuration from the legacy root to the new Fritchii root; test paths that are already relative or outside the old profile are left unchanged.
+6. A successful migration summary must identify the new destination, say which categories were copied, explain any linked NAND/SDMC, state that the old source folder was not changed on the Copy path, explain the shader preparation, and provide an **Open folder** action.
+7. Preserve interrupted-import recovery, migration journal/lock handling, rollback on failure, and backup folders. A retry must not duplicate/partially overwrite data; never delete a source or backup as a shortcut to completing migration.
+8. Keep first-run migration text, progress, success, backup, linked-folder, failure, retry, and recovery messages translated. Preserve all Qt placeholders and line breaks.
+
+**Minimum migration regression matrix for the next upstream tag:**
+- Fresh install with only an `eden` source profile.
+- Fresh install with only a `lichii` source profile.
+- Both legacy roots present, with different last-saved times.
+- Existing `%APPDATA%\\fritchii` profile already initialized (must not be overwritten by the first-run import path).
+- User chooses Start fresh / declines migration.
+- Sufficient disk space for NAND/SDMC copy, and insufficient space where the folders must remain linked.
+- Interrupted import / pending journal recovery, busy source profile, and retry after a locked file.
+- Confirm saves load in-game from the new profile, configuration paths are remapped, the old source remains intact on Copy, and the Open folder action opens the new root.
+
+Do not report profile migration as verified from compilation alone. The migration behavior and real save visibility require runtime testing with safe test profiles; never use the player's only live save folder as a migration test fixture.
 
 ### 4. Build and package a test artifact
 
@@ -229,7 +297,7 @@ Before re-applying any fork module, establish that the exact upstream tag can be
 
 Never combine upstream-baseline errors and module-integration errors in one diagnosis. Every ledger entry must say whether it originated in pristine upstream source, the baseline workflow adaptation, or fork-module integration.
 
-## Recent workflow audit (2026-11-11)
+## Recent workflow audit (2026-11-11 to 2026-11-12)
 
 The following runs were inspected. Repeated errors are linked to their existing ledger item instead of being counted as new defects:
 
@@ -243,8 +311,14 @@ The following runs were inspected. Repeated errors are linked to their existing 
 | [#21 / 43065581977](https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43065581977) | Integration commit 4835fe1d2ac861e173f39c367cf9ce0bfc97e965 | Failed | C4458 service_manager in core.cpp:253 (F-008). D9014 was absent. |
 | [Upstream v5.8.4 / 43068107673](https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43068107673) | Pristine official tag 4f5c53149b7e17d1c24445f68d79a83a3b2a17f9 | Windows MSVC job failed; other matrix jobs were cancelled | Four C4459 diagnostics in frizti_settings.cpp (new F-009) and repeated D9014 from the upstream /w4505 typo (F-005). The overall run was cancelled, but its Windows MSVC job itself completed with failure. |
 | [#22 / 43070225601](https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43070225601) | Integration commit 9e053b5a7af47e4c8281da9ecf99de60f5f70bb2 | Succeeded | Configure, full MSVC Build, Package test binary, and Upload test artifact all succeeded; log contained no compiler errors and no D9014. F-008 verified. |
+| [#23 / 43081539323](https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43081539323) | Integration commit 2d72446a8c6c552bd74183d2a01154c2fdfb9d6b | Build succeeded; packaging failed | Pinned recipe lookup expected a full internal ZIP path and found zero entries. Added as F-012. |
+| [#25 / 43081887600](https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43081887600) | Integration commit 8802040f402756bce225d56b4e7c35ea6beb3fa3 | Succeeded | Recipe lookup by exact basename with an exactly-one-match guard passed; package and artifact upload succeeded. F-012 verified. |
+| [#31 / 43145920017](https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43145920017) | Integration commit 198712dfb4737287989534496dc880c02964b7fd | Failed | `lrelease` rejected a nested/duplicate `FritchiiUi` context in `zh_CN.ts` (F-010). |
+| [#32 / 43149782388](https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43149782388) | Integration commit ede4ead9a1de1022ed7eb154455353cbee2f9d23 | Failed | `zh_CN.qm` generated with 2,249 finished entries; compilation then failed on malformed `QObject::tr` string syntax in migration UI (F-011). |
+| [#33 / 43152405973](https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43152405973) | Integration commit 6fb42027e350e4a242eef3e1712e9f14043840a8 | Succeeded | Full Windows x64 MSVC build, package test binary, and artifact upload succeeded. Verified the F-011 string fix and translation catalog generation. |
+| [#34 / 43158492258](https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43158492258) | Integration commit 74c2d427e3fbcdd8cb0491da93b1f2342910f1ca | Succeeded | Full build, package test binary, ZIP+7z creation and integrity tests, and artifact upload succeeded. Publish step was skipped; no Release was published. |
 
-Run #9 also showed the older F-001 count/state diagnostics again; these are duplicate sightings of that already recorded code family, not a new root cause. Runs #18 and #20 both showed the same F-007 diagnostic before its source rename was carried into a later build. Do not treat cancelled runs as compiler failures.
+Run #9 also showed the older F-001 count/state diagnostics again; these are duplicate sightings of that already recorded code family, not a new root cause. Runs #18 and #20 both showed the same F-007 diagnostic before its source rename was carried into a later build. Run #23 is a package-stage failure, not a compiler failure; run #25 verifies the recipe extraction correction. Runs #31 and #32 exposed independent translation-source failures; runs #33 and #34 verify the fixes and final package pipeline. Do not treat cancelled runs or skipped publishing steps as compiler failures/releases.
 
 ### F-009: pristine v5.8.4 MSVC C4459 in frizti_settings.cpp
 
@@ -268,8 +342,8 @@ Run #22 artifact metadata: Fritchii-v5.8.4-RenHDrum-zh-CN-Windows-x64-9e053b5a7a
 - **Diagnostic:** `lrelease error: Unexpected tag <context>`.
 - **Cause:** the FritchiiUi translation context was inserted inside another open context and was also emitted twice. Matching opening/closing tag counts alone did not catch this invalid nesting.
 - **Fix:** flatten the context tree, keep one top-level `FritchiiUi` context, and check XML nesting plus unique context names before committing.
-- **Verification:** Run #32 successfully generated `zh_CN.qm` with 2,249 finished translations and zero unfinished entries before reaching its separate C++ compile error.
-- **Status:** Fixed before the next build; retain the structural TS validation in the mandatory Chinese UI checklist above.
+- **Verification:** Run #32 generated `zh_CN.qm` with 2,249 finished translations and zero unfinished entries. The following Windows x64 MSVC run #33 and run #34 both completed successfully after the catalog structure was flattened.
+- **Status:** Fixed and CI-verified; retain the structural TS validation in the mandatory Chinese UI checklist above.
 
 ### F-011: MSVC C3688 from malformed QObject::tr expression in migration dialog
 
@@ -281,9 +355,19 @@ Run #22 artifact metadata: Fritchii-v5.8.4-RenHDrum-zh-CN-Windows-x64-9e053b5a7a
 - **Translation result:** in the same run, Qt successfully generated `zh_CN.qm` with 2,249 finished translations and zero unfinished entries. The failure happened later while compiling `user_data_migration.cpp`.
 - **Fix:** put `QObject::tr(...)` around the two adjacent string literals, not inside a quoted literal:
   `QObject::tr("Fritchii will use its own profile. Your old emulator " "data has not been changed.")`.
-- **Status:** Corrected in the follow-up source patch; awaiting confirmation from the next Windows x64 MSVC build.
+- **Status:** Corrected in commit `6fb42027e350e4a242eef3e1712e9f14043840a8` and verified by successful Windows x64 MSVC run [#33](https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43152405973) and subsequent run [#34](https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43158492258).
 
 
+
+### F-012: pinned OoT recipe archive entry path mismatch
+
+- **Failing workflow:** [run #23 / 43081539323](https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43081539323), commit `2d72446a8c6c552bd74183d2a01154c2fdfb9d6b`.
+- **Stage:** Build completed successfully; Package test binary failed before artifact upload.
+- **Diagnostic:** `Expected exactly one 'recipes/OoT v131072 (cache v54).nx2recipe' in the official package; found 0`.
+- **Cause:** the script required the archive entry's full path to equal `recipes/OoT v131072 (cache v54).nx2recipe`, but the official ZIP stored the recipe under a different internal path. A stable filename does not guarantee a stable archive directory prefix.
+- **Fix:** compare the final path component (`$_.FullName.Split('/')[-1]`) to the exact recipe filename, then require exactly one match. Keep both SHA-256 checks: one for the downloaded official v5.5 archive and one for the extracted recipe. Never choose the first of multiple matches.
+- **Verification:** [run #25 / 43081887600](https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43081887600) passed Build, Package test binary, and artifact upload after switching to basename matching. The later ZIP+7z package run [#34](https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43158492258) also succeeded.
+- **Prevention for future upgrades:** keep the pinned archive and file hashes; inspect ZIP entry names before assuming directory layout; match by exact basename, assert one result, extract that one entry, verify the extracted hash, and finally verify the recipe exists in the output package. A missing or duplicate match must fail packaging before upload.
 
 ### Fork release packaging policy
 
