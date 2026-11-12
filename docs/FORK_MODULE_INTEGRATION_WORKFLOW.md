@@ -29,9 +29,11 @@ The following modules are currently enabled in the manifest:
 
 | Module ID | What to re-apply |
 | --- | --- |
-| `renhdrum` | RenHDrum controller haptics / HD Rumble, SDL3 transport patches, settings UI, runtime DLL |
-| `chinese-ui` | Simplified Chinese translation catalog and RenHDrum translations |
-| `accurate-vibration-default` | Set `enable_accurate_vibrations` default to `true` |
+| `renhdrum` | RenHDrum controller haptics / HD Rumble, SDL3 transport patches, settings UI, runtime DLL, OoT gain/low-boost tuning (revision 13) |
+| `chinese-ui` | Simplified Chinese catalog, menus/tooltips, Saves and first-run migration translations |
+| `fork-branding` | Fritchii-HDrum About/menu identity and matching translations |
+| `fork-update-channel` | Own GitHub release feed, exact auto-updater tag/ZIP/digest contract and tests |
+| `accurate-vibration-default` | Set `enable_accurate_vibrations` default to `true` without overwriting existing saved choices |
 | `controls-ui-pr36` | Adapt the Controls layout and controller preview changes from upstream PR #36 |
 
 The exact files, source references, build flags, migration notes, and validation requirements live in the YAML manifest. Update that manifest whenever the module scope or source changes.
