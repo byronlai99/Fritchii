@@ -457,12 +457,12 @@ integration_failure_ledger:
       status_detail: "The publish step was skipped in run #34; this mismatch was found by static comparison, not a failed published update."
     status: open_pre_publish_blocker
     symptoms:
-      - "The workflow is configured to publish v5.8.4-preview.<run_number> and Fritchii-HDrum-v5.8.4-Windows-x64.zip."
-      - "The updater accepts fritchii-v... / frizti-v... tags and only Fritchii-HDrum-v<version>-Windows-x64.zip."
+      - "The workflow tag v5.8.4-preview.<run_number> is not accepted by the updater parser."
     root_cause:
       - "The workflow release naming convention was not reconciled with the fork's customized update_checker.cpp contract."
     resolution:
-      - "No release was published. Update the workflow tag and updater ZIP name before enabling publish_release."
+      - "Corrected the ZIP and 7z basename to Fritchii-HDrum-v5.8.4-Windows-x64 in commit 0d86b7580ac6afd71243ad7ec6759d84dac54824."
+      - "No release was published. Change the workflow tag to fritchii-v5.8.4 (or another supported canonical version tag), confirm the GitHub SHA-256 digest, and run updater tests before enabling publish_release."
     prevention:
       - "Validate release tag, repository URL, exact ZIP name, and GitHub SHA-256 digest with the updater parser/tests before every release."
       - "Keep the 7z archive as an optional manual-download asset; it is not selected by the current updater."
