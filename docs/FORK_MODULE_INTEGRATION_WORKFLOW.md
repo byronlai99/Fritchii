@@ -163,6 +163,36 @@ Treat the data-directory migration as a compatibility and data-safety contract, 
 
 Do not report profile migration as verified from compilation alone. The migration behavior and real save visibility require runtime testing with safe test profiles; never use the player's only live save folder as a migration test fixture.
 
+### 3C. Preserve fork branding and the built-in update channel
+
+These are fork-owned behaviors, not cosmetic leftovers. Re-apply them when upstream changes the About UI, version metadata, release workflow, updater, download dialog, or package naming.
+
+**Fritchii-HDrum identity:**
+- Keep the application Help > About action and About dialog branded **Fritchii-HDrum** in both the classic and Fritchii menu/layout modes. Do not let a rebase restore Lichii/Eden/Fritchii-only labels or make branding conditional on a UI mode.
+- Keep the About title/body and matching zh_CN.ts source strings in sync.
+- Keep the updater download request User-Agent as Fritchii-HDrum.
+
+**Built-in updater source and exact release contract:**
+- src/frontend_common/update_checker.cpp points to the fork's own repository: byronlai99/Fritchii-HDrum. Do not revert it to Frizti/Lichii.
+- The built-in updater accepts version tags in the form fritchii-vN, fritchii-vN.M, or fritchii-vN.M.P (legacy frizti-v... tags remain parseable). A suffix such as -preview.34 is not accepted by the current parser.
+- For a version N[.M[.P]], the only recognized Windows package is exactly Fritchii-HDrum-vN[.M[.P]]-Windows-x64.zip, attached to the same release/tag at the canonical GitHub download URL. Debug-symbol ZIPs and .7z archives are intentionally not updater packages; .7z may remain as a manual-download alternative.
+- GitHub must expose a valid SHA-256 asset digest. Without it, the updater deliberately changes the button to **Open Release Page** rather than installing automatically. Downloads are also checked against the published size/digest before installation.
+- A release whose notes contain the exact hidden marker <!-- fritchii:no-update --> is skipped by the updater. Use it for test/joke releases that must remain visible on GitHub but must not be offered in-app.
+- The Fritchii update path is Windows-only. The current CheckFritchii() returns no update for non-Windows platforms.
+
+**Important current workflow mismatch (resolve before enabling publish):**
+
+The current .github/workflows/renhdrum-v584-build.yml publish step still generates a tag like v5.8.4-preview.<run number> and an asset named like Fritchii-v5.8.4-RenHDrum-zh-CN-Windows-x64.zip. Neither matches the current updater contract above. Consequently, if that publish step is enabled unchanged, the built-in updater will ignore the release even though the package may download manually. Run #34 left the publish step skipped, so this is a documented pre-publish compatibility issue, not a failed or published release.
+
+Before any future release is published:
+1. Choose a canonical version tag accepted by the parser, normally fritchii-v<version>.
+2. Name the updater ZIP exactly Fritchii-HDrum-v<version>-Windows-x64.zip. The ZIP must contain the normal complete app package. Keep the optional 7z as a second manual asset.
+3. Confirm GitHub exposes the ZIP's sha256: digest in the Release API response.
+4. Test the release JSON through SelectFritchiiUpdate() and SelectFritchiiAsset(); verify the running version, next-version ordering, exact repo URL, exact asset name, digest, and hidden-marker behavior.
+5. Keep src/tests/common/update_checker.cpp in sync with any change to repository, tag parsing, asset naming, digest handling, or hidden-release behavior.
+
+The current Windows x64 MSVC workflow's Package test binary step packages the executable; it is not evidence that the Catch2 updater unit tests ran. The recent #31–#34 job steps did not show an explicit updater test execution step. Run the updater test target separately or add it explicitly to CI before claiming updater regression tests passed.
+
 ### 4. Build and package a test artifact
 
 Use the build policy in `docs/fork-modules.yml`. The current policy is Windows x64 MSVC only, no PGO, and test artifact only.
@@ -368,6 +398,17 @@ Run #22 artifact metadata: Fritchii-v5.8.4-RenHDrum-zh-CN-Windows-x64-9e053b5a7a
 - **Fix:** compare the final path component (`$_.FullName.Split('/')[-1]`) to the exact recipe filename, then require exactly one match. Keep both SHA-256 checks: one for the downloaded official v5.5 archive and one for the extracted recipe. Never choose the first of multiple matches.
 - **Verification:** [run #25 / 43081887600](https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43081887600) passed Build, Package test binary, and artifact upload after switching to basename matching. The later ZIP+7z package run [#34](https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43158492258) also succeeded.
 - **Prevention for future upgrades:** keep the pinned archive and file hashes; inspect ZIP entry names before assuming directory layout; match by exact basename, assert one result, extract that one entry, verify the extracted hash, and finally verify the recipe exists in the output package. A missing or duplicate match must fail packaging before upload.
+
+### F-013: updater release tag and asset naming do not match the publish workflow
+
+- **Finding type:** static integration mismatch; no release was published by the inspected run.
+- **Affected files:** src/frontend_common/update_checker.cpp, src/yuzu/updater/update_dialog.cpp, and .github/workflows/renhdrum-v584-build.yml.
+- **Updater contract:** repository byronlai99/Fritchii-HDrum; version tags are parsed from fritchii-v... or legacy frizti-v...; the required Windows asset is exactly Fritchii-HDrum-v<version>-Windows-x64.zip.
+- **Workflow output currently configured:** tag v5.8.4-preview.<run number>; ZIP Fritchii-v5.8.4-RenHDrum-zh-CN-Windows-x64.zip.
+- **Impact:** enabling the current publish step unchanged would produce a GitHub release that the in-app updater cannot parse/select. Manual download remains possible; this is not a compile or archive-integrity failure.
+- **Additional requirement:** the release asset needs a valid GitHub SHA-256 digest for automatic installation. With no digest, the updater offers the release page instead. The optional 7z is not selected by the updater.
+- **Resolution required before publishing:** align the workflow tag and ZIP name with the exact updater contract, confirm the Release API digest, and run the updater unit tests against the resulting release metadata.
+- **Status:** Open; run #34 succeeded but the publish step was skipped. Do not mark auto-update as verified until the release metadata is accepted by the updater.
 
 ### Fork release packaging policy
 
