@@ -237,7 +237,7 @@ jobs:
           $bin = (Resolve-Path 'build/release/bin').Path
           $packageDir = Join-Path $env:GITHUB_WORKSPACE 'build/release/packages'
           New-Item -ItemType Directory -Force -Path $packageDir | Out-Null
-          $base = 'Fritchii-v5.8.4-RenHDrum-zh-CN-Windows-x64'
+          $base = 'Fritchii-HDrum-v5.8.4-Windows-x64'
           $zip = Join-Path $packageDir "$base.zip"
           $archive7z = Join-Path $packageDir "$base.7z"
 
@@ -264,7 +264,7 @@ jobs:
       - name: Upload ZIP and 7z test artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: Fritchii-v5.8.4-RenHDrum-zh-CN-Windows-x64-${{ github.sha }}
+          name: Fritchii-HDrum-v5.8.4-Windows-x64-${{ github.sha }}
           path: build/release/packages/
           if-no-files-found: error
           retention-days: 7
@@ -277,7 +277,7 @@ jobs:
         run: |
           set -euo pipefail
           package_dir="${GITHUB_WORKSPACE}/build/release/packages"
-          base="Fritchii-v5.8.4-RenHDrum-zh-CN-Windows-x64"
+          base="Fritchii-HDrum-v5.8.4-Windows-x64"
           zip="${package_dir}/${base}.zip"
           archive7z="${package_dir}/${base}.7z"
           tag="v5.8.4-preview.${GITHUB_RUN_NUMBER}"
