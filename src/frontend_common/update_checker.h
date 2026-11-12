@@ -66,7 +66,7 @@ std::optional<FritchiiVersion> RunningVersion();
 // "fritchii-v4", "fritchii-v4.1", or the older "frizti-v3".
 std::optional<FritchiiVersion> ParseFritchiiTag(std::string_view tag);
 
-// "Fritchii-v4-Windows-x64.zip". Releases from before the rename named it differently and are
+// "Fritchii-HDrum-v4-Windows-x64.zip". Releases from before the rename named it differently and are
 // never installed.
 std::string FritchiiAssetName(const FritchiiVersion& version);
 

@@ -3,8 +3,8 @@
     <name>AboutDialog</name>
     <message>
         <location filename="../../src/yuzu/aboutdialog.ui" line="14"/>
-        <source>About Eden</source>
-        <translation>关于 Eden</translation>
+        <source>About Fritchii-HDrum</source>
+        <translation>关于 Fritchii-HDrum</translation>
     </message>
     <message>
         <location filename="../../src/yuzu/aboutdialog.ui" line="72"/>

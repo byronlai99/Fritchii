@@ -141,6 +141,8 @@ jobs:
           # Match the upstream v5.8.4 MSVC workflow. This skips Qt's separately deployed
           # translation catalogs; the app's zh_CN catalog is compiled into its own Qt resource.
           windeployqt --release --no-translations (Join-Path $bin 'lichii.exe')
+          # All application language catalogs are embedded in lichii.exe.
+          Remove-Item (Join-Path $bin 'translations') -Recurse -Force -ErrorAction SilentlyContinue
 
           $dll = Join-Path $bin 'renhdrum.dll'
           Invoke-WebRequest -Uri 'https://github.com/trzz1214/RenHDrum/releases/download/v0.3.0/renhdrum.dll' -OutFile $dll

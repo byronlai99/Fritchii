@@ -477,6 +477,8 @@ jobs:
             }
           }
           windeployqt --release --no-translations build/release/bin/lichii.exe
+          # The application's language catalogs are embedded in lichii.exe.
+          Remove-Item 'build/release/bin/translations' -Recurse -Force -ErrorAction SilentlyContinue
 
       # A dynamic MinGW build is not portable on its own: windeployqt6 brings the Qt libraries and
       # plugins, then every non-system DLL the binaries and those plugins pull in gets copied next to
@@ -492,6 +494,8 @@ jobs:
           test -f eden-cli.exe
           windeployqt6 --no-translations --no-compiler-runtime --no-opengl-sw \
             --no-system-dxc-compiler --no-system-d3d-compiler lichii.exe
+          # All application language catalogs are embedded in lichii.exe.
+          rm -rf translations
           deps() {
             objdump -p "$1" | awk '/DLL Name:/ {print $3}' | while read -r dll; do
               [ -z "$dll" ] && continue
