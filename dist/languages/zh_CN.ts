@@ -7344,8 +7344,8 @@ Debug Message: </source>
     </message>
     <message>
         <location filename="../../src/yuzu/main.ui" line="295"/>
-        <source>&amp;About Eden</source>
-        <translation>关于 Eden(&amp;A)</translation>
+        <source>&amp;About Fritchii-HDrum</source>
+        <translation>关于 Fritchii-HDrum(&amp;A)</translation>
     </message>
     <message>
         <location filename="../../src/yuzu/main.ui" line="303"/>
