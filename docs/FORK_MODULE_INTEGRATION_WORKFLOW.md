@@ -97,7 +97,7 @@ For each module:
 
 ### 3. Preserve module-specific requirements
 
-- **RenHDrum:** verify the RenHDrum API/DLL version, SDL3 version compatibility, patch applicability, CMake integration, runtime loading, and supported controller paths.
+- **RenHDrum:** verify the RenHDrum API/DLL version, SDL3 version compatibility, patch applicability, CMake integration, runtime loading, and supported controller paths. Also preserve the OoT tuned-settings entries for hd_rumble_gain and hd_rumble_low_boost in src/common/frizti_settings.cpp; src/common/frizti_settings.h must bump Settings::Frizti::Revision when this tuned list/default changes. The current v5.8.4 integration uses revision 13 (upstream v5.8.4 baseline revision 12). Check the one-time reapply behavior and keep later user edits.
 - **Simplified Chinese:** reconcile the translation catalog, retain new strings, and check that the translation is actually built and selectable.
 - **Accurate vibration:** keep `enable_accurate_vibrations` separate from the general vibration and RenHDrum master switches. A changed default must not silently erase an existing user's saved preference.
 - **PR #36:** re-check the current Controls page geometry and apply only the still-needed layout fixes. Keep its compact QSS selectors scoped to the Controls widgets.
@@ -415,5 +415,5 @@ Run #22 artifact metadata: Fritchii-v5.8.4-RenHDrum-zh-CN-Windows-x64-9e053b5a7a
 - Every Windows x64 MSVC package build produces both `.zip` and `.7z` archives from the same validated `build/release/bin` directory.
 - Run 7-Zip integrity tests against both archives before uploading the workflow artifact.
 - Push-triggered builds remain test-artifact only. A manually dispatched build publishes only when `publish_release=true`; the input defaults to `false`.
-- Every published build is a GitHub **pre-release**, tagged `v5.8.4-preview.<run number>`. Do not publish a stable Release from this integration workflow.
-- Attach both the ZIP and 7z archives to the same pre-release. Preserve the package manifest: include `lichii.exe`, `renhdrum.dll`, the embedded Simplified Chinese catalog and the pinned OoT cache-v54 recipe; exclude `eden-cli.exe`, `vc_redist*` and `*.pdb`.
+- The current workflow's preview tag is `v5.8.4-preview.<run number>`; treat it as a manual-download preview only. It is not compatible with the in-app updater contract in F-013. Do not enable publishing until F-013 is closed.
+- Attach both the ZIP and 7z archives to the same manually downloadable preview if publication is explicitly approved. For an updater-visible release, use the canonical tag and ZIP filename in §3C; the 7z remains a manual alternative. Preserve the package manifest: include `lichii.exe`, `renhdrum.dll`, the embedded Simplified Chinese catalog and the pinned OoT cache-v54 recipe; exclude `eden-cli.exe`, `vc_redist*` and `*.pdb`.
