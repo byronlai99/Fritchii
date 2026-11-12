@@ -184,7 +184,7 @@ These are fork-owned behaviors, not cosmetic leftovers. Re-apply them when upstr
 
 **Important current workflow mismatch (resolve before enabling publish):**
 
-The current .github/workflows/renhdrum-v584-build.yml publish step still generates a tag like v5.8.4-preview.<run number> and an asset named like Fritchii-HDrum-v5.8.4-Windows-x64.zip. Neither matches the current updater contract above. Consequently, if that publish step is enabled unchanged, the built-in updater will ignore the release even though the package may download manually. Run #34 left the publish step skipped, so this is a documented pre-publish compatibility issue, not a failed or published release.
+The current .github/workflows/renhdrum-v584-build.yml publish step still generates a tag like v5.8.4-preview.<run number> and an asset named like Fritchii-HDrum-v5.8.4-Windows-x64.zip. The ZIP filename now matches the updater contract; the preview tag v5.8.4-preview.<run number> still does not. Consequently, if that publish step is enabled unchanged, the built-in updater will ignore the release because of its tag, even though the package filename now matches and manual download remains possible. Run #34 left the publish step skipped, so this is a documented pre-publish tag compatibility issue, not a failed or published release.
 
 Before any future release is published:
 1. Choose a canonical version tag accepted by the parser, normally fritchii-v<version>.
@@ -415,9 +415,9 @@ Run #22 artifact metadata: Fritchii-v5.8.4-RenHDrum-zh-CN-Windows-x64-9e053b5a7a
 - **Affected files:** src/frontend_common/update_checker.cpp, src/yuzu/updater/update_dialog.cpp, and .github/workflows/renhdrum-v584-build.yml.
 - **Updater contract:** repository byronlai99/Fritchii-HDrum; version tags are parsed from fritchii-v... or legacy frizti-v...; the required Windows asset is exactly Fritchii-HDrum-v<version>-Windows-x64.zip.
 - **Workflow output currently configured:** tag v5.8.4-preview.<run number>; ZIP Fritchii-HDrum-v5.8.4-Windows-x64.zip.
-- **Impact:** enabling the current publish step unchanged would produce a GitHub release that the in-app updater cannot parse/select. Manual download remains possible; this is not a compile or archive-integrity failure.
+- **Impact:** the ZIP filename is now corrected to match the updater. The remaining mismatch is the workflow's v5.8.4-preview.<run_number> tag, which the current updater cannot parse. Manual download remains possible; this is not a compile or archive-integrity failure.
 - **Additional requirement:** the release asset needs a valid GitHub SHA-256 digest for automatic installation. With no digest, the updater offers the release page instead. The optional 7z is not selected by the updater.
-- **Resolution required before publishing:** align the workflow tag and ZIP name with the exact updater contract, confirm the Release API digest, and run the updater unit tests against the resulting release metadata.
+- **Resolution required before publishing:** align the workflow tag with the updater contract, confirm the Release API digest, and run the updater unit tests against the resulting release metadata.
 - **Status:** Open; run #34 succeeded but the publish step was skipped. Do not mark auto-update as verified until the release metadata is accepted by the updater.
 
 ### Fork release packaging policy
