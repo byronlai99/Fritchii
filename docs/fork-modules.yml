@@ -21,6 +21,41 @@ baseline:
   fork_repository: byronlai99/Fritchii-HDrum
   working_branch: feature/v5.8.4-renhdrum-zh-cn
 
+# Release-note review is separate from fork-module definitions: upstream features must be
+# preserved/adapted, not accidentally added as duplicate fork modules.
+upstream_release_review:
+  reviewed_tag: fritchii-v5.8.4
+  reviewed_on: 2026-11-12
+  release_notes_url: https://github.com/Frizti/Fritchii/releases/tag/fritchii-v5.8.4
+  porting_rule: "For every future tag, map each release-note bullet to source changes, modules, translations, data paths, settings, and package checks; record an explicit action."
+  upstream_features_to_preserve:
+    - id: saves-profile-backup-and-fix
+      release_note: "Saves copies now target Fritchii's own profile; the Saves window backs up before copy/import/fix, reports the backup path, offers Open backup, and can repair orphaned saves."
+      action: "Preserve upstream behavior. Re-check active save destination, backup-before-write ordering, displayed backup path, Open backup action, and in-game save visibility."
+      translation: "Reconcile all Saves actions, prompts, warnings, and completion messages in the QObject translation context."
+    - id: switch2-12gb-dram-runtime-switch
+      release_note: "Switch 2 games use the 12 GB memory layout while running and restore the previous setting after exit; the label is 12GB DRAM (Switch 2), not Unsafe, and it is no longer classified as OoT-only."
+      action: "Preserve temporary runtime switching and restoration; verify Switch 1 behavior, setting label/help text, and OoT/per-game tuned-setting classification."
+      translation: "Reconcile the renamed setting label and explanatory text."
+    - id: dlss-quality-preset-per-game
+      release_note: "DLSS quality and preset are available per game under Game Settings > Graphics with use-global behavior."
+      action: "Preserve global fallback, per-game override, serialization, and restore behavior; do not recreate as a fork module."
+      translation: "Add or update Chinese labels, descriptions, tooltips, and game-settings strings."
+    - id: tuned-settings-reapply-on-upgrade
+      release_note: "Fritchii tuned settings are applied once again with the update; users can edit them afterwards."
+      action: "Inspect tuning revision / one-time reapply logic. Preserve RenHDrum gain and low-boost entries in OoT tuning. Ensure defaults are not reapplied every launch and later user edits survive."
+      translation: "Check any changed tuning labels/help text."
+    - id: dedicated-fritchii-profile-and-legacy-import
+      release_note: "Current fork baseline uses the dedicated Fritchii profile root and first-run legacy profile import."
+      action: "Preserve %APPDATA%\\fritchii, portable user-folder precedence, legacy source detection, copy-only source preservation, config path remapping, optional mods, cache exclusion, NAND/SDMC link fallback, backup/recovery, and Open folder notice. See the migration regression matrix in the workflow document."
+      translation: "Translate first-run choice, source profile, progress, success, backup, link, shader preparation, failure, retry, and recovery UI."
+  required_release_note_classification:
+    - preserve_upstream
+    - re_apply_enabled_fork_module
+    - adapt_to_new_api
+    - already_equivalent_upstream
+    - manual_validation
+
 modules:
   - id: renhdrum
     enabled: true
@@ -303,6 +338,26 @@ integration_failure_ledger:
       - "Before the first build of each upstream tag, scan the full target source for C4456/C4457/C4458/C4459 and all configured /we diagnostics."
       - "Record whether each issue comes from pristine upstream, workflow adaptation, or fork-module integration."
 
+  - id: F-012-recipe-archive-entry-path-mismatch
+    evidence:
+      failing_workflow_run: 43081539323
+      failing_workflow_url: https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43081539323
+      failing_commit: 2d72446a8c6c552bd74183d2a01154c2fdfb9d6b
+      verification_workflow_run: 43081887600
+      verification_workflow_url: https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43081887600
+      verification_commit: 8802040f402756bce225d56b4e7c35ea6beb3fa3
+      stage: Package test binary
+    status: fixed_and_ci_verified
+    symptoms:
+      - "Build succeeded but packaging failed because exact full-path matching found zero OoT cache-v54 recipe entries in the official v5.5 ZIP."
+    root_cause:
+      - "The ZIP entry's internal directory prefix did not match the assumed recipes/ path, although the filename was present."
+    resolution:
+      - "Match the exact basename OoT v131072 (cache v54).nx2recipe, require exactly one entry, and preserve both pinned archive and extracted-file SHA-256 checks."
+    prevention:
+      - "Do not assume archive internal folder layout; inspect the ZIP entry names or match exact basename."
+      - "Fail when there are zero or multiple matching entries, then verify the extracted file hash and final package presence."
+
 recent_workflow_audit:
   - run: 43048515194
     label: integration-run-9
@@ -341,6 +396,44 @@ recent_workflow_audit:
     artifact: Fritchii-v5.8.4-RenHDrum-zh-CN-Windows-x64-9e053b5a7af47e4c8281da9ecf99de60f5f70bb2
     artifact_sha256: 8b498bc84acdec0c3c6c80e73ecd570dc9062fc137dc6078dbb9cfa3a34e6042
     artifact_expires_at: 2026-11-18T18:10:27Z
+  - run: 43081539323
+    label: integration-run-23
+    result: failure
+    stage: package
+    errors: [F-012]
+  - run: 43081887600
+    label: integration-run-25
+    result: success
+    errors: []
+    verified_fix: F-012
+  - run: 43145920017
+    label: integration-run-31
+    result: failure
+    stage: build-lrelease
+    errors: [F-010]
+  - run: 43149782388
+    label: integration-run-32
+    result: failure
+    stage: build-cpp
+    translation_result: "zh_CN.qm generated with 2,249 finished entries and zero unfinished entries"
+    errors: [F-011]
+  - run: 43152405973
+    label: integration-run-33
+    result: success
+    errors: []
+    verified_fixes: [F-010, F-011]
+    package_test: success
+    artifact_upload: success
+  - run: 43158492258
+    label: integration-run-34
+    result: success
+    errors: []
+    package_test: success
+    archives: [zip, 7z]
+    archive_integrity_tests: success
+    artifact_upload: success
+    publish_step: skipped
+    release_published: false
 
 workflow_portability_policy:
   upstream_reference:
