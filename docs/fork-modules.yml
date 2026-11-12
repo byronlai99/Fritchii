@@ -223,6 +223,22 @@ build_policy:
     - vc_redist*
     - "*.pdb"
   artifact_retention_days: 7
+  archive_content_audit:
+    mandatory: true
+    automated_in_current_workflow: false
+    current_status: outstanding
+    required_entries:
+      - lichii.exe
+      - renhdrum.dll
+      - "recipes/OoT v131072 (cache v54).nx2recipe"
+      - Qt runtime DLLs and plugins
+      - "zh_CN translation embedded in lichii.exe resources"
+    forbidden_entries:
+      - eden-cli.exe
+      - vc_redist*
+      - "*.pdb"
+      - translations/
+    verification: "List the members of the finished ZIP and 7z separately; 7z test/existence alone is not a content manifest."
   required_assets:
     - path: "recipes/OoT v131072 (cache v54).nx2recipe"
       source_release: Frizti/Fritchii@fritchii-v5.5
@@ -556,8 +572,7 @@ workflow_portability_policy:
     - "Verify app-embedded zh_CN Qt resources separately from Qt translation files deployed by windeployqt."
     - "Inspect the archive itself for required and excluded files."
 
-# Last full static review for the current 5.8.4 integration branch.
-# Status describes source inspection only; it is not a successful CI build.
+# Last static review and integration CI evidence for the current 5.8.4 branch.
 last_static_review:
   date: 2026-11-12
   scope: feature/v5.8.4-renhdrum-zh-cn
@@ -568,14 +583,25 @@ last_static_review:
     - "Matched upstream v5.8.4 windeployqt --release --no-translations; application zh_CN is compiled into its Qt resource."
     - "Added RenHDrum gain and low-boost settings to OoT tuned settings; bumped Frizti tuning revision to 13."
     - "Added a mandatory pre-build static review gate to the maintenance workflow."
+  ci_verified_by:
+    workflow_run: 43158492258
+    workflow_run_url: https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43158492258
+    tested_code_commit: 74c2d427e3fbcdd8cb0491da93b1f2342910f1ca
+    result: success
+    verified:
+      - "Windows x64 MSVC configure, compile, and link for yuzu and yuzu-cmd."
+      - "The current SDL3/RenHDrum integration compiles and links in the Windows build."
+      - "The package step fetched RenHDrum v0.3.1 and validated its pinned SHA-256."
+      - "The pinned recipe archive and extracted recipe SHA-256 checks passed."
+      - "ZIP and 7z archives were created, passed 7-Zip integrity tests, and were uploaded as artifacts."
+    limitations:
+      - "The workflow did not run the Catch2 updater unit tests."
+      - "The workflow did not enumerate and assert the final ZIP/7z member lists; see build_policy.archive_content_audit."
+      - "No GitHub Release was published; the updater tag/asset mismatch F-013 remains open."
   requires_ci_validation:
-    - "Full Windows x64 MSVC compile and link for yuzu and yuzu-cmd."
-    - "Confirm the SendReceive C4458 fix and Vulkan shader_index C4456 fix compile, and /wd4505 removes D9014 from MSVC output."
-    - "Confirm SDL3 HD Rumble patches apply to the exact fetched SDL3 source and patched functions link."
-    - "Confirm the Windows artifact contains lichii.exe, renhdrum.dll, Qt runtime dependencies and embedded zh_CN translation resources."
-    - "Inspect final archive and confirm eden-cli.exe, vc_redist* and *.pdb are absent."
-    - "Run updater Catch2 tests and validate the release metadata contract (tag, repository URL, exact ZIP name, SHA-256 digest, and hidden marker); the package step is not a unit-test run."
-    - "Do not enable publication while F-013 remains open."
+    - "Run the Catch2 updater tests and validate accepted/rejected tags, exact repository URL, exact ZIP name, numeric version ordering, hidden marker, and SHA-256 digest."
+    - "Add an archive-member audit after ZIP and 7z creation, or explicitly inspect both final archives before approving an artifact."
+    - "Resolve F-013 and test the published release metadata through the updater before enabling release publication."
   requires_hardware_validation:
     - "Switch Pro Controller and Joy-Con HD Rumble, wired and Bluetooth where applicable."
     - "DualSense wired and Bluetooth haptics."
