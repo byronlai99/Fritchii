@@ -108,6 +108,56 @@ modules:
       - "Confirm Simplified Chinese is present in the language selector."
       - "Launch the app in Simplified Chinese and inspect the main UI and RenHDrum settings."
 
+  - id: fork-branding
+    enabled: true
+    name: Fritchii-HDrum application identity and About UI
+    integration:
+      files:
+        - src/yuzu/about_dialog.cpp
+        - src/yuzu/aboutdialog.ui
+        - src/yuzu/main.ui
+        - src/yuzu/fritchii/fritchii_ui.cpp
+        - dist/languages/zh_CN.ts
+      migration_notes:
+        - "Keep Help > About and the About dialog branded Fritchii-HDrum in both classic and Fritchii layouts; do not make the brand conditional on the UI mode."
+        - "Keep the About title/body source strings and Simplified Chinese translation synchronized."
+      validation:
+        - "Inspect Help > About from both classic and Fritchii menu/layout modes."
+        - "Confirm the title, build version, project name, source links, and Chinese translation identify Fritchii-HDrum."
+
+  - id: fork-update-channel
+    enabled: true
+    name: Fritchii-HDrum release source and in-app updater
+    source:
+      repository: byronlai99/Fritchii-HDrum
+    integration:
+      files:
+        - src/frontend_common/update_checker.cpp
+        - src/frontend_common/update_checker.h
+        - src/yuzu/updater/update_dialog.cpp
+        - src/tests/common/update_checker.cpp
+      expected_contract:
+        release_repository: byronlai99/Fritchii-HDrum
+        version_tags:
+          - fritchii-vN
+          - fritchii-vN.M
+          - fritchii-vN.M.P
+        legacy_tag_prefix: frizti-v
+        windows_asset: Fritchii-HDrum-v<version>-Windows-x64.zip
+        requires_github_sha256_digest: true
+        hidden_release_marker: "<!-- fritchii:no-update -->"
+        platform: Windows
+      migration_notes:
+        - "Do not restore the upstream Frizti/Lichii release repository or old package-name rules."
+        - "The updater selects only the exact Windows ZIP name and canonical URL; debug ZIPs and 7z are not auto-update packages."
+        - "Release metadata must include a GitHub SHA-256 digest or the dialog opens the release page instead of installing automatically."
+        - "Keep the Fritchii-HDrum User-Agent in the download client."
+        - "The current build workflow's v5.8.4-preview tag and RenHDrum-zh-CN ZIP name do not satisfy this contract; align them before enabling publication."
+      validation:
+        - "Run Catch2 updater tests in src/tests/common/update_checker.cpp."
+        - "Test release metadata for accepted/rejected tags, exact repo URL, exact ZIP name, numeric version order, hidden marker, and SHA-256 digest."
+        - "Verify a real release is discoverable by the Windows in-app updater before marking auto-update as verified."
+
   - id: accurate-vibration-default
     enabled: true
     name: Enable Accurate Vibration by default
@@ -175,6 +225,24 @@ build_policy:
       file_sha256: 85d944c8557fbeffe02af566c9c4277251ed0ab1a0f2a3ab7a626af6a877c3a1
       update_policy: "Immutable; do not regenerate or replace unless the user explicitly requests it."
       packaging: "Extract the single matching recipe entry into build/release/bin/recipes/ after verifying both hashes."
+
+fork_release_contract:
+  updater_repository: byronlai99/Fritchii-HDrum
+  accepted_tag_forms:
+    - fritchii-v<version>
+    - frizti-v<version>
+  canonical_tag_format: fritchii-v<version>
+  required_windows_asset: Fritchii-HDrum-v<version>-Windows-x64.zip
+  accepted_auto_update_format: zip
+  manual_download_alternative: 7z
+  sha256_digest_required_for_automatic_install: true
+  hidden_release_marker: "<!-- fritchii:no-update -->"
+  current_workflow_mismatch:
+    generated_tag: "v5.8.4-preview.<run_number>"
+    generated_zip: "Fritchii-v5.8.4-RenHDrum-zh-CN-Windows-x64.zip"
+    status: open_pre_publish_blocker
+    impact: "The in-app updater will not parse this tag or select this ZIP. Manual download is unaffected."
+    resolution: "Before enabling publish_release, align tag and ZIP filename with the updater contract and confirm the GitHub SHA-256 asset digest."
 
 # Historical integration failures and recurring workflow portability checks.
 # Do not delete old entries when moving to a newer upstream tag.
@@ -358,6 +426,25 @@ integration_failure_ledger:
       - "Do not assume archive internal folder layout; inspect the ZIP entry names or match exact basename."
       - "Fail when there are zero or multiple matching entries, then verify the extracted file hash and final package presence."
 
+  - id: F-013-updater-tag-asset-contract-mismatch
+    evidence:
+      inspected_workflow_run: 43158492258
+      workflow_run_url: https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43158492258
+      workflow_file: .github/workflows/renhdrum-v584-build.yml
+      updater_source: src/frontend_common/update_checker.cpp
+      status_detail: "The publish step was skipped in run #34; this mismatch was found by static comparison, not a failed published update."
+    status: open_pre_publish_blocker
+    symptoms:
+      - "The workflow is configured to publish v5.8.4-preview.<run_number> and Fritchii-v5.8.4-RenHDrum-zh-CN-Windows-x64.zip."
+      - "The updater accepts fritchii-v... / frizti-v... tags and only Fritchii-HDrum-v<version>-Windows-x64.zip."
+    root_cause:
+      - "The workflow release naming convention was not reconciled with the fork's customized update_checker.cpp contract."
+    resolution:
+      - "No release was published. Update the workflow tag and updater ZIP name before enabling publish_release."
+    prevention:
+      - "Validate release tag, repository URL, exact ZIP name, and GitHub SHA-256 digest with the updater parser/tests before every release."
+      - "Keep the 7z archive as an optional manual-download asset; it is not selected by the current updater."
+
 recent_workflow_audit:
   - run: 43048515194
     label: integration-run-9
@@ -434,6 +521,7 @@ recent_workflow_audit:
     artifact_upload: success
     publish_step: skipped
     release_published: false
+    static_finding: F-013
 
 workflow_portability_policy:
   upstream_reference:
@@ -480,6 +568,8 @@ last_static_review:
     - "Confirm SDL3 HD Rumble patches apply to the exact fetched SDL3 source and patched functions link."
     - "Confirm the Windows artifact contains lichii.exe, renhdrum.dll, Qt runtime dependencies and embedded zh_CN translation resources."
     - "Inspect final archive and confirm eden-cli.exe, vc_redist* and *.pdb are absent."
+    - "Run updater Catch2 tests and validate the release metadata contract (tag, repository URL, exact ZIP name, SHA-256 digest, and hidden marker); the package step is not a unit-test run."
+    - "Do not enable publication while F-013 remains open."
   requires_hardware_validation:
     - "Switch Pro Controller and Joy-Con HD Rumble, wired and Bluetooth where applicable."
     - "DualSense wired and Bluetooth haptics."
@@ -504,3 +594,6 @@ pre_build_static_review:
     - external_workflow_portability_comparison
     - historical_failure_ledger_review
     - final_archive_content_audit
+    - fork_update_channel_release_metadata
+    - updater_unit_tests
+    - fork_branding_and_about_ui
