@@ -319,7 +319,7 @@ TEST_CASE("GitHub digests are parsed only when they are SHA-256", "[updater]") {
 TEST_CASE("Fritchii selects only the Windows package from the Fritchii-HDrum repository", "[updater]") {
     const auto source = UpdateChecker::DefaultSource();
     CHECK(source.origin == "https://api.github.com");
-    CHECK(source.api_path == "/repos/Frizti/Lichii/releases?per_page=100");
+    CHECK(source.api_path == "/repos/byronlai99/Fritchii-HDrum/releases?per_page=100");
     CHECK_FALSE(source.test);
 
     const std::string tag = "fritchii-v5";
@@ -368,9 +368,9 @@ TEST_CASE("Fritchii picks the newest newer release that has a package", "[update
     };
     const auto releases = std::array{
         make("frizti-v3", "Lichii-Frizti-v3-Windows-x64.zip"),
-        make("fritchii-v4", "Fritchii-v4-Windows-x64.zip"),
+        make("fritchii-v4", "Fritchii-HDrum-v4-Windows-x64.zip"),
         make("fritchii-v5", "Fritchii-v5-debug-symbols-not-needed-to-play.zip"),
-        make("fritchii-v4.1", "Fritchii-v4.1-Windows-x64.zip"),
+        make("fritchii-v4.1", "Fritchii-HDrum-v4.1-Windows-x64.zip"),
         make("build-99", "lichii-windows-x86_64.zip"),
     };
     const auto source = UpdateChecker::DefaultSource();
@@ -392,8 +392,8 @@ TEST_CASE("Fritchii never offers a release whose notes hide it from the updater"
         return release;
     };
     const auto releases = std::array{
-        make("fritchii-v5.6", "Fritchii-v5.6-Windows-x64.zip", "Real notes"),
-        make("fritchii-v9", "Fritchii-v9-Windows-x64.zip",
+        make("fritchii-v5.6", "Fritchii-HDrum-v5.6-Windows-x64.zip", "Real notes"),
+        make("fritchii-v9", "Fritchii-HDrum-v9-Windows-x64.zip",
              "Big news!\n<!-- fritchii:no-update -->\nMore text"),
     };
     const auto source = UpdateChecker::DefaultSource();
