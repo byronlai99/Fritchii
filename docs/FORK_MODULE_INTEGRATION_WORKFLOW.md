@@ -208,6 +208,14 @@ Before packaging:
 - Exclude `eden-cli.exe`, `vc_redist*`, and `*.pdb` from the package.
 - Upload a short-retention GitHub Actions artifact. Do not create a GitHub Release unless the user explicitly asks.
 
+**After creating each archive (mandatory final-content audit):**
+
+- Run the archive integrity test on both ZIP and 7z. Integrity success only proves that the container is readable; it does not prove that the package contains the correct files.
+- List the members of each finished archive independently (for example, with 7-Zip list output). Confirm the expected package root and required entries: lichii.exe, renhdrum.dll, and recipes/OoT v131072 (cache v54).nx2recipe. Confirm the Qt runtime DLLs/plugins and that the app's zh_CN catalog is embedded in the executable.
+- Confirm these are absent from both finished archives: eden-cli.exe, vc_redist*, *.pdb, and an external translations/ directory.
+- Record each archive's filename, size, SHA-256, member count, and the result of the required/forbidden-entry checks. Do not use a package-directory listing taken before archive creation as a substitute for inspecting the ZIP and 7z themselves.
+- **Current workflow gap:** run #34 performed 7-Zip integrity tests and checked that both archive files existed, but did not enumerate and assert the final archive members. Treat the final-content audit as outstanding until this is added to the workflow or performed explicitly for the uploaded artifact.
+
 ### 5. Validate and report
 
 Report each module as one of:
