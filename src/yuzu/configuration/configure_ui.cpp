@@ -12,7 +12,6 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QCoreApplication>
-#include <QDirIterator>
 #include <QFileDialog>
 #include <QString>
 #include <QToolButton>
@@ -177,8 +176,9 @@ void ConfigureUi::RequestGameListUpdate() {
 void ConfigureUi::SetConfiguration() {
     ui->theme_combobox->setCurrentIndex(
         ui->theme_combobox->findData(QString::fromStdString(UISettings::values.theme)));
-    ui->language_combobox->setCurrentIndex(ui->language_combobox->findData(
-        QString::fromStdString(UISettings::values.language.GetValue())));
+    const QString language = QString::fromStdString(UISettings::values.language.GetValue());
+    const int language_index = ui->language_combobox->findData(language);
+    ui->language_combobox->setCurrentIndex(language_index >= 0 ? language_index : 0);
     ui->show_add_ons->setChecked(UISettings::values.show_add_ons.GetValue());
     ui->show_size->setChecked(UISettings::values.show_size.GetValue());
     ui->show_types->setChecked(UISettings::values.show_types.GetValue());
@@ -224,21 +224,12 @@ void ConfigureUi::RetranslateUI() {
 }
 
 void ConfigureUi::InitializeLanguageComboBox() {
-    ui->language_combobox->addItem(tr("<System>"), QString{});
-    ui->language_combobox->addItem(tr("English"), QStringLiteral("en"));
-    QDirIterator it(QStringLiteral(":/languages"), QDirIterator::NoIteratorFlags);
-    while (it.hasNext()) {
-        QString locale = it.next();
-        locale.truncate(locale.lastIndexOf(QLatin1Char{'.'}));
-        locale.remove(0, locale.lastIndexOf(QLatin1Char{'/'}) + 1);
-        const QString lang = QLocale::languageToString(QLocale(locale).language());
-        const QString country = QLocale::territoryToString(QLocale(locale).territory());
-        ui->language_combobox->addItem(QStringLiteral("%1 (%2)").arg(lang, country), locale);
-    }
+    // Keep the interface language choices limited to System, English and Chinese.
+    ui->language_combobox->addItem(QStringLiteral("System"), QString{});
+    ui->language_combobox->addItem(QStringLiteral("English"), QStringLiteral("en"));
+    ui->language_combobox->addItem(QStringLiteral("中文"), QStringLiteral("zh_CN"));
 
-    // Unlike other configuration changes, interface language changes need to be reflected on the
-    // interface immediately. This is done by passing a signal to the main window, and then
-    // retranslating when passing back.
+    // Interface language changes are reflected immediately.
     connect(ui->language_combobox, qOverload<int>(&QComboBox::currentIndexChanged), this,
             &ConfigureUi::OnLanguageChanged);
 }
