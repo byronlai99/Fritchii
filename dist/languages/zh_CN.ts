@@ -6820,7 +6820,8 @@ Please go to Configure -&gt; System -&gt; Network and make a selection.</source>
         <location filename="../../src/yuzu/multiplayer/host_room.cpp" line="187"/>
         <source>Failed to announce the room to the public lobby. In order to host a room publicly, you must have a valid Eden account configured in Emulation -&gt; Configure -&gt; Web. If you do not want to publish a room in the public lobby, then select Unlisted instead.
 Debug Message: </source>
-        <translation> </translation>
+        <translation>无法将房间公告发布到公共大厅。若要在公共大厅中公开托管房间，必须先在“模拟 → 配置 → 网络”中设置有效的 Eden 账户。如果不希望将房间发布到公共大厅，请选择“私有”。
+调试信息：</translation>
     </message>
 </context>
 <context>
