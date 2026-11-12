@@ -83,14 +83,20 @@ modules:
         - src/yuzu/CMakeLists.txt
         - src/yuzu/configuration/controller_haptics/
         - src/yuzu/configuration/configure_vibration.cpp
+        - src/common/settings.h
+        - src/common/frizti_settings.cpp
+        - src/common/frizti_settings.h
         - dist/languages/zh_CN.ts
       migration_notes:
         - "Check the target SDL3 version before applying the SDL3 HD Rumble patches; adapt patch context rather than forcing old patches."
         - "NX2-only Settings::nx2_active_mode is not present in the v5.8.4 baseline. Do not copy that reference unless the new upstream base provides the symbol/API."
         - "Verify runtime DLL version and SHA-256 before packaging."
+        - "Preserve hd_rumble_gain and hd_rumble_low_boost in Settings::Frizti::TunedSettings; the v5.8.4 integration carries tuning revision 13, one revision above the upstream v5.8.4 revision 12."
+        - "When the tuned-settings list or its target defaults change, bump Settings::Frizti::Revision once; do not force the tuned values on every launch or erase user edits made after the one-time application."
     validation:
       - "Build with ENABLE_RENHDRUM=ON and RENHDRUM_SDL_PATCHES=ON."
       - "Confirm renhdrum.dll is next to lichii.exe in the test package."
+      - "Verify OoT tuned settings include both hd_rumble_gain and hd_rumble_low_boost and that the revision-13 migration is applied once, then preserves subsequent user edits."
       - "Test Switch Pro Controller/Joy-Con HD Rumble and DualSense haptics where hardware is available."
 
   - id: chinese-ui
