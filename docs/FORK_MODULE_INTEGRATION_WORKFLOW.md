@@ -66,6 +66,35 @@ For each module:
 - **Accurate vibration:** keep `enable_accurate_vibrations` separate from the general vibration and RenHDrum master switches. A changed default must not silently erase an existing user's saved preference.
 - **PR #36:** re-check the current Controls page geometry and apply only the still-needed layout fixes. Keep its compact QSS selectors scoped to the Controls widgets.
 
+### 3A. Reconcile the complete Simplified Chinese UI (mandatory on every upstream update)
+
+Do this for every upstream tag, even when the upstream release notes do not mention translations. A UI string can be added or changed in a C++ file, a Qt .ui form, a dynamically built menu, a tooltip, or a first-run dialog without an obvious translation-related commit.
+
+**Default language behavior (keep this contract):**
+- A fresh profile stores `UISettings::values.language` as an empty string. The interface selector's first option is **System**, whose item data is empty.
+- `MainWindow::LoadTranslation()` passes `QLocale()` to the translator when that value is empty. Windows' system locale is therefore used on first launch; if no matching catalog can be loaded, the application falls back to English.
+- The selector must remain exactly **System / English / 中文**. Do not silently change the fresh-install default to Chinese or English.
+
+**Required translation-port checklist:**
+
+1. Start from the current fork's complete `dist/languages/zh_CN.ts`, not an older upstream copy. Compare the new upstream `dist/languages/zh_CN.ts` and every changed/new `.ui` and source file against it. Merge newly added or changed source strings by context; never replace the fork catalog wholesale or discard existing fork-only entries (RenHDrum, DLSS/FG, Fritchii menus, migration text, and other local UI).
+2. Re-scan all changed C++ and Qt UI code for visible text: menu/action labels, submenus, button labels, tab names, tooltips/hover popups, status text, QMessageBox/QDialog/QProgressDialog text, error/recovery messages, update/About dialogs, and strings assembled dynamically. Do not limit the review to `.ui` files or upstream translation diffs.
+3. Keep translation contexts exact. Typical contexts in this fork include:
+   - Qt Designer forms: the class/context generated for the corresponding `.ui` file (for example `MainWindow`).
+   - `QObject::tr(...)`: `QObject`.
+   - `ConfigureDialog::tr(...)`: `ConfigureDialog`.
+   - Fritchii's custom menus: `FritchiiUi`.
+   - Left-rail tooltips created by `FritchiiUi::Home`: `FritchiiUi::Home`.
+   - Main-window dynamic actions: `MainWindow`.
+   If code uses `QCoreApplication::translate("SomeContext", ...)`, the TS context must match that exact string. A translation entry under a similar but different class name does not translate at runtime.
+4. Treat first-run profile migration as a permanent translation surface. Check the complete flow: first-run question; source-profile name and last-played label; Saves and keys / Settings / Mods; Copy / Start fresh / Cancel; busy-source and progress messages; successful-copy summary and destination path; linked NAND/SDMC and backup notices; shader-preparation notice; failure, retry, and start-without-migrating choices; and unfinished-import recovery. Keep every dynamic placeholder (`%1`, `%2`, `%3`, `%n`) unchanged in meaning and count.
+5. For each added/changed message, provide a complete Simplified Chinese translation. Preserve Qt markup, HTML entities, mnemonic ampersands, line breaks, plural forms, and placeholders. Do not leave an empty translation unless intentionally untranslated and documented.
+6. Validate the TS catalog before committing: balanced XML; no nested or duplicate `<context>` blocks; unique context names; no duplicate source keys within a context; valid `<translation>` / `<numerusform>` structure; placeholders match the source. Use Qt's `lupdate` or an equivalent source scan to find newly introduced strings, then run `lrelease` through the actual Windows MSVC build and confirm `zh_CN.qm` is generated successfully.
+7. Confirm the catalog is embedded in the application resource under `:/languages/`. CMake's `qt_add_translation()` and `qt_add_resources()` generate and embed the QM catalog. The Windows package intentionally uses `windeployqt --no-translations`; do not re-add an external `translations\\` directory merely to make the application's Chinese UI work.
+8. After a successful build, perform a UI spot-check in Chinese for both the classic and Fritchii layouts: Settings > Advanced; all Help/File/Game menu entries; Library/Settings/Help hover tooltips; About; first-run migration; and any newly changed upstream screens. Record anything that still needs real runtime confirmation.
+
+**Do not mark Chinese UI as complete based only on a populated TS file.** The source context must match, `lrelease` must succeed, the catalog must be embedded, and the relevant UI surfaces must be checked.
+
 ### 4. Build and package a test artifact
 
 Use the build policy in `docs/fork-modules.yml`. The current policy is Windows x64 MSVC only, no PGO, and test artifact only.
@@ -230,3 +259,27 @@ Run #9 also showed the older F-001 count/state diagnostics again; these are dupl
 
 
 Run #22 artifact metadata: Fritchii-v5.8.4-RenHDrum-zh-CN-Windows-x64-9e053b5a7af47e4c8281da9ecf99de60f5f70bb2 (SHA-256 8b498bc84acdec0c3c6c80e73ecd570dc9062fc137dc6078dbb9cfa3a34e6042; expires 2026-11-18). The workflow package and upload steps passed; the ZIP's internal file list has not yet been audited separately.
+ 
+### F-010: malformed nested context in zh_CN.ts blocks lrelease
+
+- **Workflow run:** [#31](https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43145920017).
+- **Affected commit:** `198712dfb4737287989534496dc880c02964b7fd`.
+- **File / line:** `dist/languages/zh_CN.ts:11764`.
+- **Diagnostic:** `lrelease error: Unexpected tag <context>`.
+- **Cause:** the FritchiiUi translation context was inserted inside another open context and was also emitted twice. Matching opening/closing tag counts alone did not catch this invalid nesting.
+- **Fix:** flatten the context tree, keep one top-level `FritchiiUi` context, and check XML nesting plus unique context names before committing.
+- **Verification:** Run #32 successfully generated `zh_CN.qm` with 2,249 finished translations and zero unfinished entries before reaching its separate C++ compile error.
+- **Status:** Fixed before the next build; retain the structural TS validation in the mandatory Chinese UI checklist above.
+
+### F-011: MSVC C3688 from malformed QObject::tr expression in migration dialog
+
+- **Workflow run:** [#32](https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43149782388).
+- **Affected commit:** `ede4ead9a1de1022ed7eb154455353cbee2f9d23`.
+- **File / line:** `src/yuzu/user_data_migration.cpp:179`.
+- **Diagnostics:** `C3688: invalid literal suffix 'Fritchii'`, followed by parser errors including `C2001: newline in constant`.
+- **Cause:** the translation wrapper was accidentally inserted inside a string literal, producing `"QObject::tr("Fritchii ..."`.
+- **Translation result:** in the same run, Qt successfully generated `zh_CN.qm` with 2,249 finished translations and zero unfinished entries. The failure happened later while compiling `user_data_migration.cpp`.
+- **Fix:** put `QObject::tr(...)` around the two adjacent string literals, not inside a quoted literal:
+  `QObject::tr("Fritchii will use its own profile. Your old emulator " "data has not been changed.")`.
+- **Status:** Corrected in the follow-up source patch; awaiting confirmation from the next Windows x64 MSVC build.
+
