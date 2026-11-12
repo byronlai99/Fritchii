@@ -197,7 +197,7 @@ The current Windows x64 MSVC workflow's Package test binary step packages the ex
 
 ### 4. Build and package a test artifact
 
-Use the build policy in `docs/fork-modules.yml`. The current policy is Windows x64 MSVC only, no PGO, and test artifact only.
+Use the build policy in `docs/fork-modules.yml`. The build target is Windows x64 MSVC only, with PGO disabled. The default workflow output is a test artifact; optional pre-release publishing is manually dispatched, defaults to `publish_release=false`, and must remain disabled until the updater naming contract F-013 is fixed.
 
 Before packaging:
 
@@ -243,7 +243,7 @@ A user request to add or remove a module overrides this list for that task, and 
 
 ## Current baseline note
 
-The manifest currently records upstream `fritchii-v5.8.4` as the baseline. The first 5.8.4 port still requires a fresh successful Actions run and hands-on controller/UI testing; a previous run failed because the port referenced `Settings::nx2_active_mode`, which was absent from that base. That NX2-only reference has been removed from the v5.8.4 RenHDrum path.
+The manifest currently records upstream `fritchii-v5.8.4` as the baseline. The integrated v5.8.4 code has passed the latest Windows x64 MSVC build and package workflow in [run #34](https://github.com/byronlai99/Fritchii-HDrum/actions/runs/43158492258). The earlier `Settings::nx2_active_mode` reference was not present in the v5.8.4 base and has been removed. CI success does not replace remaining controller/UI hardware validation, updater unit tests, the final ZIP/7z member audit, or resolution of the pre-publish updater naming mismatch F-013.
 
 ## Upgrade failure ledger (carry this forward to every version)
 
