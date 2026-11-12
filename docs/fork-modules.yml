@@ -158,7 +158,7 @@ modules:
         - "The updater selects only the exact Windows ZIP name and canonical URL; debug ZIPs and 7z are not auto-update packages."
         - "Release metadata must include a GitHub SHA-256 digest or the dialog opens the release page instead of installing automatically."
         - "Keep the Fritchii-HDrum User-Agent in the download client."
-        - "The current build workflow's v5.8.4-preview tag and RenHDrum-zh-CN ZIP name do not satisfy this contract; align them before enabling publication."
+        - "The ZIP/7z basename is Fritchii-HDrum-v5.8.4-Windows-x64. The current preview tag v5.8.4-preview.<run_number> remains incompatible with the in-app updater; resolve F-013 before publishing."
       validation:
         - "Run Catch2 updater tests in src/tests/common/update_checker.cpp."
         - "Test release metadata for accepted/rejected tags, exact repo URL, exact ZIP name, numeric version order, hidden marker, and SHA-256 digest."
