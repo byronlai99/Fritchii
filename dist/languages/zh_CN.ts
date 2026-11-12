@@ -3225,6 +3225,10 @@ Automatic uses the compute fallback on AMD GPUs, where native mesh shaders can h
         <source>Web</source>
         <translation>网络</translation>
     </message>
+    <message>
+        <source>Advanced</source>
+        <translation>高级</translation>
+    </message>
 </context>
 <context>
     <name>ConfigureFilesystem</name>
@@ -7203,8 +7207,8 @@ Debug Message: </source>
     </message>
     <message>
         <location filename="../../src/yuzu/main.ui" line="62"/>
-        <source>Open &amp;Eden Folders</source>
-        <translation>打开 &amp;Eden 文件夹</translation>
+        <source>Open &amp;Folder</source>
+        <translation>打开文件夹(&amp;F)</translation>
     </message>
     <message>
         <location filename="../../src/yuzu/main.ui" line="85"/>
@@ -8585,6 +8589,14 @@ Would you like to bypass this and exit anyway?</source>
 <message>
         <source>the game</source>
         <translation>游戏</translation>
+    </message>
+    <message>
+        <source>Prepare &amp;Shaders Now</source>
+        <translation>立即预热着色器(&amp;S)</translation>
+    </message>
+    <message>
+        <source>Check for Updates...</source>
+        <translation>检查更新...</translation>
     </message>
 </context>
 <context>
@@ -11652,7 +11664,7 @@ While this is on, games can't open their web pages (some manuals and logins). Yo
     </message>
 </context>
 <context>
-    <name>Home</name>
+    <name>FritchiiUi::Home</name>
     <message>
         <source>Library</source>
         <translation>游戏库</translation>
@@ -11747,4 +11759,186 @@ While this is on, games can't open their web pages (some manuals and logins). Yo
         </translation>
     </message>
 </context>
+    <context>
+        <name>FritchiiUi</name>
+<context>
+        <name>FritchiiUi</name>
+    <message>
+        <source>&amp;Game</source>
+        <translation>游戏(&amp;G)</translation>
+    </message>
+    <message>
+        <source>Ad&amp;vanced</source>
+        <translation>高级(&amp;A)</translation>
+    </message>
+    <message>
+        <source>&amp;Export Log...</source>
+        <translation>导出日志(&amp;E)...</translation>
+    </message>
+    <message>
+        <source>What&apos;s &amp;New</source>
+        <translation>更新内容(&amp;N)</translation>
+    </message>
+    <message>
+        <source>&amp;Delete Shader Cache...</source>
+        <translation>删除着色器缓存(&amp;D)...</translation>
+    </message>
+    <message>
+        <source>Fritchii &amp;Discord</source>
+        <translation>Fritchii Discord(&amp;D)</translation>
+    </message>
+    <message>
+        <source>D&amp;onate</source>
+        <translation>捐赠(&amp;O)</translation>
+    </message>
+    <message>
+        <source>&amp;Copy Data from Eden or Lichii...</source>
+        <translation>从 Eden 或 Lichii 复制数据(&amp;C)...</translation>
+    </message>
+    <message>
+        <source>Sa&amp;ves...</source>
+        <translation>存档(&amp;V)...</translation>
+    </message>
+    <message>
+        <source>Open &amp;Recent</source>
+        <translation>最近打开(&amp;R)</translation>
+    </message>
+    <message>
+        <source>Open &amp;Folder</source>
+        <translation>打开文件夹(&amp;F)</translation>
+    </message>
+    <message>
+        <source>Game &amp;List</source>
+        <translation>游戏列表(&amp;L)</translation>
+    </message>
+    <message>
+        <source>&amp;Icon Size</source>
+        <translation>图标大小(&amp;I)</translation>
+    </message>
+    <message>
+        <source>&amp;Window Size</source>
+        <translation>窗口大小(&amp;W)</translation>
+    </message>
+    <message>
+        <source>Create &amp;Shortcut</source>
+        <translation>创建快捷方式(&amp;S)</translation>
+    </message>
+    <message>
+        <source>&amp;Open Game...</source>
+        <translation>打开游戏(&amp;O)...</translation>
+    </message>
+    <message>
+        <source>Open &amp;Extracted Game...</source>
+        <translation>打开已解包游戏(&amp;E)...</translation>
+    </message>
+    <message>
+        <source>&amp;Install Update or DLC...</source>
+        <translation>安装更新或 DLC(&amp;I)...</translation>
+    </message>
+    <message>
+        <source>&amp;Settings...</source>
+        <translation>设置(&amp;S)...</translation>
+    </message>
+    <message>
+        <source>Game &amp;Settings...</source>
+        <translation>游戏设置(&amp;S)...</translation>
+    </message>
+    <message>
+        <source>&amp;Data</source>
+        <translation>数据(&amp;D)</translation>
+    </message>
+    <message>
+        <source>&amp;NAND</source>
+        <translation>NAND(&amp;N)</translation>
+    </message>
+    <message>
+        <source>&amp;SD Card</source>
+        <translation>SD 卡(&amp;S)</translation>
+    </message>
+    <message>
+        <source>&amp;Mods</source>
+        <translation>模组(&amp;M)</translation>
+    </message>
+    <message>
+        <source>Open &amp;Log Folder</source>
+        <translation>打开日志文件夹(&amp;L)</translation>
+    </message>
+    <message>
+        <source>&amp;720p</source>
+        <translation>&amp;720p</translation>
+    </message>
+    <message>
+        <source>&amp;900p</source>
+        <translation>&amp;900p</translation>
+    </message>
+    <message>
+        <source>&amp;1080p</source>
+        <translation>&amp;1080p</translation>
+    </message>
+    <message>
+        <source>&amp;List</source>
+        <translation>列表(&amp;L)</translation>
+    </message>
+    <message>
+        <source>&amp;Grid</source>
+        <translation>网格(&amp;G)</translation>
+    </message>
+    <message>
+        <source>&amp;Carousel</source>
+        <translation>轮播(&amp;C)</translation>
+    </message>
+    <message>
+        <source>Show Game &amp;Names</source>
+        <translation>显示游戏名称(&amp;N)</translation>
+    </message>
+    <message>
+        <source>&amp;Performance Overlay</source>
+        <translation>性能监控叠加层(&amp;P)</translation>
+    </message>
+    <message>
+        <source>&amp;Status Bar</source>
+        <translation>状态栏(&amp;S)</translation>
+    </message>
+    <message>
+        <source>Search &amp;Bar</source>
+        <translation>搜索栏(&amp;B)</translation>
+    </message>
+    <message>
+        <source>Single &amp;Window</source>
+        <translation>单窗口模式(&amp;W)</translation>
+    </message>
+    <message>
+        <source>&amp;Overlay Display Applet</source>
+        <translation>屏幕叠加小程序(&amp;O)</translation>
+    </message>
+    <message>
+        <source>&amp;Data Manager...</source>
+        <translation>数据管理器(&amp;D)...</translation>
+    </message>
+    <message>
+        <source>Take &amp;Screenshot</source>
+        <translation>截取屏幕截图(&amp;S)</translation>
+    </message>
+    <message>
+        <source>&amp;Load or Remove Amiibo...</source>
+        <translation>载入或移除 Amiibo(&amp;L)...</translation>
+    </message>
+    <message>
+        <source>From &amp;Folder...</source>
+        <translation>从文件夹(&amp;F)...</translation>
+    </message>
+    <message>
+        <source>From &amp;ZIP...</source>
+        <translation>从 ZIP 文件(&amp;Z)...</translation>
+    </message>
+    <message>
+        <source>&amp;About Fritchii-HDrum</source>
+        <translation>关于 Fritchii-HDrum(&amp;A)</translation>
+    </message>
+    <message>
+        <source>&amp;Open-Source Components</source>
+        <translation>开源组件(&amp;O)</translation>
+    </message>
+</context>
+    </context>
 </TS>

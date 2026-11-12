@@ -10,6 +10,7 @@
 #include <QAction>
 #include <QActionGroup>
 #include <QApplication>
+#include <QCoreApplication>
 #include <QBuffer>
 #include <QDateTime>
 #include <QDesktopServices>
@@ -191,7 +192,7 @@ QIcon Glyph(const QString& name, unsigned rgb, int px) {
 }
 
 void RestructureMenus(Ui::MainWindow& ui, QMainWindow& window, const MenuHooks& hooks) {
-    const auto tr = [](const char* text) { return QObject::tr(text); };
+    const auto tr = [](const char* text) { return QCoreApplication::translate("FritchiiUi", text); };
 
     // File: open, install, folders, settings, exit.
     ui.menuOpen_Eden_Folders->removeAction(ui.action_Log_Folder);

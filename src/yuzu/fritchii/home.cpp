@@ -7,6 +7,7 @@
 #include <vector>
 
 #include <QApplication>
+#include <QCoreApplication>
 #include <QBoxLayout>
 #include <QDir>
 #include <QEvent>
@@ -203,14 +204,17 @@ QWidget* Home::MakeRail() {
     layout->setContentsMargins(11, 16, 11, 16);
     layout->setSpacing(8);
 
-    library_button = RailButton(QStringLiteral("library"), tr("Library"));
+    const auto rail_tip = [](const char* text) {
+        return QCoreApplication::translate("FritchiiUi::Home", text);
+    };
+    library_button = RailButton(QStringLiteral("library"), rail_tip("Library"));
     library_button->setCheckable(true);
     connect(library_button, &QToolButton::clicked, this, &Home::ShowHome);
 
-    QToolButton* settings = RailButton(QStringLiteral("settings"), tr("Settings"));
+    QToolButton* settings = RailButton(QStringLiteral("settings"), rail_tip("Settings"));
     connect(settings, &QToolButton::clicked, this, [this] { hooks.open_settings(); });
 
-    QToolButton* help = RailButton(QStringLiteral("help"), tr("Help"));
+    QToolButton* help = RailButton(QStringLiteral("help"), rail_tip("Help"));
     connect(help, &QToolButton::clicked, this, [this, help] {
         if (hooks.help_menu) {
             hooks.help_menu->exec(help->mapToGlobal(QPoint(help->width() + 8, 0)));
@@ -221,7 +225,7 @@ QWidget* Home::MakeRail() {
     for (QMenu* menu : hooks.classic_menus) {
         classic->addMenu(menu);
     }
-    QToolButton* menu_button = RailButton(QStringLiteral("menu"), tr("Menu"));
+    QToolButton* menu_button = RailButton(QStringLiteral("menu"), rail_tip("Menu"));
     connect(menu_button, &QToolButton::clicked, this, [classic, menu_button] {
         const QSize size = classic->sizeHint();
         classic->exec(menu_button->mapToGlobal(
