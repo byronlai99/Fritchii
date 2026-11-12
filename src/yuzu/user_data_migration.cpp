@@ -72,7 +72,7 @@ UserDataMigrator::UserDataMigrator(QMainWindow* main_window) {
                 QMessageBox::Retry | QMessageBox::Close, QMessageBox::Retry);
             if (answer != QMessageBox::Retry) {
                 throw std::runtime_error(
-                    "Import recovery was postponed. Relaunch Lichii to retry.");
+                    "Import recovery was postponed. Relaunch Fritchii to retry.");
             }
             Migration::Recover(state_dir);
         }
@@ -140,11 +140,11 @@ void UserDataMigrator::ShowMigrationPrompt(QMainWindow* main_window) {
                      [=](bool linked) { clear_shaders->setEnabled(!linked); });
     update_cache_default();
     migration_prompt.setText(
-        QObject::tr("Import an existing emulator profile into Lichii?\n"
+        QObject::tr("Import an existing emulator profile into Fritchii?\n"
                     "Copy keeps the original profile unchanged and is recommended.\n"
                     "Move retains a recovery backup and requires space for a full copy.\n"
                     "Link shares settings and saves with the source emulator.\n"
-                    "Existing Lichii data is kept in backup directories, not merged or deleted.\n\n"
+                    "Existing Fritchii data is kept in backup directories, not merged or deleted.\n\n"
                     "Close the source emulator, then choose its profile below.\n"
                     "Close this window to decide on the next launch."));
     migration_prompt.addButton(QObject::tr("Import"));
@@ -155,7 +155,7 @@ void UserDataMigrator::ShowMigrationPrompt(QMainWindow* main_window) {
     QAbstractButton* button = migration_prompt.clickedButton();
 
     if (button == nullptr) {
-        throw std::runtime_error("Import was postponed. Relaunch Lichii to choose a profile.");
+        throw std::runtime_error("Import was postponed. Relaunch Fritchii to choose a profile.");
     }
     if (button == fresh) {
         Common::FS::ProfileMigration::MarkFresh(FrontendCommon::ProfileImportStateDirectory());
@@ -170,13 +170,13 @@ void UserDataMigrator::ShowMigrationPrompt(QMainWindow* main_window) {
     MigrateUserData(main_window, clear_shaders->isEnabled() && clear_shaders->isChecked(),
                     strategy);
     if (!migrated) {
-        throw std::runtime_error("Import failed. Relaunch Lichii to retry or recover.");
+        throw std::runtime_error("Import failed. Relaunch Fritchii to retry or recover.");
     }
 }
 
 void UserDataMigrator::ShowMigrationCancelledMessage(QMainWindow* main_window) {
     QMessageBox::information(main_window, QObject::tr("Migration"),
-                             QObject::tr("Lichii will use its own profile. Your old emulator "
+                             "QObject::tr("Fritchii will use its own profile. Your old emulator "
                                          "data has not been changed."),
                              QMessageBox::Ok);
 }
@@ -416,7 +416,7 @@ ImportPlan PlanImport(const OldProfile& old, const ProfileImportChoice& choice) 
             result.copy_bytes += size;
             add(source, destination / name);
         } else {
-            result.linked.push_back(QString::fromLatin1(name));
+            result.linked.push_back(QString::fromLatin1(name).toUpper());
             add(source, destination / name, Migration::Strategy::Link);
         }
     }
@@ -643,7 +643,7 @@ void UserDataMigrator::AutoImport(QMainWindow* main_window,
         if (choice->mods) {
             parts << QObject::tr("mods");
         }
-        QString what = parts.join(QStringLiteral(", "));
+        QString what = parts.join(QObject::tr(", "));
         what[0] = what[0].toUpper();
         QString text = QObject::tr("Fritchii now keeps its data in its own folder:\n%1\n\n"
                                    "%2 copied from the %3 folder.")
@@ -652,7 +652,7 @@ void UserDataMigrator::AutoImport(QMainWindow* main_window,
             text += QObject::tr("\n\n%1 was too big to copy, so it is shared with the old folder. "
                                 "Keep that folder.")
                         .arg(import.linked.size() == 1 ? import.linked[0]
-                                                       : QStringLiteral("nand and sdmc"));
+                                                       : QObject::tr("NAND and SDMC"));
         }
         if (requested) {
             text += QObject::tr("\n\nFritchii's previous data is kept next to it, in the folders "

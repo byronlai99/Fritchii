@@ -9759,6 +9759,160 @@ p, li { white-space: pre-wrap; }
         <source>Got it</source>
         <translation>知道了</translation>
     </message>
+    <message>
+        <source>Recover unfinished import</source>
+        <translation>恢复未完成的迁移</translation>
+    </message>
+    <message>
+        <source>An earlier import did not finish. Recover the previous profile and retry? No source or backup data will be deleted.</source>
+        <translation>上一次数据迁移尚未完成。是否恢复之前的用户配置并重试？不会删除源数据或备份。</translation>
+    </message>
+    <message>
+        <source>Import an existing emulator profile into Fritchii?
+Copy keeps the original profile unchanged and is recommended.
+Move retains a recovery backup and requires space for a full copy.
+Link shares settings and saves with the source emulator.
+Existing Fritchii data is kept in backup directories, not merged or deleted.
+
+Close the source emulator, then choose its profile below.
+Close this window to decide on the next launch.</source>
+        <translation>要将现有模拟器配置导入 Fritchii 吗？
+复制：保留原配置不变（推荐）。
+移动：保留可恢复的备份，并需要足够空间进行完整复制。
+链接：与源模拟器共享设置和存档。
+Fritchii 中已有的数据会保存在备份目录中，不会合并或删除。
+
+请先关闭源模拟器，然后在下方选择要导入的配置。
+关闭此窗口后，下次启动时可以再决定。</translation>
+    </message>
+    <message>
+        <source>Move Old Data (retain backup)</source>
+        <translation>迁移旧数据（保留备份）</translation>
+    </message>
+    <message>
+        <source>Import</source>
+        <translation>导入</translation>
+    </message>
+    <message>
+        <source>Fritchii will use its own profile. Your old emulator data has not been changed.</source>
+        <translation>Fritchii 将使用自己的独立配置。旧模拟器中的数据没有被修改。</translation>
+    </message>
+    <message>
+        <source>Fritchii keeps its data in its own folder now.
+Copy your data from another emulator folder?</source>
+        <translation>Fritchii 现在会将数据保存在独立文件夹中。
+要从其他模拟器文件夹复制现有数据吗？</translation>
+    </message>
+    <message>
+        <source>Copy your data from another folder?
+Fritchii restarts and copies it over its own. What it has now is kept as a backup.</source>
+        <translation>要从其他文件夹复制数据吗？
+Fritchii 会重新启动，并将数据复制到自己的文件夹中。现有数据会保留为备份。</translation>
+    </message>
+    <message>
+        <source>%1 (last played %2)</source>
+        <translation>%1（上次游玩：%2）</translation>
+    </message>
+    <message>
+        <source>Saves and keys</source>
+        <translation>存档与密钥</translation>
+    </message>
+    <message>
+        <source>Settings</source>
+        <translation>设置</translation>
+    </message>
+    <message>
+        <source>Mods</source>
+        <translation>模组</translation>
+    </message>
+    <message>
+        <source>Copy</source>
+        <translation>复制</translation>
+    </message>
+    <message>
+        <source>Start fresh</source>
+        <translation>全新开始</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <source>Another emulator seems to be using the %1 folder.</source>
+        <translation>检测到另一个模拟器似乎正在使用 %1 文件夹。请先关闭它，再重试。</translation>
+    </message>
+    <message>
+        <source>Copying your data from the %1 folder to Fritchii&apos;s own folder (%2 GB)...</source>
+        <translation>正在将 %1 文件夹中的数据复制到 Fritchii 的独立文件夹（%2 GB）...</translation>
+    </message>
+    <message>
+        <source>saves and keys</source>
+        <translation>存档与密钥</translation>
+    </message>
+    <message>
+        <source>settings</source>
+        <translation>设置</translation>
+    </message>
+    <message>
+        <source>mods</source>
+        <translation>模组</translation>
+    </message>
+    <message>
+        <source>, </source>
+        <translation>、</translation>
+    </message>
+    <message>
+        <source>Fritchii now keeps its data in its own folder:
+%1
+
+%2 copied from the %3 folder.</source>
+        <translation>Fritchii 现在会将数据保存在自己的独立文件夹中：
+%1
+
+已从 %3 文件夹复制以下内容：%2。</translation>
+    </message>
+    <message>
+        <source>%1 was too big to copy, so it is shared with the old folder. Keep that folder.</source>
+        <translation>%1 体积过大，无法复制，因此会与旧文件夹共享。请保留该文件夹。</translation>
+    </message>
+    <message>
+        <source>NAND and SDMC</source>
+        <translation>NAND 和 SD 卡</translation>
+    </message>
+    <message>
+        <source>Fritchii&apos;s previous data is kept next to it, in the folders ending in &quot;.backup&quot;.</source>
+        <translation>Fritchii 之前的数据会保留在旁边以 .backup 结尾的备份文件夹中。</translation>
+    </message>
+    <message>
+        <source>Shaders get prepared again the first time you start a game.
+Your old folder was not changed: %1</source>
+        <translation>首次启动游戏时会重新准备着色器。
+旧文件夹没有被修改：%1</translation>
+    </message>
+    <message>
+        <source>Open folder</source>
+        <translation>打开文件夹</translation>
+    </message>
+    <message>
+        <source>Your data in the %1 folder could not be copied to Fritchii&apos;s folder. Nothing was changed.
+
+%2
+
+Close any emulator or program using it, then start Fritchii again.</source>
+        <translation>无法将 %1 文件夹中的数据复制到 Fritchii 的文件夹。没有任何数据被修改。
+
+%2
+
+请关闭所有正在使用该文件夹的模拟器或程序，然后重新启动 Fritchii。</translation>
+    </message>
+    <message>
+        <source>Close and try again</source>
+        <translation>关闭并重试</translation>
+    </message>
+    <message>
+        <source>Start without it</source>
+        <translation>跳过迁移并启动</translation>
+    </message>
 </context>
 <context>
     <name>QtAmiiboSettingsDialog</name>
@@ -11759,10 +11913,8 @@ While this is on, games can't open their web pages (some manuals and logins). Yo
         </translation>
     </message>
 </context>
-    <context>
-        <name>FritchiiUi</name>
 <context>
-        <name>FritchiiUi</name>
+    <name>FritchiiUi</name>
     <message>
         <source>&amp;Game</source>
         <translation>游戏(&amp;G)</translation>
@@ -11940,5 +12092,4 @@ While this is on, games can't open their web pages (some manuals and logins). Yo
         <translation>开源组件(&amp;O)</translation>
     </message>
 </context>
-    </context>
 </TS>
