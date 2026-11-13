@@ -1,10 +1,12 @@
-# Fritchii-HDrum document cleanup review backup
+# Fritchii-HDrum document cleanup archive manifest (historical)
 
 Snapshot branch: `feature/v5.8.4-renhdrum-zh-cn`
 Snapshot commit: `d4fa6f74a20fc1e4737cb708ff950ca58e0504fe`
 Created: 2026-11-14
 
-This is a review backup only. Original source files are still present at their original paths. Nothing has been deleted or moved out of the working tree yet.
+**Archive status:** The ZIP was deleted on 2026-11-14 at the user's request. This manifest is retained as a historical record of the cleanup scope; the archived file contents are no longer stored in this repository.
+
+At the time the archive was created, the original source files were still present at their original paths.
 
 ## 1. Whole-file removal candidates (21 files)
 These documents are entirely about specific games or title-specific workarounds. Review the archive contents before approving deletion.
@@ -53,4 +55,4 @@ Examples include `docs/native-dlss-replacement.md`, `docs/nx2/amd.md`, `docs/nx2
 ## 5. Historical GitHub Releases
 The 12 release descriptions were checked separately. Descriptions with relevant references include `Fritchii-HDrum v5.8.4`, `Fritchii v5.6 build 63`, and `Fritchii v4.11 build 27`. Release text should be edited in place after review; it is not a source file and is not included as a delete candidate here.
 
-The ZIP contains the original file contents with their repository-relative paths grouped into `originals/`, `review-only/`, and `edit-in-place/`.
+The deleted ZIP contained the original file contents with their repository-relative paths grouped into `originals/`, `review-only/`, and `edit-in-place/`.
