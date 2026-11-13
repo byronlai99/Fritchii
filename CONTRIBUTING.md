@@ -52,7 +52,6 @@ Changes to RenHDrum integration should:
 - Avoid claiming support for every controller or connection mode based only on device detection.
 - Document controller model, USB/Bluetooth connection and runtime prerequisites for any new capability.
 
-The built-in Joy-Con path and RenHDrum paths are not interchangeable. Do not route a controller through a different implementation without confirming the effect on existing behavior.
 
 ### Chinese translation and localization
 
