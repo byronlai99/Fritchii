@@ -10,6 +10,7 @@
 
 **Fritchii-HDrum** is an independent Windows x64 build of [Fritchii](https://github.com/Frizti/Fritchii) with [RenHDrum](https://github.com/trzz1214/RenHDrum) integration for enhanced controller rumble and haptics.
 
+This is a personal, experimental fork. It is not an official release of Frizti's Fritchii project.
 
 ## Downloads
 
