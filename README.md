@@ -10,7 +10,6 @@
 
 **Fritchii-HDrum** is an independent Windows x64 build of [Fritchii](https://github.com/Frizti/Fritchii) with [RenHDrum](https://github.com/trzz1214/RenHDrum) integration for enhanced controller rumble and haptics.
 
-This is a personal, experimental fork. It is not an official release of Frizti's Fritchii project and is not affiliated with Nintendo, Sony or Microsoft.
 
 ## Downloads
 
@@ -38,8 +37,6 @@ Fritchii-HDrum combines the emulator's built-in controller drivers with RenHDrum
 
 | Controller | Rumble / haptics support | Notes |
 |---|---|---|
-| Nintendo Switch Pro Controller | HD Rumble through RenHDrum | Preserves high- and low-frequency vibration data. |
-| Nintendo Joy-Con (L/R) | HD Rumble through the built-in Joy-Con driver | The built-in Joy-Con driver handles these controllers by default. |
 | Sony DualSense | Advanced haptics | USB uses the haptic actuators through multi-channel audio; Bluetooth uses HID haptics when supported by the RenHDrum runtime. |
 | Sony DualSense Edge | Advanced haptics | USB and Bluetooth haptics paths are implemented, subject to runtime and device availability. |
 | Xbox One controllers | Enhanced rumble | RenHDrum processing; trigger rumble is available only where the controller and connection expose trigger motors. |
@@ -49,10 +46,8 @@ Fritchii-HDrum combines the emulator's built-in controller drivers with RenHDrum
 
 ### Controller notes
 
-- **Joy-Con:** The built-in Joy-Con driver is enabled by default and takes priority for Joy-Con devices. Their rumble is handled by that native driver rather than the RenHDrum path.
 - **DualSense over Bluetooth:** Advanced haptics require a compatible RenHDrum runtime with the Bluetooth HID report function and a usable HID device path. If unavailable, the emulator falls back to standard rumble.
 - **Xbox trigger rumble:** Trigger motors work only on controllers and connection modes that expose them to SDL. Many wireless receivers expose only the main grip motors.
-- **Nintendo Switch 2 Pro Controller:** Native Switch 2 HD Rumble support is not implemented in the current build. It may still be detected by Windows or SDL, but this build does not include the dedicated Switch 2 HD Rumble driver.
 
 Controller behavior depends on the game, controller firmware, operating system, SDL device detection and whether the controller is connected over USB or Bluetooth. Not every game uses HD Rumble or advanced haptics.
 
@@ -78,7 +73,6 @@ See [LICENSE.txt](LICENSE.txt) and the source files for applicable license terms
 
 **Fritchii-HDrum** 是一个独立的 Windows x64 版本，基于 [Fritchii](https://github.com/Frizti/Fritchii)，并整合了 [RenHDrum](https://github.com/trzz1214/RenHDrum)，以增强控制器的震动与触觉反馈功能。
 
-这是一个个人维护的实验性分支，并非 Frizti 的 Fritchii 项目的官方版本，也与 Nintendo、Sony 或 Microsoft 没有任何隶属关系。
 
 ## 下载
 
@@ -106,8 +100,6 @@ Fritchii-HDrum 将模拟器内置的控制器驱动与 RenHDrum 相结合，以�
 
 | 控制器 | 震动 / 触觉反馈支持 | 备注 |
 |---|---|---|
-| Nintendo Switch Pro Controller | 通过 RenHDrum 提供 HD Rumble | 保留高频与低频震动数据。 |
-| Nintendo Joy-Con (L/R) | 通过内置 Joy-Con 驱动提供 HD Rumble | 默认由模拟器内置的 Joy-Con 驱动处理这些控制器。 |
 | Sony DualSense | 进阶触觉反馈 | USB 通过多声道音频驱动触觉执行器；在 RenHDrum 运行时支持的情况下，蓝牙使用 HID 触觉反馈。 |
 | Sony DualSense Edge | 进阶触觉反馈 | 已实现 USB 与蓝牙触觉反馈路径，实际可用性取决于运行时和设备支持情况。 |
 | Xbox One 控制器 | 增强震动 | 由 RenHDrum 处理；只有当控制器和连接方式提供扳机马达时，才可使用扳机震动。 |
@@ -117,10 +109,8 @@ Fritchii-HDrum 将模拟器内置的控制器驱动与 RenHDrum 相结合，以�
 
 ### 控制器注意事项
 
-- **Joy-Con：** 内置 Joy-Con 驱动默认启用，并优先处理 Joy-Con 设备。Joy-Con 的震动由该原生驱动负责，而不是通过 RenHDrum 路径处理。
 - **DualSense 蓝牙连接：** 进阶触觉反馈需要兼容的 RenHDrum 运行时，具备蓝牙 HID 报告功能以及可用的 HID 设备路径。如果这些条件不满足，模拟器会回退到标准震动。
 - **Xbox 扳机震动：** 只有当控制器和连接模式向 SDL 提供扳机马达时，该功能才能使用。许多无线接收器只会提供手柄主体的震动马达。
-- **Nintendo Switch 2 Pro Controller：** 当前版本尚未实现原生 Switch 2 HD Rumble 支持。Windows 或 SDL 仍可能识别到该控制器，但此版本并未包含专用的 Switch 2 HD Rumble 驱动。
 
 控制器的实际表现取决于游戏本身、控制器固件、操作系统、SDL 的设备识别结果，以及控制器使用 USB 还是蓝牙连接。并非所有游戏都会使用 HD Rumble 或进阶触觉反馈功能。
 
