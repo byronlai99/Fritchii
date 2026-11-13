@@ -74,7 +74,6 @@ See [LICENSE.txt](LICENSE.txt) and the source files for applicable license terms
 
 **Fritchii-HDrum** 是一个独立的 Windows x64 版本，基于 [Fritchii](https://github.com/Frizti/Fritchii)，并整合了 [RenHDrum](https://github.com/trzz1214/RenHDrum)，以增强控制器的震动与触觉反馈功能。
 
-这是一个个人维护的实验性分支，并非 Frizti 的 Fritchii 项目的官方版本，也与 Nintendo、Sony 或 Microsoft 没有任何隶属关系。
 
 ## 下载
 
