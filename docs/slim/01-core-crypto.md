@@ -87,6 +87,16 @@ NAX loader 的删除记录见 [02 - 内容加载与解密边界](02-content-load
 
 已经删除原先通过 KeyManager 取得 Title Key / Titlekek 并设置外部解密 key 的处理。改为识别已解密 NCA，并拒绝加密 NCA。具体加载行为见模块 02。
 
+### F. BIS 加密分区存储失败关闭
+
+文件：
+
+- `src/core/file_sys/bis_factory.cpp`
+
+`BISFactory::OpenPartitionStorage()` 保留原有接口以兼容调用者，但不再尝试读取并解密 CalibrationBinary / Package2。该路径依赖已删除的 `PartitionDataManager` 与外部 `KeyManager`，因此 Slim 统一返回空文件，避免重新引入外部密钥派生依赖。
+
+这不影响 `OpenPartition()` 提供的目录型 BIS 分区访问（例如 `/system`、`/user`）；它只关闭需要外部密钥的加密 BIS storage 路径。
+
 ## 3. 当前核心文件地图
 
 | 文件 | 当前处理 |
