@@ -157,8 +157,6 @@
     <string name="welcome">Benvindo! </string>
     <string name="welcome_description">Aprende como configurar &lt;b>Eden&lt;/b> e arranca a emulação.</string>
     <string name="get_started">Começa</string>
-    <string name="keys">Chaves</string>
-    <string name="keys_description">Seleciona o teu ficheiro &lt;b>prod.keys&lt;/b> com o botão abaixo.</string>
     <string name="firmware">Firmware</string>
     <string name="games">Jogos</string>
     <string name="games_description">Seleciona a tua pasta &lt;b>Games&lt;/b> com o botão abaixo.</string>
@@ -185,10 +183,6 @@
     <string name="add_games_warning_description">Os jogos não serão exibidos na lista de jogos se uma pasta não estiver selecionada.</string>
     <string name="home_search_games">Procurar jogos</string>
     <string name="search_settings">Procurar nas definições</string>
-    <string name="install_prod_keys">Instala prod.keys</string>
-    <string name="install_prod_keys_description">Necessário para desencriptar jogos comerciais</string>
-    <string name="install_prod_keys_warning">Ignorar a adição de chaves?</string>
-    <string name="install_prod_keys_warning_description">São necessárias chaves válidas para emular jogos comerciais. Somente aplicativos homebrew funcionarão se você continuar.</string>
     <string name="install_firmware_warning">Ignorar a adição do firmware?</string>
     <string name="install_firmware_warning_description">Muitos jogos requerem acesso ao firmware para funcionar corretamente.</string>
     <string name="notifications">Notificações</string>
@@ -201,8 +195,6 @@
     <string name="warning">Aviso</string>
     <string name="warning_skip">Saltar</string>
     <string name="warning_cancel">Cancelar</string>
-    <string name="install_amiibo_keys">Instala chaves Amiibo</string>
-    <string name="install_amiibo_keys_description">Necessário para usares Amiibo no jogo</string>
     <string name="gpu_driver_fetcher">Obtentor de drivers GPU</string>
     <string name="gpu_driver_manager">Gerenciador de driver de GPU</string>
     <string name="install_gpu_driver_description">Instala drivers alternativos para desempenho ou precisão potencialmente melhores</string>
@@ -236,7 +228,6 @@
     <string name="install_game_content_description">Instale atualizações de jogos ou DLC</string>
     <string name="installing_game_content">A instalar conteúdo...</string>
     <string name="install_game_content_failure">Erro ao instalar ficheiro(s) para NAND</string>
-    <string name="install_game_content_failure_description">Por favor confitma que o conteúdo(s) é válido e que as prod.keys estão instaladas.</string>
     <string name="install_game_content_failure_base">A instalação de jogos base não é permitida para evitar possíveis conflitos.</string>
     <string name="install_game_content_failed_count">%1$d erro(s) de instalação</string>
     <string name="install_game_content_success">Conteúdo(s) de jogo instalados com sucesso</string>
@@ -244,7 +235,6 @@
     <string name="install_game_content_success_overwrite">%1$d substituída com êxito</string>
     <string name="custom_driver_not_supported">Drivers personalizados não suportados</string>
     <string name="manage_yuzu_data">Administrar dados Eden</string>
-    <string name="manage_yuzu_data_description">Importa/exporta firmware, chaves, dados do usuário e mais!</string>
     <string name="game_folders">Pastas de jogos</string>
     <string name="deep_scan">Varredura profunda</string>
     <string name="add_game_folder">Adicionar pasta de jogo</string>
@@ -264,19 +254,12 @@
     <string name="verify_installed_content">Verificar conteúdo instalado</string>
     <string name="verify_installed_content_description">Verifica todo o conteúdo instalado em busca de dados corrompidos</string>
 
-    <string name="keys_missing">Faltando chaves de encriptação</string>
-    <string name="keys_missing_description">O firmware e jogos comerciais não poderão ser decriptados</string>
     <string name="uninstall_firmware">Desinstalar firmware</string>
     <string name="uninstall_firmware_description">Desinstalar o firmware irá removê-lo do dispositivo e pode afetar a compatibilidade de jogos.</string>
     <string name="firmware_uninstalling">A desinstalar firmware...</string>
     <string name="firmware_uninstalled_success">Firmware desinstalado com sucesso</string>
 
 
-    <string name="keys_failed">Falha ao instalar chaves</string>
-    <string name="keys_install_success">Chaves instaladas com sucesso</string>
-    <string name="error_keys_copy_failed">Uma ou mais chaves falharam ao copiar.</string>
-    <string name="error_keys_invalid_filename">Verifique se o seu ficheiro de chaves tem extensão .keys e tente novamente.</string>
-    <string name="error_keys_failed_init">Falha ao inicializar chaves. Verifique se as suas ferramentas de dump estão atualizadas e volte a fazer dump das chaves.</string>
 
     <!-- Applet launcher strings -->
     <string name="qlaunch_applet">Qlaunch</string>
@@ -602,8 +585,6 @@ uma tentativa de mapeamento automático</string>
     <string name="verify_no_result_description">Os conteúdos do arquivo não foram verificados se são válidos</string>
     <!-- ROM loading errors -->
     <string name="loader_error_encrypted">A tua ROM está encriptada</string>
-    <string name="loader_error_encrypted_roms_description"><![CDATA[Siga os guias para voltar a fazer dump dos seus <a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-physical-titles-game-cards\">cartões de jogo</a> ou <a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-digital-titles-eshop\">títulos digitais</a>.]]></string>
-    <string name="loader_error_encrypted_keys_description"><![CDATA[Por favor confirma que o teu ficheiro <a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-prodkeys-and-titlekeys\">prod.keys</a> está instalado para que os jogos possam ser desencriptados.]]></string>
     <string name="loader_error_video_core">Ocorreu um erro ao iniciar o núcleo de vídeo.</string>
     <string name="loader_error_video_core_description">Isto é normalmente causado por um driver de GPU incompatível. Instalar um driver GPU pode resolver este problema.</string>
     <string name="loader_error_file_not_found">O ficheiro da ROM não existe</string>

@@ -157,8 +157,6 @@
     <string name="welcome">Velkommen!</string>
     <string name="welcome_description">Lær å sette opp &lt;b>Eden&lt;/b> og hopp inn i emulering.</string>
     <string name="get_started">Kom i gang</string>
-    <string name="keys">Nøkler</string>
-    <string name="keys_description">Velg din &lt;b>prod.keys&lt;/b> fil ved å bruke knappen under.</string>
     <string name="firmware">Firmware</string>
     <string name="games">Spill</string>
     <string name="games_description">Velg din &lt;b>Spill&lt;/b> mappe ved å bruke knappen under.</string>
@@ -181,10 +179,6 @@
     <string name="add_games_warning">Hoppe over valg av spillmappe?</string>
     <string name="add_games_warning_description">Spill vises ikke i Spill-listen hvis en mappe ikke er valgt.</string>
     <string name="home_search_games">Søk i spill|</string>
-    <string name="install_prod_keys">Installer prod.keys</string>
-    <string name="install_prod_keys_description">Nødvendig for å dekryptere spill</string>
-    <string name="install_prod_keys_warning">Hoppe over å legge til nøkler?</string>
-    <string name="install_prod_keys_warning_description">Gyldige nøkler er påkrevd for å emulere spill. Bare hjemmebryggede apper vil fungere hvis du fortsetter.</string>
     <string name="install_firmware_warning">Hopp over tillegget av firmware?</string>
     <string name="install_firmware_warning_description">Mange spill krever tilgang til firmware for å fungere skikkelig.</string>
     <string name="notifications">Varsler</string>
@@ -197,8 +191,6 @@
     <string name="warning">Advarsel</string>
     <string name="warning_skip">Hopp over</string>
     <string name="warning_cancel">Avbryt</string>
-    <string name="install_amiibo_keys">Installer Amiibo-nøkler</string>
-    <string name="install_amiibo_keys_description">Kreves for å bruke Amiibo i spillet</string>
     <string name="gpu_driver_fetcher">GPU-driverhenting</string>
     <string name="install_gpu_driver_description">Installer alternative drivere for potensielt bedre ytelse eller nøyaktighet.</string>
     <string name="advanced_settings">Avanserte innstillinger</string>
@@ -226,7 +218,6 @@
     <string name="install_game_content_description">Installer spilloppdateringer eller DLC</string>
     <string name="installing_game_content">Installerer innhold…</string>
     <string name="install_game_content_failure">Feil ved installasjon</string>
-    <string name="install_game_content_failure_description">Sørg for at innholdet er gyldig</string>
     <string name="install_game_content_failure_base">Grunnspill kan ikke installeres</string>
     <string name="install_game_content_failed_count">%1$d installasjonsfeil</string>
     <string name="install_game_content_success">Innhold installert</string>
@@ -234,7 +225,6 @@
     <string name="install_game_content_success_overwrite">%1$d overskrevet</string>
     <string name="custom_driver_not_supported">Egendefinert driver støttes ikke</string>
     <string name="manage_yuzu_data">Administrer eden-data</string>
-    <string name="manage_yuzu_data_description">Importer/eksporter firmware, nøkler osv.</string>
     <string name="game_folders">Spillmapper</string>
     <string name="deep_scan">Dyp skanning</string>
     <string name="add_game_folder">Legg til spillmappe</string>
@@ -252,19 +242,12 @@
     <string name="verify_installed_content">Verifiser innhold</string>
     <string name="verify_installed_content_description">Sjekk for korrupsjon</string>
 
-    <string name="keys_missing">Nøkler mangler</string>
-    <string name="keys_missing_description">Kan ikke dekryptere firmware/spill</string>
     <string name="uninstall_firmware">Avinstaller firmware</string>
     <string name="uninstall_firmware_description">Avinstallering av firmware vil fjerne den fra enheten og kan påvirke spillkompatibilitet.</string>
     <string name="firmware_uninstalling">Avinstallerer firmware...</string>
     <string name="firmware_uninstalled_success">Firmware avinstallert</string>
 
 
-    <string name="keys_failed">Kunne ikke installere nøkler</string>
-    <string name="keys_install_success">Nøklene ble installert</string>
-    <string name="error_keys_copy_failed">En eller flere nøkler kunne ikke kopieres.</string>
-    <string name="error_keys_invalid_filename">Kontroller at nøkkelfilen din har filendelsen .keys og prøv på nytt.</string>
-    <string name="error_keys_failed_init">Kunne ikke initialisere nøkler. Sjekk at dumpverktøyene dine er oppdaterte og dump nøklene på nytt.</string>
 
     <!-- Applet launcher strings -->
     <string name="qlaunch_applet">Qlaunch</string>
@@ -480,8 +463,6 @@
     <string name="verify_failure">Integritetsverifisering mislyktes!</string>
     <!-- ROM loading errors -->
     <string name="loader_error_encrypted">ROM-en din er kryptert</string>
-    <string name="loader_error_encrypted_roms_description"><![CDATA[Følg veiledningene for å dumpe <a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-physical-titles-game-cards\">spillkort</a> eller <a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-digital-titles-eshop\">digitale titler</a> på nytt.]]></string>
-    <string name="loader_error_encrypted_keys_description"><![CDATA[Vennligst sørg for at <a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-prodkeys-and-titlekeys\">prod.keys</a> filen er installert slik at spillene kan dekrypteres.]]></string>
     <string name="loader_error_video_core">Det oppstod en feil ved initialisering av videokjernen</string>
     <string name="loader_error_video_core_description">Dette skyldes vanligvis en inkompatibel GPU-driver. Installering av en tilpasset GPU-driver kan løse problemet.</string>
     <string name="loader_error_file_not_found">ROM-filen finnes ikke</string>
