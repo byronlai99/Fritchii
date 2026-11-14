@@ -7,7 +7,7 @@
 #include <optional>
 
 #include "core/crypto/aes_util.h"
-#include "core/crypto/key_manager.h"
+#include "core/crypto/aes_util.h"
 #include "core/file_sys/fssystem/fs_i_storage.h"
 
 namespace FileSys {
