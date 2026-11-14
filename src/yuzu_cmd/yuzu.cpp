@@ -10,6 +10,7 @@
 #include <fstream>
 #include <vector>
 #include <cstdlib>
+#include <exception>
 #include <chrono>
 #include <cstdio>
 #include <csignal>
@@ -20,7 +21,10 @@
 #include <mutex>
 #include <optional>
 #include <regex>
+#include <stop_token>
 #include <string>
+#include <string_view>
+#include <system_error>
 #include <utility>
 
 #include "common/settings_enums.h"

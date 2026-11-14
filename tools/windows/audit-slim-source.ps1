@@ -25,11 +25,11 @@ $rules = @(
     },
     @{
         Name = 'reference to a removed key-manager/partition API type'
-        Pattern = '\b(?:KeyManager|PartitionDataManager|Package2Type|SignatureType|TitleKeyType|TicketData|RSA4096Ticket|RSA2048Ticket|ECDSATicket|RSAKeyPair|KeyCategory|S128KeyType|S256KeyType|KeyIndex)\b'
+        Pattern = '\b(?:KeyManager|PartitionDataManager|Package2Type|SignatureType|TitleKeyType|TicketData|RSA4096Ticket|RSA2048Ticket|ECDSATicket|RSAKeyPair|KeyCategory|S128KeyType|S256KeyType|KeyAreaKeyType|SourceKeyType|SDKeyType|BISKeyType|RSAKekType|KeyIndex)\b'
     },
     @{
         Name = 'reference to a removed key-derivation/ticket API'
-        Pattern = '\b(?:GetSignatureTypeDataSize|GetSignatureTypePaddingSize|GenerateKeyEncryptionKey|DeriveKeyblobKey|DeriveKeyblobMACKey|DeriveMasterKey|DecryptKeyblob|DeriveSDSeed|DeriveSDKeys|GetTicketblob|GetBISKey|KeyFileExists|DeriveSDSeedLazy|BaseDeriveNecessary|DeriveBase|DeriveETicket|PopulateTickets|SynthesizeTickets|PopulateFromPartitionData|GetCommonTickets|GetPersonalizedTickets|AddTicket|ReloadKeys|AreKeysLoaded|WriteKeyToFile|DeriveGeneralPurposeKeys|DeriveETicketRSAKey|SetKeyWrapped|ParseTicketTitleKey|HasBoot0|GetBoot0Raw|GetEncryptedKeyblob|GetEncryptedKeyblobs|GetSecureMonitor|GetPackage1Decrypted|HasFuses|GetFusesRaw|GetSecureBootKey|HasKFuses|GetKFusesRaw|HasPackage2|GetPackage2Raw|HasProdInfo|GetProdInfoRaw|DecryptProdInfo|GetPackage2FSDecompressed|GetPackage2SPLDecompressed|DecryptPackage2|GetDecryptedProdInfo|GetETicketExtendedKek)\b'
+        Pattern = '\b(?:GetSignatureTypeDataSize|GetSignatureTypePaddingSize|GenerateKeyEncryptionKey|DeriveKeyblobKey|DeriveKeyblobMACKey|DecryptKeyblob|DeriveMasterKey|DecryptKeyblob|DeriveSDSeed|DeriveSDKeys|GetTicketblob|GetBISKey|KeyFileExists|DeriveSDSeedLazy|BaseDeriveNecessary|DeriveBase|DeriveETicket|PopulateTickets|SynthesizeTickets|PopulateFromPartitionData|GetCommonTickets|GetPersonalizedTickets|AddTicket|ReloadKeys|AreKeysLoaded|WriteKeyToFile|DeriveGeneralPurposeKeys|DeriveETicketRSAKey|SetKeyWrapped|ParseTicketTitleKey|HasBoot0|GetBoot0Raw|GetEncryptedKeyblob|GetEncryptedKeyblobs|GetSecureMonitor|GetPackage1Decrypted|HasFuses|GetFusesRaw|GetSecureBootKey|HasKFuses|GetKFusesRaw|HasPackage2|GetPackage2Raw|HasProdInfo|GetProdInfoRaw|DecryptProdInfo|GetPackage2FSDecompressed|GetPackage2SPLDecompressed|DecryptPackage2|GetDecryptedProdInfo|GetETicketExtendedKek)\b'
     },
     @{
         Name = 'reference to removed path enumeration value'
