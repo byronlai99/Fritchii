@@ -20,10 +20,10 @@ $rules = @(
         Pattern = '\bCore::Crypto::SHA256Hash\b'
     },
     @{
-    @{
         Name = 'reference to removed NAX or XTS crypto types'
         Pattern = '\b(?:XTSEncryptionLayer|NAXHeader|NAXContentType|AppLoader_NAX)\b|\b(?:FileSys::NAX|Core::Crypto::Ticket)\b'
     },
+    @{
         Name = 'reference to a removed key-manager/partition API type'
         Pattern = '\b(?:KeyManager|PartitionDataManager|Package2Type|SignatureType|TitleKeyType|TicketData|RSA4096Ticket|RSA2048Ticket|ECDSATicket|RSAKeyPair|KeyCategory|S128KeyType|S256KeyType|KeyIndex)\b'
     },
