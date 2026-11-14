@@ -73,8 +73,8 @@ AppLoader_XCI::LoadResult AppLoader_XCI::Load(Kernel::KProcess& process, Core::S
         return {xci->GetProgramNCAStatus(), {}};
     }
 
-    if (!xci->HasProgramNCA() && !Core::Crypto::KeyManager::KeyFileExists(false)) {
-        return {ResultStatus::ErrorMissingProductionKeyFile, {}};
+    if (!xci->HasProgramNCA()) {
+        return {ResultStatus::ErrorXCIMissingProgramNCA, {}};
     }
 
     const auto result = nca_loader->Load(process, system);
