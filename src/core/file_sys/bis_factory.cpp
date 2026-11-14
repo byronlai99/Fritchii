@@ -83,30 +83,13 @@ VirtualDir BISFactory::OpenPartition(BisPartitionId id) const {
 
 VirtualFile BISFactory::OpenPartitionStorage(BisPartitionId id,
                                              VirtualFilesystem file_system) const {
-    const auto nand_directory = file_system->OpenDirectory(
-        Common::FS::GetEdenPathString(Common::FS::EdenPath::NANDDir), OpenMode::Read);
-    Core::Crypto::PartitionDataManager partition_data{nand_directory};
-
-    // Derive external keys only after the BIS partition data has been opened.
-    Core::Crypto::KeyManager::Instance().PopulateFromPartitionData(partition_data);
-
-    switch (id) {
-    case BisPartitionId::CalibrationBinary:
-        return partition_data.GetDecryptedProdInfo();
-    case BisPartitionId::BootConfigAndPackage2Part1:
-    case BisPartitionId::BootConfigAndPackage2Part2:
-    case BisPartitionId::BootConfigAndPackage2Part3:
-    case BisPartitionId::BootConfigAndPackage2Part4:
-    case BisPartitionId::BootConfigAndPackage2Part5:
-    case BisPartitionId::BootConfigAndPackage2Part6: {
-        const auto new_id = static_cast<u8>(id) -
-                            static_cast<u8>(BisPartitionId::BootConfigAndPackage2Part1) +
-                            static_cast<u8>(Core::Crypto::Package2Type::NormalMain);
-        return partition_data.GetPackage2Raw(static_cast<Core::Crypto::Package2Type>(new_id));
-    }
-    default:
-        return nullptr;
-    }
+    // Encrypted BIS storage (prodinfo/package2) requires the external KeyManager and
+    // PartitionDataManager. Slim intentionally removes both, so keep this API for callers
+    // but fail closed instead of reintroducing external-key derivation.
+    // Directory-backed BIS partitions remain available through OpenPartition().
+    static_cast<void>(id);
+    static_cast<void>(file_system);
+    return nullptr;
 }
 
 VirtualDir BISFactory::GetImageDirectory() const {
