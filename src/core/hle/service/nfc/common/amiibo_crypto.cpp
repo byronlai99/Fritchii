@@ -279,9 +279,12 @@ void Cipher(const DerivedKeys& keys, const NTAG215File& in_data, NTAG215File& ou
 }
 
 bool LoadKeys(InternalKey& locked_secret, InternalKey& unfixed_info) {
-    const auto yuzu_keys_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::KeysDir);
+    // Amiibo tag keys are separate from console game keys. Preserve the historical
+    // user/keys/key_retail.bin location without restoring a generic directory mapping.
+    const auto amiibo_key_file =
+        Common::FS::GetEdenPath(Common::FS::EdenPath::EdenDir) / "keys" / "key_retail.bin";
 
-    const Common::FS::IOFile keys_file{yuzu_keys_dir / "key_retail.bin",
+    const Common::FS::IOFile keys_file{amiibo_key_file,
                                        Common::FS::FileAccessMode::Read,
                                        Common::FS::FileType::BinaryFile};
 
@@ -303,8 +306,9 @@ bool LoadKeys(InternalKey& locked_secret, InternalKey& unfixed_info) {
 }
 
 bool IsKeyAvailable() {
-    const auto yuzu_keys_dir = Common::FS::GetEdenPath(Common::FS::EdenPath::KeysDir);
-    return Common::FS::Exists(yuzu_keys_dir / "key_retail.bin");
+    const auto amiibo_key_file =
+        Common::FS::GetEdenPath(Common::FS::EdenPath::EdenDir) / "keys" / "key_retail.bin";
+    return Common::FS::Exists(amiibo_key_file);
 }
 
 bool DecodeAmiibo(const EncryptedNTAG215File& encrypted_tag_data, NTAG215File& tag_data) {

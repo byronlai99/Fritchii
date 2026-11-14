@@ -32,6 +32,10 @@ $rules = @(
         Pattern = '\b(?:GetSignatureTypeDataSize|GetSignatureTypePaddingSize|GenerateKeyEncryptionKey|DeriveKeyblobKey|DeriveKeyblobMACKey|DeriveMasterKey|DecryptKeyblob|DeriveSDSeed|DeriveSDKeys|GetTicketblob|GetBISKey|KeyFileExists|DeriveSDSeedLazy|BaseDeriveNecessary|DeriveBase|DeriveETicket|PopulateTickets|SynthesizeTickets|PopulateFromPartitionData|GetCommonTickets|GetPersonalizedTickets|AddTicket|ReloadKeys|AreKeysLoaded|WriteKeyToFile|DeriveGeneralPurposeKeys|DeriveETicketRSAKey|SetKeyWrapped|ParseTicketTitleKey|HasBoot0|GetBoot0Raw|GetEncryptedKeyblob|GetEncryptedKeyblobs|GetSecureMonitor|GetPackage1Decrypted|HasFuses|GetFusesRaw|GetSecureBootKey|HasKFuses|GetKFusesRaw|HasPackage2|GetPackage2Raw|HasProdInfo|GetProdInfoRaw|DecryptProdInfo|GetPackage2FSDecompressed|GetPackage2SPLDecompressed|DecryptPackage2|GetDecryptedProdInfo|GetETicketExtendedKek)\b'
     },
     @{
+        Name = 'reference to removed path enumeration value'
+        Pattern = '\\bEdenPath::KeysDir\\b|\\bKeysDir\\b'
+    },
+    @{
         Name = 'obsolete key-file setup path'
         Pattern = '(?i)\b(?:prod|title|dev)\.keys\b|\buse_dev_keys\b'
     },

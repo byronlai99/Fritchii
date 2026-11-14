@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
 
-    <string name="app_disclaimer">本軟體可執行 Nintendo Switch 主機的遊戲，軟體不提供遊戲和金鑰檔案。<br /><br />在開始之前，請先安裝您的 <![CDATA[<b> prod.keys </b>]]> 檔案，<![CDATA[<a href=\"https://git.eden-emu.dev/eden-emu/eden/src/branch/master/docs/user/QuickStart.md\">了解更多</a>]]></string>
+    <string name="app_disclaimer">本軟體不包含任何遊戲檔案。請使用您擁有合法使用權的遊戲內容。<br /><br />本軟體僅提供模擬器功能，執行效果取決於裝置與遊戲內容。</string>
     <string name="notice_notification_channel_name">通知和錯誤</string>
     <string name="notice_notification_channel_description">發生錯誤時顯示通知</string>
     <string name="notification_permission_not_granted">未授予通知權限！</string>
@@ -398,7 +398,7 @@
     <string name="install_game_content_description">安裝遊戲更新或 DLC</string>
     <string name="installing_game_content">正在安裝內容…</string>
     <string name="install_game_content_failure">安裝檔案至 NAND 時發生錯誤</string>
-    <string name="install_game_content_failure_description">請確保內容有效並且 prod.keys 檔案已安裝</string>
+    <string name="install_game_content_failure_description">請確認附加內容檔案有效，且檔案格式受到支援。</string>
     <string name="install_game_content_failure_base">為避免產生衝突，無法直接安裝遊戲本體</string>
     <string name="install_game_content_failed_count">%1$d 安裝錯誤</string>
     <string name="install_game_content_success">遊戲內容已成功安裝</string>
@@ -439,7 +439,7 @@
     <string name="applets_description">使用已安裝的韌體啟動系統小程式</string>
     <string name="applets_error_firmware">未安裝韌體</string>
     <string name="applets_error_applet">無法使用小程式</string>
-    <string name="applets_error_description"><![CDATA[請確定您的<a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-prodkeys-and-titlekeys\">prod.keys</a>檔案和<a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-system-firmware\">韌體</a>已安裝並重試]]></string>
+    <string name="applets_error_description">請確認系統韌體已正確安裝後再試一次。</string>
     <string name="album_applet">相簿</string>
     <string name="album_applet_description">使用系統相片檢視器查看儲存在使用者螢幕截圖資料夾中的影像</string>
     <string name="mii_edit_applet">Mii 編輯</string>
