@@ -8,12 +8,16 @@ $scanRoots = @(
     (Join-Path $repoRoot 'CMakeModules'),
     (Join-Path $repoRoot 'CMakeLists.txt')
 )
-$extensions = @('.c', '.cc', '.cpp', '.cxx', '.h', '.hh', '.hpp', '.hxx', '.cmake', '.txt')
+$extensions = @('.c', '.cc', '.cpp', '.cxx', '.h', '.hh', '.hpp', '.hxx', '.cmake', '.txt', '.ui', '.xml', '.ts')
 
 $rules = @(
     @{
         Name = 'include of a removed crypto/loader header'
         Pattern = '^\s*#\s*include\s*[<"][^">]*(?:key_manager|partition_data_manager|xts_encryption_layer|xts_archive|nax)\.h[">]'
+    },
+    @{
+        Name = 'reference to the removed Core::Crypto SHA256Hash alias'
+        Pattern = '\bCore::Crypto::SHA256Hash\b'
     },
     @{
         Name = 'reference to a removed key-manager/partition API type'
@@ -25,7 +29,7 @@ $rules = @(
     },
     @{
         Name = 'obsolete key-file setup path'
-        Pattern = '(?i)\b(?:prod|title)\.keys\b'
+        Pattern = '(?i)\b(?:prod|title|dev)\.keys\b|\buse_dev_keys\b'
     },
     @{
         Name = 'CMake reference to a removed translation unit'
