@@ -33,8 +33,6 @@ add_library(core STATIC
     crypto/encryption_layer.h
     crypto/ncz_decompressor.cpp
     crypto/ncz_decompressor.h
-    crypto/xts_encryption_layer.cpp
-    crypto/xts_encryption_layer.h
     debugger/debugger.cpp
     debugger/debugger.h
     debugger/debugger_interface.h
