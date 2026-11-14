@@ -419,22 +419,6 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
         gamesViewModel.addFolder(externalContentDir, savedFromGameFragment = false)
     }
 
-    val getAmiiboKey = registerForActivityResult(ActivityResultContracts.OpenDocument()) { result ->
-        if (result != null) {
-            processAmiiboKey(result)
-        }
-    }
-
-    private fun processAmiiboKey(result: Uri) {
-        InstallableActions.processKey(
-            activity = this,
-            fragmentManager = supportFragmentManager,
-            gamesViewModel = gamesViewModel,
-            result = result,
-            extension = "bin"
-        )
-    }
-
     val getFirmware = registerForActivityResult(ActivityResultContracts.OpenDocument()) { result ->
         if (result != null) {
             processFirmware(result)
@@ -445,7 +429,6 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
         InstallableActions.processFirmware(
             activity = this,
             fragmentManager = supportFragmentManager,
-            homeViewModel = homeViewModel,
             result = result,
             onComplete = onComplete
         )
@@ -455,7 +438,6 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
         InstallableActions.uninstallFirmware(
             activity = this,
             fragmentManager = supportFragmentManager,
-            homeViewModel = homeViewModel
         )
     }
 

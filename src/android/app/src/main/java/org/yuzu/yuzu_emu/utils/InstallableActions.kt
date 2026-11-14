@@ -98,41 +98,9 @@ object InstallableActions {
         }
     }
 
-    fun processKey(
-        activity: FragmentActivity,
-        fragmentManager: FragmentManager,
-        gamesViewModel: GamesViewModel,
-        result: Uri,
-        extension: String = "keys"
-    ) {
-        activity.contentResolver.takePersistableUriPermission(
-            result,
-            Intent.FLAG_GRANT_READ_URI_PERMISSION
-        )
-
-        val resultCode = NativeLibrary.installKeys(result.toString(), extension)
-        if (resultCode == 0) {
-            Toast.makeText(
-                activity.applicationContext,
-                R.string.keys_install_success,
-                Toast.LENGTH_SHORT
-            ).show()
-            gamesViewModel.reloadGames(true)
-            return
-        }
-
-        val resultString = activity.resources.getStringArray(R.array.installKeysResults)[resultCode]
-        MessageDialogFragment.newInstance(
-            titleId = R.string.keys_failed,
-            descriptionString = resultString,
-            helpLinkId = R.string.keys_missing_help
-        ).show(fragmentManager, MessageDialogFragment.TAG)
-    }
-
     fun processFirmware(
         activity: FragmentActivity,
         fragmentManager: FragmentManager,
-        homeViewModel: HomeViewModel,
         result: Uri,
         onComplete: (() -> Unit)? = null
     ) {
@@ -163,7 +131,6 @@ object InstallableActions {
                     firmwarePath.deleteRecursively()
                     cacheFirmwareDir.copyRecursively(firmwarePath, overwrite = true)
                     NativeLibrary.initializeSystem(true)
-                    homeViewModel.setCheckKeys(true)
                     activity.getString(R.string.save_file_imported_success)
                 }
             } catch (_: Exception) {
@@ -180,7 +147,6 @@ object InstallableActions {
     fun uninstallFirmware(
         activity: FragmentActivity,
         fragmentManager: FragmentManager,
-        homeViewModel: HomeViewModel
     ) {
         val firmwarePath = File(NativeConfig.getNandDir() + "/system/Contents/registered/")
         ProgressDialogFragment.newInstance(
@@ -191,7 +157,6 @@ object InstallableActions {
                 if (firmwarePath.exists()) {
                     firmwarePath.deleteRecursively()
                     NativeLibrary.initializeSystem(true)
-                    homeViewModel.setCheckKeys(true)
                     activity.getString(R.string.firmware_uninstalled_success)
                 } else {
                     activity.getString(R.string.firmware_uninstalled_failure)

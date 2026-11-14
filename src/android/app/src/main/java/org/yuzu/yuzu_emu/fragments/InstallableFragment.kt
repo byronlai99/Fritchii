@@ -142,20 +142,10 @@ class InstallableFragment : Fragment() {
                     InstallableActions.uninstallFirmware(
                         activity = requireActivity(),
                         fragmentManager = parentFragmentManager,
-                        homeViewModel = homeViewModel
                     )
                 }
             ),
-            Installable(
-                R.string.install_prod_keys,
-                R.string.install_prod_keys_description,
-                install = { getProdKeyLauncher.launch(arrayOf("*/*")) }
-            ),
-            Installable(
-                R.string.install_amiibo_keys,
-                R.string.install_amiibo_keys_description,
-                install = { getAmiiboKeyLauncher.launch(arrayOf("*/*")) }
-            )
+
         )
 
         binding.listInstallables.apply {
@@ -187,39 +177,12 @@ class InstallableFragment : Fragment() {
             windowInsets
         }
 
-    private val getProdKeyLauncher =
-        registerForActivityResult(ActivityResultContracts.OpenDocument()) { result ->
-            if (result != null) {
-                InstallableActions.processKey(
-                    activity = requireActivity(),
-                    fragmentManager = parentFragmentManager,
-                    gamesViewModel = gamesViewModel,
-                    result = result,
-                    extension = "keys"
-                )
-            }
-        }
-
-    private val getAmiiboKeyLauncher =
-        registerForActivityResult(ActivityResultContracts.OpenDocument()) { result ->
-            if (result != null) {
-                InstallableActions.processKey(
-                    activity = requireActivity(),
-                    fragmentManager = parentFragmentManager,
-                    gamesViewModel = gamesViewModel,
-                    result = result,
-                    extension = "bin"
-                )
-            }
-        }
-
     private val getFirmwareLauncher =
         registerForActivityResult(ActivityResultContracts.OpenDocument()) { result ->
             if (result != null) {
                 InstallableActions.processFirmware(
                     activity = requireActivity(),
                     fragmentManager = parentFragmentManager,
-                    homeViewModel = homeViewModel,
                     result = result
                 )
             }
