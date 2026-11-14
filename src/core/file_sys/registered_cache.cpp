@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <algorithm>
+#include <array>
 #include <limits>
 #include <random>
 #include <regex>
@@ -72,7 +73,7 @@ static std::string GetRelativePathFromNcaID(const std::array<u8, 16>& nca_id, bo
         return fmt::format(format_str, nca_str);
     }
 
-    Core::Crypto::SHA256Hash hash{};
+    std::array<u8, 0x20> hash{};
     u32 hash_len = 0;
     EVP_Digest(nca_id.data(), nca_id.size(), hash.data(), &hash_len, EVP_sha256(), nullptr);
 
@@ -393,7 +394,7 @@ bool PlaceholderCache::Create(const NcaID& id, u64 size) const {
         return false;
     }
 
-    Core::Crypto::SHA256Hash hash{};
+    std::array<u8, 0x20> hash{};
     u32 hash_len = 0;
     EVP_Digest(id.data(), id.size(), hash.data(), &hash_len, EVP_sha256(), nullptr);
 
@@ -421,7 +422,7 @@ bool PlaceholderCache::Delete(const NcaID& id) const {
         return false;
     }
 
-    Core::Crypto::SHA256Hash hash{};
+    std::array<u8, 0x20> hash{};
     u32 hash_len = 0;
     EVP_Digest(id.data(), id.size(), hash.data(), &hash_len, EVP_sha256(), nullptr);
 
@@ -1072,7 +1073,7 @@ InstallResult RegisteredCache::RawInstallNCA(const NCA& nca, const VfsCopyFuncti
                                              bool overwrite_if_exists,
                                              std::optional<NcaID> override_id) {
     const auto in = nca.GetBaseFile();
-    Core::Crypto::SHA256Hash hash{};
+    std::array<u8, 0x20> hash{};
 
     // Calculate NcaID
     // NOTE: Because computing the SHA256 of an entire NCA is quite expensive (especially if the
