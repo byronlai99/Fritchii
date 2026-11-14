@@ -27,13 +27,6 @@ enum StringKey {
     DataManagerSysNandTooltip,
     DataManagerModsTooltip,
 
-    // Key install results
-    KeyInstallSuccess,
-    KeyInstallInvalidDir,
-    KeyInstallErrorFailedCopy,
-    KeyInstallErrorWrongFilename,
-    KeyInstallErrorFailedInit,
-
     // Firmware install results
     FwInstallSuccess,
     FwInstallNoNCAs,
@@ -64,7 +57,7 @@ enum StringKey {
 
 // NB: the constexpr check always succeeds (in clangd at least) if size arg < size
 // always triple-check the size arg
-static const constexpr frozen::map<StringKey, frozen::string, 29> strings = {
+static const constexpr frozen::map<StringKey, frozen::string, 24> strings = {
     // 0-4
     {DataManagerSavesTooltip,
      QT_TR_NOOP("Contains game save data. DO NOT REMOVE UNLESS YOU KNOW WHAT YOU'RE DOING!")},
@@ -74,20 +67,8 @@ static const constexpr frozen::map<StringKey, frozen::string, 29> strings = {
     {DataManagerSysNandTooltip, QT_TR_NOOP("Contains firmware and applet data.")},
     {DataManagerModsTooltip, QT_TR_NOOP("Contains game mods, patches, and cheats.")},
 
-    // Key install
-    // 5-9
-    {KeyInstallSuccess, QT_TR_NOOP("Decryption Keys were successfully installed")},
-    {KeyInstallInvalidDir, QT_TR_NOOP("Unable to read key directory, aborting")},
-    {KeyInstallErrorFailedCopy, QT_TR_NOOP("One or more keys failed to copy.")},
-    {KeyInstallErrorWrongFilename,
-     QT_TR_NOOP("Verify your keys file has a .keys extension and try again.")},
-    {KeyInstallErrorFailedInit,
-     QT_TR_NOOP(
-         "Decryption Keys failed to initialize. Check that your dumping tools are up to date and "
-         "re-dump keys.")},
-
     // fw install
-    // 10-14
+    // 5-9
     {FwInstallSuccess, QT_TR_NOOP("Successfully installed firmware version %1")},
     {FwInstallNoNCAs, QT_TR_NOOP("Unable to locate potential firmware NCA files")},
     {FwInstallFailedDelete, QT_TR_NOOP("Failed to delete one or more firmware files.")},
@@ -106,7 +87,7 @@ static const constexpr frozen::map<StringKey, frozen::string, 29> strings = {
          "redump firmware if necessary.")},
 
     // migrator
-    // 17-22
+    // 12-17
     {MigrationPromptPrefix,
      QT_TR_NOOP("Lichii has detected user data for the following emulators:")},
     {MigrationPrompt,
@@ -128,7 +109,7 @@ static const constexpr frozen::map<StringKey, frozen::string, 29> strings = {
                 "This is recommended if you want to share data between emulators.")},
 
     // why am I writing these comments again
-    // 23-28
+    // 18-23
     {KvdbNonexistent, QT_TR_NOOP("Ryujinx title database does not exist.")},
     {KvdbNoHeader, QT_TR_NOOP("Invalid header on Ryujinx title database.")},
     {KvdbInvalidMagic, QT_TR_NOOP("Invalid magic header on Ryujinx title database.")},
