@@ -11,10 +11,6 @@
 #include "core/file_sys/nca_metadata.h"
 #include "core/file_sys/vfs/vfs.h"
 
-namespace Core::Crypto {
-class KeyManager;
-}
-
 namespace Loader {
 enum class ResultStatus : u16;
 }
@@ -63,7 +59,6 @@ public:
     VirtualDir GetParentDirectory() const override;
 
 private:
-    void SetTicketKeys(const std::vector<VirtualFile>& files);
     void InitializeExeFSAndRomFS(const std::vector<VirtualFile>& files);
     void ReadNCAs(const std::vector<VirtualFile>& files);
 
@@ -80,10 +75,6 @@ private:
     // Map title id -> {map type -> NCA}
     std::map<u64, std::map<std::pair<TitleType, ContentRecordType>, std::shared_ptr<NCA>>> ncas;
     std::set<u64> program_ids;
-    std::vector<VirtualFile> ticket_files;
-
-    Core::Crypto::KeyManager& keys;
-
     VirtualFile romfs;
     VirtualDir exefs;
 };

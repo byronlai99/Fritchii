@@ -15,7 +15,6 @@
 #include "common/logging.h"
 #include "common/random.h"
 #include "common/string_util.h"
-#include "core/crypto/key_manager.h"
 #include "core/crypto/ncz_decompressor.h"
 #include "core/file_sys/card_image.h"
 #include "core/file_sys/common_funcs.h"
@@ -859,7 +858,7 @@ InstallResult RegisteredCache::InstallEntry(const NSP& nsp, bool overwrite_if_ex
 
     if (meta_iter == ncas.end()) {
         LOG_ERROR(Loader, "The file you are attempting to install does not have a metadata NCA and "
-                          "is therefore malformed. Check your encryption keys.");
+                          "is therefore malformed or encrypted content is unsupported.");
         return InstallResult::ErrorMetaFailed;
     }
 

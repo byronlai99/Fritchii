@@ -11,7 +11,6 @@
 
 #include "common/hex_util.h"
 #include "common/logging.h"
-#include "core/crypto/key_manager.h"
 #include "core/crypto/ncz_decompressor.h"
 #include "core/file_sys/common_funcs.h"
 #include "core/file_sys/content_archive.h"
@@ -26,7 +25,7 @@ namespace FileSys {
 NSP::NSP(VirtualFile file_, u64 title_id_, std::size_t program_index_)
     : file(std::move(file_)), expected_program_id(title_id_),
       program_index(program_index_), status{Loader::ResultStatus::Success},
-      pfs(std::make_shared<PartitionFilesystem>(file)), keys{Core::Crypto::KeyManager::Instance()} {
+      pfs(std::make_shared<PartitionFilesystem>(file)) {
     if (pfs->GetStatus() != Loader::ResultStatus::Success) {
         status = pfs->GetStatus();
         return;
@@ -40,7 +39,7 @@ NSP::NSP(VirtualFile file_, u64 title_id_, std::size_t program_index_)
         return;
     }
 
-    SetTicketKeys(files);
+    // Ticket files are intentionally ignored: encrypted package content is unsupported.
     ReadNCAs(files);
 }
 
@@ -185,24 +184,6 @@ std::string NSP::GetName() const {
 
 VirtualDir NSP::GetParentDirectory() const {
     return file->GetContainingDirectory();
-}
-
-void NSP::SetTicketKeys(const std::vector<VirtualFile>& files) {
-    for (const auto& ticket_file : files) {
-        if (ticket_file == nullptr) {
-            continue;
-        }
-
-        if (ticket_file->GetExtension() != "tik") {
-            continue;
-        }
-
-        auto ticket = Core::Crypto::Ticket::Read(ticket_file);
-        if (!keys.AddTicket(ticket)) {
-            LOG_WARNING(Common_Filesystem, "Could not load NSP ticket {}", ticket_file->GetName());
-            continue;
-        }
-    }
 }
 
 void NSP::InitializeExeFSAndRomFS(const std::vector<VirtualFile>& files) {

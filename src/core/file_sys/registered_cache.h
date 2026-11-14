@@ -15,7 +15,6 @@
 #include "common/container/unordered_map.h"
 #include <boost/container/flat_map.hpp>
 #include "common/common_types.h"
-#include "core/crypto/key_manager.h"
 #include "core/file_sys/vfs/vfs.h"
 #include "core/file_sys/nca_metadata.h"
 
@@ -103,8 +102,6 @@ public:
     [[nodiscard]] std::optional<u64> GetParentApplicationId(u64 program_id) const;
 
 protected:
-    // A single instance of KeyManager to be used by GetEntry()
-    Core::Crypto::KeyManager& keys = Core::Crypto::KeyManager::Instance();
 };
 
 class PlaceholderCache {
