@@ -11,7 +11,6 @@
 #include "common/logging.h"
 #include "common/settings.h"
 #include "core/core.h"
-#include "core/crypto/key_manager.h"
 #include "qt_common/config/uisettings.h"
 #include "ui_configure_debug.h"
 #include "yuzu/configuration/configure_debug.h"
@@ -148,7 +147,6 @@ void ConfigureDebug::ApplyConfiguration() {
     Common::Log::Filter filter;
     filter.ParseFilterString(Settings::values.log_filter.GetValue());
     Common::Log::SetGlobalFilter(filter);
-    Core::Crypto::KeyManager::Instance().ReloadKeys();
 }
 
 void ConfigureDebug::changeEvent(QEvent* event) {
