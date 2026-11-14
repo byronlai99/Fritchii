@@ -21,6 +21,8 @@
 #include <optional>
 #include <regex>
 #include <string>
+#include <utility>
+
 #include "common/settings_enums.h"
 #include "core/launch_params.h"
 #ifdef __EMSCRIPTEN__

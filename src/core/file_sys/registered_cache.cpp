@@ -6,9 +6,20 @@
 
 #include <algorithm>
 #include <array>
+#include <cstring>
+#include <functional>
+#include <iterator>
 #include <limits>
+#include <map>
+#include <memory>
+#include <optional>
 #include <random>
 #include <regex>
+#include <string>
+#include <string_view>
+#include <tuple>
+#include <utility>
+#include <vector>
 #include <openssl/evp.h>
 #include "common/assert.h"
 #include "common/fs/path_util.h"

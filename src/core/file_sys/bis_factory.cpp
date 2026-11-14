@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <array>
+#include <memory>
 #include <string>
 #include <string_view>
+#include <utility>
 
 #include <fmt/ranges.h>
 #include "common/fs/path_util.h"
