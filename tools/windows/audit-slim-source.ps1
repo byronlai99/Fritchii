@@ -85,6 +85,29 @@ foreach ($file in $files) {
     }
 }
 
+# The Fritchii menu builder must only reference QAction objects generated from main.ui.
+$mainUiPath = Join-Path $repoRoot 'src/yuzu/main.ui'
+$fritchiiUiPath = Join-Path $repoRoot 'src/yuzu/fritchii/fritchii_ui.cpp'
+if ((Test-Path -LiteralPath $mainUiPath) -and (Test-Path -LiteralPath $fritchiiUiPath)) {
+    $mainUiText = [System.IO.File]::ReadAllText($mainUiPath)
+    $fritchiiUiText = [System.IO.File]::ReadAllText($fritchiiUiPath)
+    $declaredActions = @(
+        [regex]::Matches($mainUiText, 'name="(action_[A-Za-z0-9_]+)"') |
+            ForEach-Object { $_.Groups[1].Value } |
+            Sort-Object -Unique
+    )
+    $referencedActions = @(
+        [regex]::Matches($fritchiiUiText, '\bui\.(action_[A-Za-z0-9_]+)\b') |
+            ForEach-Object { $_.Groups[1].Value } |
+            Sort-Object -Unique
+    )
+    foreach ($action in $referencedActions) {
+        if ($declaredActions -notcontains $action) {
+            $findings.Add("src/yuzu/fritchii/fritchii_ui.cpp: undefined MainWindow action reference: $action")
+        }
+    }
+}
+
 $removedPaths = @(
     'src/core/crypto/key_manager.cpp',
     'src/core/crypto/key_manager.h',

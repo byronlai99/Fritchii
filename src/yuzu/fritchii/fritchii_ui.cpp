@@ -236,7 +236,6 @@ void RestructureMenus(Ui::MainWindow& ui, QMainWindow& window, const MenuHooks& 
     // Tools: setup tools first; Amiibo; rarely used things under Advanced.
     QMenu* tools = ui.menu_Tools;
     tools->clear();
-    tools->addAction(ui.action_Install_Keys);
     tools->addMenu(ui.menuInstall_Firmware);
     tools->addAction(ui.action_Verify_installed_contents);
     tools->addAction(ui.action_Data_Manager);
