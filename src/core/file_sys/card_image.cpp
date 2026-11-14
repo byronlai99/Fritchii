@@ -10,7 +10,6 @@
 #include <fmt/ostream.h>
 
 #include "common/logging.h"
-#include "core/crypto/key_manager.h"
 #include "core/file_sys/card_image.h"
 #include "core/file_sys/content_archive.h"
 #include "core/file_sys/nca_metadata.h"
@@ -33,7 +32,7 @@ constexpr std::array partition_names{
 XCI::XCI(VirtualFile file_, u64 program_id, size_t program_index)
     : file(std::move(file_)), program_nca_status{Loader::ResultStatus::ErrorXCIMissingProgramNCA},
       partitions(partition_names.size()),
-      partitions_raw(partition_names.size()), keys{Core::Crypto::KeyManager::Instance()} {
+      partitions_raw(partition_names.size()) {
     const auto header_status = TryReadHeader();
     if (header_status != Loader::ResultStatus::Success) {
         status = header_status;
