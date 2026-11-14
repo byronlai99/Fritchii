@@ -216,7 +216,6 @@
      <addaction name="action_Firmware_From_Folder"/>
      <addaction name="action_Firmware_From_ZIP"/>
     </widget>
-    <addaction name="action_Install_Keys"/>
     <addaction name="menuInstall_Firmware"/>
     <addaction name="action_Verify_installed_contents"/>
     <addaction name="action_Data_Manager"/>
@@ -498,11 +497,7 @@
     <string>Open &amp;Controller Menu</string>
    </property>
   </action>
-  <action name="action_Install_Keys">
-   <property name="text">
-    <string>Install Decryption &amp;Keys</string>
-   </property>
-  </action>
+
   <action name="action_Launch_QLaunch">
    <property name="text">
     <string>&amp;Home Menu</string>

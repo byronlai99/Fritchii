@@ -174,7 +174,6 @@ static FileSys::VirtualFile VfsDirectoryCreateFileWrapper(const FileSys::Virtual
 
 #include "core/perf_stats.h"
 
-#include "core/crypto/key_manager.h"
 
 // Input //
 #include "hid_core/frontend/emulated_controller.h"
@@ -460,8 +459,9 @@ MainWindow::MainWindow(bool has_broken_vulkan)
     // Setup content providers.
     QtCommon::SetupContentProviders();
 
-    // Gen keys if necessary
-    OnCheckFirmwareDecryption(false);
+    // No external console keys are required for decrypted game content.
+    SetFirmwareVersion();
+    UpdateMenuState();
 
 #ifdef __unix__
     OnCheckGraphicsBackend();
@@ -470,9 +470,6 @@ MainWindow::MainWindow(bool has_broken_vulkan)
     // Check for orphaned profiles and reset profile data if necessary
     QtCommon::Content::FixProfiles();
 
-    if (Settings::values.use_dev_keys.GetValue()) {
-        Core::Crypto::KeyManager::Instance().ReloadKeys();
-    }
     game_list->PopulateAsync(UISettings::values.game_dirs);
 
     // Set up game list mode checkboxes.
@@ -1834,7 +1831,6 @@ void MainWindow::ConnectMenuEvents() {
     connect_menu(ui->action_Verify_installed_contents, &MainWindow::OnVerifyInstalledContents);
     connect_menu(ui->action_Firmware_From_Folder, &MainWindow::OnInstallFirmware);
     connect_menu(ui->action_Firmware_From_ZIP, &MainWindow::OnInstallFirmwareFromZIP);
-    connect_menu(ui->action_Install_Keys, &MainWindow::OnInstallDecryptionKeys);
     connect_menu(ui->action_About, &MainWindow::OnAbout);
     connect_menu(ui->action_Eden_Dependencies, &MainWindow::OnEdenDependencies);
     connect_menu(ui->action_Data_Manager, &MainWindow::OnDataDialog);
@@ -1886,7 +1882,6 @@ void MainWindow::UpdateMenuState() {
 
     ui->action_Firmware_From_Folder->setEnabled(!emulation_running);
     ui->action_Firmware_From_ZIP->setEnabled(!emulation_running);
-    ui->action_Install_Keys->setEnabled(!emulation_running);
 
     for (QAction* action : applet_actions) {
         action->setEnabled(is_firmware_available && !emulation_running);
@@ -4327,26 +4322,17 @@ void MainWindow::OnVerifyInstalledContents() {
 
 void MainWindow::OnInstallFirmware() {
     QtCommon::Content::InstallFirmware();
-    OnCheckFirmwareDecryption();
+    SetFirmwareVersion();
+    UpdateMenuState();
 }
 
 void MainWindow::OnInstallFirmwareFromZIP() {
     QtCommon::Content::InstallFirmwareZip();
-    OnCheckFirmwareDecryption();
+    SetFirmwareVersion();
+    UpdateMenuState();
 }
 
 // TODO(crueter): QtCommon this: game list populate can be a signal?
-void MainWindow::OnInstallDecryptionKeys() {
-    // Don't do this while emulation is running.
-    if (QtCommon::emu_thread != nullptr && QtCommon::emu_thread->IsRunning())
-        return;
-
-    QtCommon::Content::InstallKeys();
-
-    game_list->PopulateAsync(UISettings::values.game_dirs);
-    OnCheckFirmwareDecryption();
-}
-
 void MainWindow::OnAbout() {
     AboutDialog aboutDialog(this);
     aboutDialog.exec();
@@ -5585,26 +5571,6 @@ void MainWindow::OnMouseActivity() {
     if (!Settings::values.mouse_panning) {
         ShowMouseCursor();
     }
-}
-
-void MainWindow::OnCheckFirmwareDecryption(bool prompt) {
-    if (!ContentManager::AreKeysPresent() && !prompt) {
-        // At startup only log it: loose ExeFS/RomFS dumps (all Switch 2 games so far) need no
-        // keys, and a modal question blocked every unattended launch. Tools > Install Decryption
-        // Keys still installs them.
-        LOG_WARNING(Frontend, "Decryption keys are missing: NCA, NSP and XCI games need them");
-    } else if (!ContentManager::AreKeysPresent()) {
-        const auto res = QtCommon::Frontend::Warning(
-            tr("Derivation Components Missing"),
-            tr("Decryption keys are missing. Install them now?"),
-            QtCommon::Frontend::StandardButton::Yes | QtCommon::Frontend::StandardButton::No);
-
-        if (res == QtCommon::Frontend::StandardButton::Yes)
-            OnInstallDecryptionKeys();
-    }
-
-    SetFirmwareVersion();
-    UpdateMenuState();
 }
 
 #ifdef __unix__

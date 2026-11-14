@@ -20,7 +20,6 @@ enum class EdenPath {
     ConfigDir,      // Where config files are stored.
     CrashDumpsDir,  // Where crash dumps are stored.
     DumpDir,        // Where dumped data is stored.
-    KeysDir,        // Where key files are stored.
     LoadDir,        // Where cheat/mod files are stored.
     LogDir,         // Where log files are stored.
     LosslessDir,    // Where the user-supplied Lossless Scaling library is stored.
