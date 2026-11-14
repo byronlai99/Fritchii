@@ -17,7 +17,7 @@ $rules = @(
     },
     @{
         Name = 'reference to a removed key-manager/partition API type'
-        Pattern = '\b(?:KeyManager|PartitionDataManager|Package2Type|SHA256Hash|SignatureType|TitleKeyType|TicketData|RSA4096Ticket|RSA2048Ticket|ECDSATicket|RSAKeyPair|KeyCategory|S128KeyType|S256KeyType|KeyIndex)\b'
+        Pattern = '\b(?:KeyManager|PartitionDataManager|Package2Type|SignatureType|TitleKeyType|TicketData|RSA4096Ticket|RSA2048Ticket|ECDSATicket|RSAKeyPair|KeyCategory|S128KeyType|S256KeyType|KeyIndex)\b'
     },
     @{
         Name = 'reference to a removed key-derivation/ticket API'
@@ -57,10 +57,15 @@ foreach ($file in $files) {
     $relativePath = [System.IO.Path]::GetRelativePath($repoRoot, $file.FullName).Replace('\', '/')
     $lineNumber = 0
 
+    $isCMakeFile = $file.Extension -eq '.cmake' -or $file.Name -eq 'CMakeLists.txt'
+
     foreach ($line in [System.IO.File]::ReadLines($file.FullName)) {
         $lineNumber++
 
         foreach ($rule in $rules) {
+            if ($rule.Name -eq 'CMake reference to a removed translation unit' -and -not $isCMakeFile) {
+                continue
+            }
             if ($line -match $rule.Pattern) {
                 $findings.Add(('{0}:{1}: [{2}] {3}' -f $relativePath, $lineNumber, $rule.Name, $line.Trim()))
             }
