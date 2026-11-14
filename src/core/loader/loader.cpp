@@ -24,7 +24,6 @@
 #include "core/hle/kernel/k_process.h"
 #include "core/loader/deconstructed_rom_directory.h"
 #include "core/loader/kip.h"
-#include "core/loader/nax.h"
 #include "core/loader/nca.h"
 #include "core/loader/nro.h"
 #include "core/loader/nso.h"
@@ -140,8 +139,6 @@ FileType IdentifyFile(FileSys::VirtualFile file) {
         return *nro_type;
     } else if (const auto nca_type = IdentifyFileLoader<AppLoader_NCA>(file)) {
         return *nca_type;
-    } else if (const auto nax_type = IdentifyFileLoader<AppLoader_NAX>(file)) {
-        return *nax_type;
     } else if (const auto kip_type = IdentifyFileLoader<AppLoader_KIP>(file)) {
         return *kip_type;
     } else if (const auto nso_type = IdentifyFileLoader<AppLoader_NSO>(file)) {
@@ -241,8 +238,6 @@ std::string GetFileTypeString(FileType type) {
         return "XCI";
     case FileType::XCZ:
         return "XCZ";
-    case FileType::NAX:
-        return "NAX";
     case FileType::NSP:
         return "NSP";
     case FileType::NSZ:
@@ -403,9 +398,6 @@ static std::unique_ptr<AppLoader> GetFileLoader(Core::System& system, FileSys::V
                                                program_index);
     }
 
-    // NX NAX (NintendoAesXts) file format.
-    case FileType::NAX:
-        return std::make_unique<AppLoader_NAX>(std::move(file));
 
     // NX NSP (Nintendo Submission Package) file format
     case FileType::NSP:
@@ -458,7 +450,7 @@ std::unique_ptr<AppLoader> GetLoader(Core::System& system, FileSys::VirtualFile 
     }
 
     // Special case: 00 is either a NCA or NAX.
-    if (type != filename_type && !(file->GetName() == "00" && type == FileType::NAX)) {
+    if (type != filename_type) {
         LOG_WARNING(Loader, "File {} has a different type ({}) than its extension.",
                     file->GetName(), GetFileTypeString(type));
         if (FileType::Unknown == type) {

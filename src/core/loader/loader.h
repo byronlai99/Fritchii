@@ -45,7 +45,6 @@ enum class FileType {
     NSZ,
     XCI,
     XCZ,
-    NAX,
     KIP,
     NUP,
     NX,

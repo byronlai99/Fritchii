@@ -31,12 +31,8 @@ add_library(core STATIC
     crypto/ctr_encryption_layer.h
     crypto/encryption_layer.cpp
     crypto/encryption_layer.h
-    crypto/key_manager.cpp
-    crypto/key_manager.h
     crypto/ncz_decompressor.cpp
     crypto/ncz_decompressor.h
-    crypto/partition_data_manager.cpp
-    crypto/partition_data_manager.h
     crypto/xts_encryption_layer.cpp
     crypto/xts_encryption_layer.h
     debugger/debugger.cpp
@@ -194,8 +190,6 @@ add_library(core STATIC
     file_sys/vfs/vfs_types.h
     file_sys/vfs/vfs_vector.cpp
     file_sys/vfs/vfs_vector.h
-    file_sys/xts_archive.cpp
-    file_sys/xts_archive.h
     frontend/applets/cabinet.cpp
     frontend/applets/cabinet.h
     frontend/applets/controller.cpp
@@ -1170,8 +1164,6 @@ add_library(core STATIC
     loader/kip.h
     loader/loader.cpp
     loader/loader.h
-    loader/nax.cpp
-    loader/nax.h
     loader/nca.cpp
     loader/nca.h
     loader/nro.cpp
