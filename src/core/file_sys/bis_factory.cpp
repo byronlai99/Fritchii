@@ -1,8 +1,13 @@
 // SPDX-FileCopyrightText: Copyright 2018 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include <array>
+#include <string>
+#include <string_view>
+
 #include <fmt/ranges.h>
 #include "common/fs/path_util.h"
+#include "common/string_util.h"
 #include "core/file_sys/bis_factory.h"
 #include "core/file_sys/registered_cache.h"
 #include "core/file_sys/vfs/vfs.h"
@@ -81,15 +86,71 @@ VirtualDir BISFactory::OpenPartition(BisPartitionId id) const {
     }
 }
 
+namespace {
+
+VirtualFile FindNANDDataFile(const VirtualDir& directory, std::string_view name) {
+    if (directory == nullptr) {
+        return nullptr;
+    }
+
+    const std::string file_name{name};
+    const auto upper_name = Common::ToUpper(file_name);
+    const std::array candidates{
+        file_name,
+        file_name + ".bin",
+        upper_name,
+        upper_name + ".BIN",
+    };
+
+    for (const auto& candidate : candidates) {
+        if (auto file = directory->GetFile(candidate); file != nullptr) {
+            return file;
+        }
+    }
+    return nullptr;
+}
+
+} // namespace
+
 VirtualFile BISFactory::OpenPartitionStorage(BisPartitionId id,
                                              VirtualFilesystem file_system) const {
-    // Encrypted BIS storage (prodinfo/package2) requires the external KeyManager and
-    // PartitionDataManager. Slim intentionally removes both, so keep this API for callers
-    // but fail closed instead of reintroducing external-key derivation.
-    // Directory-backed BIS partitions remain available through OpenPartition().
-    static_cast<void>(id);
-    static_cast<void>(file_system);
-    return nullptr;
+    if (file_system == nullptr) {
+        return nullptr;
+    }
+
+    // Reading raw BIS storage is independent from external key derivation.
+    const auto nand_directory = file_system->OpenDirectory(
+        Common::FS::GetEdenPathString(Common::FS::EdenPath::NANDDir), OpenMode::Read);
+    if (nand_directory == nullptr) {
+        return nullptr;
+    }
+
+    switch (id) {
+    case BisPartitionId::CalibrationBinary:
+        // CalibrationBinary is a decrypted PRODINFO view. Without an externally supplied
+        // BIS key, returning the raw encrypted PRODINFO file as plaintext would be incorrect.
+        return nullptr;
+    case BisPartitionId::BootConfigAndPackage2Part1:
+    case BisPartitionId::BootConfigAndPackage2Part2:
+    case BisPartitionId::BootConfigAndPackage2Part3:
+    case BisPartitionId::BootConfigAndPackage2Part4:
+    case BisPartitionId::BootConfigAndPackage2Part5:
+    case BisPartitionId::BootConfigAndPackage2Part6: {
+        static constexpr std::array<std::string_view, 6> package2_names{
+            "BCPKG2-1-Normal-Main",
+            "BCPKG2-2-Normal-Sub",
+            "BCPKG2-3-SafeMode-Main",
+            "BCPKG2-4-SafeMode-Sub",
+            "BCPKG2-5-Repair-Main",
+            "BCPKG2-6-Repair-Sub",
+        };
+        const auto index = static_cast<std::size_t>(
+            static_cast<u8>(id) - static_cast<u8>(BisPartitionId::BootConfigAndPackage2Part1));
+        return FindNANDDataFile(nand_directory, package2_names[index]);
+    }
+    default:
+        return nullptr;
+    }
 }
 
 VirtualDir BISFactory::GetImageDirectory() const {
