@@ -24,22 +24,6 @@ static constexpr std::array<u64, 1> FIRMWARE_REQUIRED_GAMES = {
     0x0100152000022000ULL, // MK8DX
 };
 
-enum KeyInstallResult {
-    Success,
-    InvalidDir,
-    ErrorFailedCopy,
-    ErrorWrongFilename,
-    ErrorFailedInit,
-};
-
-/**
- * @brief Installs any arbitrary set of keys for the emulator.
- * @param location Where the keys are located.
- * @param expected_extension What extension the file should have.
- * @return A result code for the operation.
- */
-KeyInstallResult InstallKeys(std::string location, std::string expected_extension);
-
 /**
  * \brief Check if the specified program requires firmware to run properly.
  * It is the responsibility of the frontend to properly expose this to the user.

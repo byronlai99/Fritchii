@@ -31,19 +31,11 @@ inline const QString GetFirmwareInstallResultString(FirmwareInstallResult result
  * \param result The result code.
  * \return A string representation of the passed result code.
  */
-inline const QString GetKeyInstallResultString(FirmwareManager::KeyInstallResult result) {
-    return LOOKUP_ENUM(result, KeyInstallSuccess);
-}
-
 void InstallFirmware(const QString& location, bool recursive);
 QString UnzipFirmwareToTmp(const QString& location);
 
-bool CheckKeys();
 void InstallFirmware();
 void InstallFirmwareZip();
-
-// Keys //
-void InstallKeys();
 
 // Content //
 void VerifyGameContents(const std::string& game_path);

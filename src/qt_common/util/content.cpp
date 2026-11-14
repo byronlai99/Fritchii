@@ -234,29 +234,6 @@ void VerifyGameContents(const std::string& game_path) {
     }
 }
 
-void InstallKeys() {
-    const QString key_source_location = QtCommon::Frontend::GetOpenFileName(
-        tr("Select Dumped Keys Location"), {}, QStringLiteral("Decryption Keys (*.keys)"), {});
-
-    if (key_source_location.isEmpty())
-        return;
-
-    FirmwareManager::KeyInstallResult result =
-        FirmwareManager::InstallKeys(key_source_location.toStdString(), "keys");
-
-    system->GetFileSystemController().CreateFactories(*QtCommon::vfs);
-
-    const QString resMsg = GetKeyInstallResultString(result);
-    switch (result) {
-    case FirmwareManager::KeyInstallResult::Success:
-        QtCommon::Frontend::Information(tr("Decryption Keys install succeeded"), resMsg);
-        break;
-    default:
-        QtCommon::Frontend::Critical(tr("Decryption Keys install failed"), resMsg);
-        break;
-    }
-}
-
 void VerifyInstalledContents() {
     // Initialize a progress dialog.
     auto progress =
@@ -494,21 +471,7 @@ void ImportDataDir(FrontendCommon::DataManager::DataDir data_dir, const std::str
     });
 }
 
-bool CheckKeys() {
-    if (!ContentManager::AreKeysPresent()) {
-        QtCommon::Frontend::Information(
-            tr("Keys not installed"),
-            tr("Install decryption keys and restart Eden before attempting to install firmware."));
-        return false;
-    }
-
-    return true;
-}
-
 void InstallFirmware() {
-    if (!CheckKeys())
-        return;
-
     const QString firmware_source_location =
         QtCommon::Frontend::GetExistingDirectory(tr("Select Dumped Firmware Source Location"), {});
 
@@ -517,9 +480,6 @@ void InstallFirmware() {
 }
 
 void InstallFirmwareZip() {
-    if (!CheckKeys())
-        return;
-
     const QString firmware_zip_location = QtCommon::Frontend::GetOpenFileName(
         tr("Select Dumped Firmware ZIP"), {}, tr("Zipped Archives (*.zip)"));
 
