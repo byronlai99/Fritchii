@@ -43,6 +43,10 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v5
 
+      - name: Audit slim source dependencies
+        shell: pwsh
+        run: ./tools/windows/audit-slim-source.ps1
+
       - name: Set up MSVC
         uses: ilammy/msvc-dev-cmd@v1
 
