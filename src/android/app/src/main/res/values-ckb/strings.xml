@@ -157,8 +157,6 @@
     <string name="welcome">بەخێربێیت!</string>
     <string name="welcome_description">فێربە چۆن &lt;b>Eden&lt;/b> ڕێکبخەیت و بچییە ناو ئیمولەیشن.</string>
     <string name="get_started">دەست پێبکە</string>
-    <string name="keys">کلیلەکان</string>
-    <string name="keys_description">فایلی &lt;b>prod.keys&lt;/b> هەڵبژێرە بە دوگمەی خوارەوە.</string>
     <string name="firmware">فریموێر</string>
     <string name="games">یاریەکان</string>
     <string name="games_description">فۆڵدەری &lt;b>Games&lt;/b> هەڵبژێرە بە دوگمەی خوارەوە.</string>
@@ -181,10 +179,6 @@
     <string name="add_games_warning">هەڵبژاردنی فۆڵدەری یارییەکان تێپەڕدەکەیت؟</string>
     <string name="add_games_warning_description">یارییەکان لە لیستی یارییەکاندا پیشان نادرێن ئەگەر فۆڵدەرێک هەڵنەبژێردرێت.</string>
     <string name="home_search_games">گەڕان بەدوای یارییەکاندا</string>
-    <string name="install_prod_keys">دابمەزرێنە prod.keys</string>
-    <string name="install_prod_keys_description">پێویستە بۆ کۆدکردنەوەى یارییە تاکەکەسییەکان</string>
-    <string name="install_prod_keys_warning">زیادکردنی کلیلەکان تێپەڕدەکەیت؟</string>
-    <string name="install_prod_keys_warning_description">کلیلی دروست پێویستە بۆ وەرگرتنی یارییەکانی تاکەکەسی.  تەنها ئەپەکانی homebrew کاردەکەن ئەگەر بەردەوام بیت.</string>
     <string name="install_firmware_warning">فریموێر زیاد نەکەین؟</string>
     <string name="install_firmware_warning_description">زۆر یاری پێویستیان بە فریموێر هەیە بۆ ئەوەی باش کار بکەن.</string>
     <string name="notifications">ئاگادارکردنەوەکان</string>
@@ -197,8 +191,6 @@
     <string name="warning">ئاگاداری</string>
     <string name="warning_skip">پەڕاندن</string>
     <string name="warning_cancel">ڕەتکردنەوە</string>
-    <string name="install_amiibo_keys">دامەزراندنی کلیلی Amiibo</string>
-    <string name="install_amiibo_keys_description">پێویستە بۆ بەکارهێنانی Amiibo لە یاریدا</string>
     <string name="gpu_driver_fetcher">هێنەری درایڤەری GPU</string>
     <string name="install_gpu_driver_description">دامەزراندنی وەگەڕخەری بەدیل بۆ ئەوەی بە ئەگەرێکی زۆرەوە کارایی باشتر یان وردبینی هەبێت</string>
     <string name="advanced_settings">ڕێکخستنە پێشکەوتووەکان</string>
@@ -226,7 +218,6 @@
     <string name="install_game_content_description">دامەزراندنی نوێکاری یارییەکان یان DLC</string>
     <string name="installing_game_content">دامەزراندنی ناوەڕۆک...</string>
     <string name="install_game_content_failure">هەڵە لە دامەزراندنی فایل(ەکان) بۆ NAND</string>
-    <string name="install_game_content_failure_description">دڵنیابە لە دروستی ناوەڕۆک و بوونی فایلی prod.keys.</string>
     <string name="install_game_content_failure_base">دامەزراندنی یارییە سەرەکییەکان ڕێگە نییە.</string>
     <string name="install_game_content_failed_count">%1$d هەڵەی دامەزراندن</string>
     <string name="install_game_content_success">ناوەڕۆکی یاری بە سەرکەوتوویی دامەزرا</string>
@@ -234,7 +225,6 @@
     <string name="install_game_content_success_overwrite">%1$d بە سەرکەوتوویی نوێکرایەوە</string>
     <string name="custom_driver_not_supported">وەگەڕخەری تایبەتمەند پشتگیری ناکرێت</string>
     <string name="manage_yuzu_data">بەڕێوەبردنی داتای eden</string>
-    <string name="manage_yuzu_data_description">هاوردە/هەناردەکردنی پتەوواڵا، کلیل، داتای بەکارهێنەر و زیاتر!</string>
     <string name="game_folders">فۆڵدەری یارییەکان</string>
     <string name="deep_scan">گەڕانی قووڵ</string>
     <string name="add_game_folder">زیادکردنی فۆڵدەری یاری</string>
@@ -252,19 +242,12 @@
     <string name="verify_installed_content">پشکنینی ناوەڕۆکی دامەزراو</string>
     <string name="verify_installed_content_description">هەموو ناوەڕۆکی دامەزراو پشکنین دەکات بۆ تێکچوون</string>
 
-    <string name="keys_missing">کلیلە کۆدکراوەکان دیار نییە</string>
-    <string name="keys_missing_description">پتەوواڵا و یارییە تاکەکەسییەکان ناتوانرێت کۆد بکرێنەوە</string>
     <string name="uninstall_firmware">إزالة البرنامج الثابت</string>
     <string name="uninstall_firmware_description">سيؤدي إزالة البرنامج الثابت إلى حذفه من الجهاز وقد يؤثر على توافق الألعاب.</string>
     <string name="firmware_uninstalling">جاري إزالة البرنامج الثابت</string>
     <string name="firmware_uninstalled_success">تم إزالة البرنامج الثابت بنجاح</string>
 
 
-    <string name="keys_failed">سەرکەوتوو نەبوو لە ناساندنی کلیلی</string>
-    <string name="keys_install_success">کلیلەکان بە سەرکەوتوویی ناسێندران</string>
-    <string name="error_keys_copy_failed">یەک یان زیاتر کلیل سەرکەوتوو نەبوو لە ناساندن.</string>
-    <string name="error_keys_invalid_filename">دڵنیا بەرەوە کە فایلی کلیلی تۆ پاشگرەکەی .keys هەیە و هەوڵ بدەرەوە.</string>
-    <string name="error_keys_failed_init">کلیلەکان سەرکەوتوو نەبوون لە ناساندن. دڵنیا بەرەوە کە ئامرازەکانی دامپکردنت نوێن و دووبارە کلیلی دامپ بکە.</string>
 
     <!-- Applet launcher strings -->
     <string name="qlaunch_applet">Qlaunch</string>
@@ -467,8 +450,6 @@
     <string name="version">وەشان</string>
     <!-- ROM loading errors -->
     <string name="loader_error_encrypted">ڕۆمەکەت کۆدکراوە</string>
-    <string name="loader_error_encrypted_roms_description"><![CDATA[تکایە ڕێنمایییەکان بە شوێن بکەوە بۆ دووبارە دامپکردنی <a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-physical-titles-game-cards\">یارییە کارتەکان</a> یان <a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-digital-titles-eshop\">ناونیشانە دیجیتاڵییەکان</a>.]]></string>
-    <string name="loader_error_encrypted_keys_description"><![CDATA[تکایە دڵنیابەوە لەدامەزراوی <a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-prodkeys-and-titlekeys\">prod.keys</a> فایلەکەت بۆ ئەوەی بتوانرێت یارییەکان کۆد بکرێنەوە.]]></string>
     <string name="loader_error_video_core">هەڵەیەک لە دەستپێکردنی ناوەکی ڤیدیۆکەدا ڕوویدا</string>
     <string name="loader_error_video_core_description">ئەمەش بەزۆری بەهۆی وەگەڕخەرێکی ناتەبای GPU ەوەیە. دامەزراندنی وەگەڕخەری GPU ی تایبەتمەندکراو لەوانەیە ئەم کێشەیە چارەسەر بکات.</string>
     <string name="loader_error_file_not_found">فایلی ڕۆم بوونی نییە</string>
