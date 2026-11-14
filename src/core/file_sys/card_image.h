@@ -10,10 +10,6 @@
 #include "common/swap.h"
 #include "core/file_sys/vfs/vfs.h"
 
-namespace Core::Crypto {
-class KeyManager;
-}
-
 namespace Loader {
 enum class ResultStatus : u16;
 }
@@ -144,6 +140,5 @@ private:
 
     u64 update_normal_partition_end;
 
-    Core::Crypto::KeyManager& keys;
 };
 } // namespace FileSys
