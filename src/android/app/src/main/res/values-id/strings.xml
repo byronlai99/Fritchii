@@ -175,8 +175,6 @@
     <string name="welcome">Selamat datang!</string>
     <string name="welcome_description">Pelajari cara menyiapkan &lt;b>Eden&lt;/b> dan masuk ke dalam emulasi.</string>
     <string name="get_started">Memulai</string>
-    <string name="keys">Kunci</string>
-    <string name="keys_description">Pilih file &lt;b>prod.keys&lt;/b> Anda dengan tombol di bawah ini.</string>
     <string name="firmware">Firmware</string>
     <string name="games">Permainan</string>
     <string name="games_description">Pilih folder &lt;b>Games&lt;/b> Anda dengan tombol di bawah ini.</string>
@@ -208,11 +206,6 @@
     <string name="add_games_warning_help">https://yuzu-mirror.github.io/help/quickstart/#dumping-games</string>
     <string name="home_search_games">Cari permainan</string>
     <string name="search_settings">Cari pengaturan</string>
-    <string name="install_prod_keys">Install prod.keys</string>
-    <string name="install_prod_keys_description">Diperlukan untuk mendekripsi game retail</string>
-    <string name="install_prod_keys_warning">Lewati penginstalan keys?</string>
-    <string name="install_prod_keys_warning_description">Perlu keys yang valid untuk meng-emulate game retail. Hanya homebrew apps yang akan berfungsi jika kamu melanjutkan.</string>
-    <string name="install_prod_keys_warning_help">https://yuzu-mirror.github.io/help/quickstart/#guide-introduction</string>
     <string name="install_firmware_warning">Lewati penambahan firmware?</string>
     <string name="install_firmware_warning_description">Banyak game memerlukan akses ke firmware untuk berjalan dengan baik.</string>
     <string name="install_firmware_warning_help">https://yuzu-mirror.github.io/help/quickstart/#guide-introduction</string>
@@ -226,8 +219,6 @@
     <string name="warning">Peringatan</string>
     <string name="warning_skip">Lewati</string>
     <string name="warning_cancel">Batalkan</string>
-    <string name="install_amiibo_keys">Install Amiibo keys</string>
-    <string name="install_amiibo_keys_description">Diperlukan untuk menggunakan Amiibo di dalam game</string>
     <string name="gpu_driver_fetcher">Pengambil Driver GPU</string>
     <string name="gpu_driver_manager">Manajer driver GPU</string>
     <string name="install_gpu_driver_description">Instal driver lain untuk kinerja atau akurasi yang berpotensi lebih baik</string>
@@ -262,7 +253,6 @@
     <string name="install_game_content_description">Instal pembaruan game atau DLC</string>
     <string name="installing_game_content">Menginstal konten...</string>
     <string name="install_game_content_failure">Error menginstal file (- file) pada NAND</string>
-    <string name="install_game_content_failure_description">Tolong pastikan seluruh konten(-konten) valid dan prod.key terinstall</string>
     <string name="install_game_content_failure_base">Instalasi dari base game tidak diperbolehkan agar terhindar dari konflik yang mungkin terjadi.</string>
     <string name="install_game_content_failed_count">%1$d instalasi error(-error)</string>
     <string name="install_game_content_success">Konten(-konten) game sudah berhasil terinstal.</string>
@@ -272,7 +262,6 @@
     <string name="custom_driver_not_supported">Driver kustom tidak didukung</string>
     <string name="custom_driver_not_supported_description">Pemuatan driver kustom tidak didukung oleh perangkat ini.\nPeriksa lagi opsi ini di masa mendatang untuk melihat apakah dukungan telah ditambahkan!</string>
     <string name="manage_yuzu_data">Kelola data Eden.</string>
-    <string name="manage_yuzu_data_description">Impor/expor firmware, key, data pengguna, dan sebagainya!</string>
     <string name="game_folders">Folder Game</string>
     <string name="deep_scan">Pemindaian mendalam</string>
     <string name="add_game_folder">Pilih folder game</string>
@@ -288,9 +277,6 @@
     <string name="verify_installed_content">Verifikasi konten yang terinstal</string>
     <string name="verify_installed_content_description">Memeriksa semua konten yang terinstal dari kerusakan</string>
 
-    <string name="keys_missing">Kunci enkripsi hilang</string>
-    <string name="keys_missing_description">Firmware dan game retail tidak dapat didekripsi</string>
-    <string name="keys_missing_help">https://yuzu-mirror.github.io/help/quickstart/#dumping-decryption-keys</string>
 
     <string name="uninstall_firmware">Copot Firmware</string>
     <string name="uninstall_firmware_description">Mencopot firmware akan menghapusnya dari perangkat dan dapat memengaruhi kompatibilitas game.</string>
@@ -298,11 +284,6 @@
     <string name="firmware_uninstalled_success">Firmware berhasil dicopot</string>
 
 
-    <string name="keys_failed">Gagal menginstal kunci</string>
-    <string name="keys_install_success">Kunci berhasil diinstal</string>
-    <string name="error_keys_copy_failed">Satu atau lebih kunci gagal disalin.</string>
-    <string name="error_keys_invalid_filename">Pastikan file kunci Anda memiliki ekstensi .keys dan coba lagi.</string>
-    <string name="error_keys_failed_init">Kunci gagal diinisialisasi. Periksa apakah alat dumping Anda mutakhir dan dump ulang kunci.</string>
 
     <!-- Applet launcher strings -->
     <string name="qlaunch_applet">Qlaunch</string>
@@ -630,8 +611,6 @@
     <string name="verification_failed_for">Verifikasi gagal terkait file ini:\n%1$s</string>
     <!-- ROM loading errors -->
     <string name="loader_error_encrypted">ROM-mu ter-enkripsi</string>
-    <string name="loader_error_encrypted_roms_description"><![CDATA[Silakan ikuti panduan untuk mendump ulang <a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-physical-titles-game-cards\">kartrid game</a> atau <a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-digital-titles-eshop\">judul digital</a> Anda.]]></string>
-    <string name="loader_error_encrypted_keys_description"><![CDATA[Harap pastikan bahwa Anda <a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-prodkeys-and-titlekeys\">prod.keys</a> diinstal sehingga game dapat didekripsi.]]></string>
     <string name="loader_error_video_core">Terjadi kesalahan ketika menginisialisasi inti video.</string>
     <string name="loader_error_video_core_description">Hal ini biasanya disebabkan oleh driver GPU yang tidak kompatibel. Menginstal driver GPU khusus dapat mengatasi masalah ini</string>
     <string name="loader_error_file_not_found">Berkas Tidak Ditemukan</string>

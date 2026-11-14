@@ -162,8 +162,6 @@
     <string name="welcome">ברוכים הבאים!</string>
     <string name="welcome_description">למד איך להפעיל &lt;b>Eden&lt;/b> וקפוץ ישר לאמולציה.</string>
     <string name="get_started">כדי להתחיל</string>
-    <string name="keys">מפתחות</string>
-    <string name="keys_description">בחר את קובץ ה &lt;b>prod.keys&lt;/b> שלך עם הכפתור למטה.</string>
     <string name="firmware">קושחה</string>
     <string name="games">משחקים</string>
     <string name="games_description">בחר את התיקיית ה &lt;b>Games&lt;/b> שלך עם הכפתור למטה.</string>
@@ -191,10 +189,6 @@
     <string name="add_games_warning_description">משחקים לא יוצגו ברשימת המשחקים  אם לנבחרה תיקיית משחקים.</string>
     <string name="home_search_games">חפש משחקים</string>
     <string name="search_settings">חפש בהגדרות</string>
-    <string name="install_prod_keys">התקן prod.keys</string>
-    <string name="install_prod_keys_description">הכרחי בכדי לפענח משחקים</string>
-    <string name="install_prod_keys_warning">לדלג על הוספת מפתחות?</string>
-    <string name="install_prod_keys_warning_description">מפתחות חוקיים הכרחיים כדי לשחק במשחקים. רק אפליקציות פירטיות יפעלו אם תמשיך.</string>
     <string name="install_firmware_warning">לדלג על הוספת קושחה?</string>
     <string name="install_firmware_warning_description">משחקים רבים דורשים גישה לקושחה כדי לפעול כראוי.</string>
     <string name="notifications">התראות</string>
@@ -207,8 +201,6 @@
     <string name="warning">אזהרה</string>
     <string name="warning_skip">דלג</string>
     <string name="warning_cancel">ביטול</string>
-    <string name="install_amiibo_keys">התקן מפתחות Amiibo</string>
-    <string name="install_amiibo_keys_description">נחוץ כדי להשתמש ב Amiibo במשחק</string>
     <string name="gpu_driver_fetcher">מאחזר מנהלי התקן GPU</string>
     <string name="gpu_driver_manager">מנהל הדרייברים של המעבד הגרפי</string>
     <string name="install_gpu_driver_description">התקן דרייברים אחרים בשביל סיכוי לביצועים או דיוק גבוההים יותר</string>
@@ -243,7 +235,6 @@
     <string name="install_game_content_description">התקן עדכוני משחק או DLC</string>
     <string name="installing_game_content">מתקין תוכן...</string>
     <string name="install_game_content_failure">תקלה בהתקנת הקובץ (או קבצים) ל NAND</string>
-    <string name="install_game_content_failure_description">בבקשה ודא שהתוכן (או תכנים) חוקיים ושקובץ ה prod.keys מותקן.</string>
     <string name="install_game_content_failure_base">התקנת משחק בסיס נדחת בכדי להימנע מקונפליקטים אפשריים.</string>
     <string name="install_game_content_failed_count">%1$dבעיה (בעיות) התקנה</string>
     <string name="install_game_content_success">תוכן (או תכני) המשחק הותקנו בהצלחה</string>
@@ -251,7 +242,6 @@
     <string name="install_game_content_success_overwrite">%1$d נדרס/נכתב מעל בהצלחה</string>
     <string name="custom_driver_not_supported">דרייברים מותאמים אישית לא נתמכים</string>
     <string name="manage_yuzu_data">נהל את המידע של Eden</string>
-    <string name="manage_yuzu_data_description">יבא/יצא firmware, keys, מידע של משתמש ועוד!</string>
     <string name="game_folders">תיקיית משחקים</string>
     <string name="deep_scan">סריקה עמוקה</string>
     <string name="add_game_folder">הוסף תיקיית משחקים</string>
@@ -271,19 +261,12 @@
     <string name="verify_installed_content">אמת תוכן מותקן</string>
     <string name="verify_installed_content_description">בודק תוכן מותקן לשגיאות</string>
 
-    <string name="keys_missing">מפתחות הצפנה חסרים</string>
-    <string name="keys_missing_description">לא ניתן לפענח firmware ומשחקים</string>
     <string name="uninstall_firmware">הסרת קושחה</string>
     <string name="uninstall_firmware_description">הסרת הקושחה תמחק אותה מהמכשיר ועלולה להשפיע על תאימות משחקים.</string>
     <string name="firmware_uninstalling">מסיר קושחה...</string>
     <string name="firmware_uninstalled_success">הקושחה הוסרה בהצלחה</string>
 
 
-    <string name="keys_failed">התקנת מפתחות נכשלה</string>
-    <string name="keys_install_success">מפתחות הותקנו בהצלחה</string>
-    <string name="error_keys_copy_failed">אחד או יותר מהמפתחות לא הצליחו להעתקה.</string>
-    <string name="error_keys_invalid_filename">ודא שלקובץ המפתחות שלך יש סיומת .keys ונסה שוב.</string>
-    <string name="error_keys_failed_init">אתחול המפתחות נכשל. ודא שכלי ה-dump מעודכנים ושמור מפתחות מחדש.</string>
 
     <!-- Applet launcher strings -->
     <string name="qlaunch_applet">Qlaunch</string>
@@ -503,8 +486,6 @@
     <string name="verify_success">אימות  התקינות הצליח!</string>
     <!-- ROM loading errors -->
     <string name="loader_error_encrypted">המשחק שלך מוצפן</string>
-    <string name="loader_error_encrypted_roms_description"><![CDATA[אנא עקוב אחר המדריכים לשמירת <a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-physical-titles-game-cards\">כרטיסי משחק</a> או <a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-digital-titles-eshop\">כותרות דיגיטליות</a> מחדש.]]></string>
-    <string name="loader_error_encrypted_keys_description"><![CDATA[אנא וודא שקובץ ה-<a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-prodkeys-and-titlekeys\">prod.keys</a> מותקן כך שניתן יהיה לפענח משחקים.]]></string>
     <string name="loader_error_video_core">התרחשה בעיה באתחול של ליבת הווידאו</string>
     <string name="loader_error_video_core_description">זה בדרך כלל נגרם על ידי דרייבר לא מתאים עבור המעבד הגרפי. התקנת דרייבר אשר מתאים למעבד הגרפי יכול לפתור את הבעיה הזו.</string>
     <string name="loader_error_file_not_found">קובץ המשחק לא קיים</string>

@@ -157,8 +157,6 @@
     <string name="welcome">Üdvözöljük!</string>
     <string name="welcome_description">Ismerkedj meg a &lt;b>Eden&lt;/b> beállításával és ugorj bele az emulációba.</string>
     <string name="get_started">Vágjunk bele</string>
-    <string name="keys">Kulcsok</string>
-    <string name="keys_description">Válaszd ki a &lt;b>prod.keys&lt;/b> fájlodat az alábbi gombbal.</string>
     <string name="firmware">Firmware</string>
     <string name="games">Játékok</string>
     <string name="games_description">Válaszd ki a &lt;b>Játékok&lt;/b> mappát az alábbi gombbal.</string>
@@ -184,10 +182,6 @@
     <string name="add_games_warning_description">A játékok nem jelennek meg a Játékok listában, ha egy mappa nincs kijelölve.</string>
     <string name="home_search_games">Játékok keresése</string>
     <string name="search_settings">Beállítások keresése</string>
-    <string name="install_prod_keys">prod.keys telepítése</string>
-    <string name="install_prod_keys_description">Kiskereskedelmi játékok dekódolásához szükséges</string>
-    <string name="install_prod_keys_warning">Kihagyod a kulcsok hozzáadását?</string>
-    <string name="install_prod_keys_warning_description">A kiskereskedelmi játékok emulálásához érvényes kulcsokra van szükség. Csak a homebrew alkalmazások fognak működni, ha folytatod.</string>
     <string name="install_firmware_warning">Kihagyod a firmware hozzáadását?</string>
     <string name="install_firmware_warning_description">Sok játék megfelelő működéséhez firmware szükséges.</string>
     <string name="notifications">Értesítések</string>
@@ -200,8 +194,6 @@
     <string name="warning">Figyelmeztetés</string>
     <string name="warning_skip">Kihagyás</string>
     <string name="warning_cancel">Mégse</string>
-    <string name="install_amiibo_keys">Amiibo kulcsok telepítése</string>
-    <string name="install_amiibo_keys_description">Amiibo használata szükséges a játékhoz</string>
     <string name="gpu_driver_fetcher">GPU illesztőprogram letöltő</string>
     <string name="gpu_driver_manager">GPU illesztőprogram-kezelő</string>
     <string name="install_gpu_driver_description">Alternatív illesztőprogramok telepítése az esetlegesen elérhető teljesítmény és pontosság érdekében</string>
@@ -235,7 +227,6 @@
     <string name="install_game_content_description">Játékfrissítések vagy DLC telepítése</string>
     <string name="installing_game_content">Tartalom telepítése...</string>
     <string name="install_game_content_failure">Hiba történt a fájl(ok) NAND-ra telepítése közben</string>
-    <string name="install_game_content_failure_description">Győződj meg róla, hogy a tartalom valós, és a prod.keys fájl telepítve van.</string>
     <string name="install_game_content_failure_base">Az alapjátékok telepítése nem engedélyezett az esetleges konfliktusok elkerülése érdekében.</string>
     <string name="install_game_content_failed_count">%1$d telepítési hiba</string>
     <string name="install_game_content_success">Játéktartalom sikeresen telepítve</string>
@@ -243,7 +234,6 @@
     <string name="install_game_content_success_overwrite">%1$d sikeresen felülírva</string>
     <string name="custom_driver_not_supported">Egyéni illesztőprogramok nem támogatottak</string>
     <string name="manage_yuzu_data">Eden adatok kezelése</string>
-    <string name="manage_yuzu_data_description">Firmware, kulcsok, felhasználói adatok és egyebek importálása/exportálása</string>
     <string name="game_folders">Játékmappák</string>
     <string name="deep_scan">Mély szkennelés</string>
     <string name="add_game_folder">Játékmappa hozzáadása</string>
@@ -261,19 +251,12 @@
     <string name="verify_installed_content">Telepített tartalom ellenőrzése</string>
     <string name="verify_installed_content_description">A telepített tartalom épségét ellenőrzi</string>
 
-    <string name="keys_missing">Hiányzó titkosítókulcsok</string>
-    <string name="keys_missing_description">A Firmware és a kiskereskedelmi (retail) játékok nem dekódolhatók</string>
     <string name="uninstall_firmware">Firmware eltávolítása</string>
     <string name="uninstall_firmware_description">A firmware eltávolítása törli azt az eszközről, és befolyásolhatja a játékok kompatibilitását.</string>
     <string name="firmware_uninstalling">Firmware eltávolítása...</string>
     <string name="firmware_uninstalled_success">A firmware sikeresen eltávolítva</string>
 
 
-    <string name="keys_failed">A kulcsok telepítése sikertelen</string>
-    <string name="keys_install_success">A kulcsok sikeresen telepítve</string>
-    <string name="error_keys_copy_failed">Egy vagy több kulcs másolása sikertelen.</string>
-    <string name="error_keys_invalid_filename">Győződjön meg róla, hogy a kulcsfájl .keys kiterjesztésű, és próbálja újra.</string>
-    <string name="error_keys_failed_init">A kulcsok inicializálása sikertelen. Ellenőrizze, hogy a dumping eszközök naprakészek-e, és dumpolja újra a kulcsokat.</string>
 
     <!-- Applet launcher strings -->
     <string name="qlaunch_applet">Qlaunch</string>
@@ -591,8 +574,6 @@
     <string name="verify_no_result_description">A fájltartalom érvényessége nem lett ellenőrizve</string>
     <!-- ROM loading errors -->
     <string name="loader_error_encrypted">ROM titkosítva</string>
-    <string name="loader_error_encrypted_roms_description"><![CDATA[Kérjük, kövesse az útmutatót a <a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-physical-titles-game-cards\">játékkártyák</a> vagy <a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-digital-titles-eshop\">digitális címek</a> újradumpolásához.]]></string>
-    <string name="loader_error_encrypted_keys_description"><![CDATA[Győződj meg róla, hogy a <a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-prodkeys-and-titlekeys\">prod.keys</a> fájl telepítve van, hogy a játékok visszafejthetők legyenek.]]></string>
     <string name="loader_error_video_core">Hiba lépett fel a videómag inicializása során</string>
     <string name="loader_error_video_core_description">Ezt általában egy nem kompatibilis GPU illesztő okozza. Egyéni GPU illesztőprogram telepítése megoldhatja a problémát.</string>
     <string name="loader_error_file_not_found">ROM fájl nem létezik</string>
