@@ -20,12 +20,16 @@ $rules = @(
         Pattern = '\bCore::Crypto::SHA256Hash\b'
     },
     @{
+    @{
+        Name = 'reference to removed NAX or XTS crypto types'
+        Pattern = '\b(?:XTSEncryptionLayer|NAXHeader|NAXContentType|AppLoader_NAX)\b|\b(?:FileSys::NAX|Core::Crypto::Ticket)\b'
+    },
         Name = 'reference to a removed key-manager/partition API type'
         Pattern = '\b(?:KeyManager|PartitionDataManager|Package2Type|SignatureType|TitleKeyType|TicketData|RSA4096Ticket|RSA2048Ticket|ECDSATicket|RSAKeyPair|KeyCategory|S128KeyType|S256KeyType|KeyIndex)\b'
     },
     @{
         Name = 'reference to a removed key-derivation/ticket API'
-        Pattern = '\b(?:GetSignatureTypeDataSize|GetSignatureTypePaddingSize|GenerateKeyEncryptionKey|DeriveKeyblobKey|DeriveKeyblobMACKey|DeriveMasterKey|DecryptKeyblob|DeriveSDSeed|DeriveSDKeys|GetTicketblob|GetBISKey)\b'
+        Pattern = '\b(?:GetSignatureTypeDataSize|GetSignatureTypePaddingSize|GenerateKeyEncryptionKey|DeriveKeyblobKey|DeriveKeyblobMACKey|DeriveMasterKey|DecryptKeyblob|DeriveSDSeed|DeriveSDKeys|GetTicketblob|GetBISKey|KeyFileExists|DeriveSDSeedLazy|BaseDeriveNecessary|DeriveBase|DeriveETicket|PopulateTickets|SynthesizeTickets|PopulateFromPartitionData|GetCommonTickets|GetPersonalizedTickets|AddTicket|ReloadKeys|AreKeysLoaded|LoadFromFile|WriteKeyToFile|DeriveGeneralPurposeKeys|DeriveETicketRSAKey|SetKeyWrapped|ParseTicketTitleKey|GetPackage2FSDecompressed|GetPackage2SPLDecompressed|DecryptPackage2|GetDecryptedProdInfo|GetETicketExtendedKek)\b'
     },
     @{
         Name = 'obsolete key-file setup path'
