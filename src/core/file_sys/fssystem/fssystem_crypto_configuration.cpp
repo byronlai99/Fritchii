@@ -14,7 +14,11 @@ namespace {
 
 // Deliberately refuse to derive external console keys. Plaintext NCA files do not
 // need this callback; encrypted headers/sections therefore fail closed.
-void RejectEncryptedKey(void* dst_key, size_t dst_key_size, const void*, size_t, s32) {
+void RejectEncryptedKey(void* dst_key, size_t dst_key_size, const void*, size_t, s32 key_type) {
+    if (key_type == static_cast<s32>(KeyType::ZeroKey)) {
+        std::memset(dst_key, 0, dst_key_size);
+        return;
+    }
     std::memset(dst_key, 0xFF, dst_key_size);
 }
 

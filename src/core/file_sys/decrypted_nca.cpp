@@ -110,7 +110,7 @@ bool Sha256(const void* data, std::size_t size, Hash& out) {
 
 using RightsId = std::array<u8, NcaHeader::RightsIdSize>;
 
-bool SetTitleKey(NcaReader&, std::string& error) {
+bool RejectEncryptedNca(NcaReader&, std::string& error) {
     error = "Encrypted NCA content is not supported. Use a decrypted NUP or game directory.";
     return false;
 }
@@ -450,7 +450,7 @@ VirtualFile OpenDecryptedNca(VirtualFile nca, std::string& error) {
     if (reader.GetMagic() == NcaHeader::MagicDecrypted) {
         return nca;
     }
-    if (!SetTitleKey(reader, error)) {
+    if (!RejectEncryptedNca(reader, error)) {
         return nullptr;
     }
 

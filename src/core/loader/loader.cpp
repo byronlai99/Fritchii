@@ -258,7 +258,7 @@ std::string GetFileTypeString(FileType type) {
     return "unknown";
 }
 
-constexpr std::array<const char*, 70> RESULT_MESSAGES{
+constexpr std::array<const char*, 49> RESULT_MESSAGES{
     "The operation completed successfully.",
     "The loader requested to load is already loaded.",
     "The operation is not implemented.",
@@ -272,17 +272,9 @@ constexpr std::array<const char*, 70> RESULT_MESSAGES{
     "The PFS/HFS partition has a bad header.",
     "The PFS/HFS partition has incorrect size as determined by the header.",
     "The NCA file has a bad header.",
-    "The general keyfile could not be found.",
-    "The NCA Header key could not be found.",
-    "The NCA Header key is incorrect or the header is invalid.",
     "Support for NCA2-type NCAs is not implemented.",
     "Support for NCA0-type NCAs is not implemented.",
-    "The titlekey for this Rights ID could not be found.",
-    "The titlekek for this crypto revision could not be found.",
     "The Rights ID in the header is invalid.",
-    "The key area key for this application type and crypto revision could not be found.",
-    "The key area key is incorrect or the section header is invalid.",
-    "The titlekey and/or titlekek is incorrect or the section header is invalid.",
     "The XCI file is missing a Program-type NCA.",
     "The NCA file is not an application.",
     "The Program-type NCA contains no executable. An update may be required.",
@@ -298,19 +290,6 @@ constexpr std::array<const char*, 70> RESULT_MESSAGES{
     "There was a general error loading the NSO into emulated memory.",
     "There is no icon available.",
     "There is no control data available.",
-    "The NAX file has a bad header.",
-    "The NAX file has incorrect size as determined by the header.",
-    "The HMAC to generated the NAX decryption keys failed.",
-    "The HMAC to validate the NAX decryption keys failed.",
-    "The NAX key derivation failed.",
-    "The NAX file cannot be interpreted as an NCA file.",
-    "The NAX file has an incorrect path.",
-    "The SD seed could not be found or derived.",
-    "The SD KEK Source could not be found.",
-    "The AES KEK Generation Source could not be found.",
-    "The AES Key Generation Source could not be found.",
-    "The SD Save Key Source could not be found.",
-    "The SD NCA Key Source could not be found.",
     "The NSP file is missing a Program-type NCA.",
     "The BKTR-type NCA has a bad BKTR header.",
     "The BKTR Subsection entry is not located immediately after the Relocation entry.",
@@ -449,7 +428,6 @@ std::unique_ptr<AppLoader> GetLoader(Core::System& system, FileSys::VirtualFile 
         type = FileType::DeconstructedRomDirectory;
     }
 
-    // Special case: 00 is either a NCA or NAX.
     if (type != filename_type) {
         LOG_WARNING(Loader, "File {} has a different type ({}) than its extension.",
                     file->GetName(), GetFileTypeString(type));

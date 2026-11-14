@@ -26,11 +26,6 @@ inline const QString GetFirmwareInstallResultString(FirmwareInstallResult result
     return LOOKUP_ENUM(result, FwInstallSuccess);
 }
 
-/**
- * \brief Get a string representation of a result from InstallKeys.
- * \param result The result code.
- * \return A string representation of the passed result code.
- */
 void InstallFirmware(const QString& location, bool recursive);
 QString UnzipFirmwareToTmp(const QString& location);
 
