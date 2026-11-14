@@ -33,6 +33,8 @@
 
 KeyManager 原先承担的工作不只是“读取一个 keys 文件”，还涉及多类密钥索引、密钥派生、Ticket、Title Key、密钥文件路径和 reload 等职责。未来上游如果重构 KeyManager，不要照着旧文件名机械删除；应重新追踪调用链，确认新版本中这些职责被拆到了哪些类。
 
+**Amiibo 专用密钥是独立例外：** NFC Amiibo 加解密使用 `key_retail.bin`，它不是主机 `prod.keys` / `title.keys`，也不参与 NCA、BIS 或 Ticket 密钥派生。为兼容旧用户数据，`amiibo_crypto.cpp` 仍读取 `<EdenDir>/keys/key_retail.bin`；这只是保留旧文件位置，不会恢复通用 `KeysDir` 枚举，也不会自动创建通用密钥目录。没有该文件时，现有 NFC 逻辑仍可按无密钥只读模式载入加密 Amiibo。
+
 ### B. 删除旧 XTS / NAX 专用包装层
 
 删除文件：
