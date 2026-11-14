@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <memory>
+#include <utility>
 
 #include "core/hle/service/es/es.h"
 #include "core/hle/service/ipc_helpers.h"
