@@ -15,7 +15,6 @@
 #include "common/common_funcs.h"
 #include "common/common_types.h"
 #include "common/swap.h"
-#include "core/crypto/key_manager.h"
 #include "core/file_sys/vfs/vfs.h"
 
 namespace Loader {
@@ -104,7 +103,6 @@ private:
     bool encrypted = false;
     bool is_update = false;
 
-    Core::Crypto::KeyManager& keys;
     std::shared_ptr<NcaReader> reader;
 };
 

@@ -6,12 +6,16 @@
 
 #pragma once
 
+#include <array>
 #include <memory>
 #include <span>
 #include <type_traits>
 #include "common/common_types.h"
 
 namespace Core::Crypto {
+
+using Key128 = std::array<u8, 0x10>;
+using Key256 = std::array<u8, 0x20>;
 
 struct CipherContext;
 

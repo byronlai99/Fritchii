@@ -12,7 +12,6 @@
 #include "common/alignment.h"
 #include "common/logging.h"
 #include "core/crypto/aes_util.h"
-#include "core/crypto/key_manager.h"
 #include "core/file_sys/card_image.h"
 #include "core/file_sys/decrypted_nca.h"
 #include "core/file_sys/fssystem/fssystem_aes_ctr_counter_extended_storage.h"
@@ -111,31 +110,9 @@ bool Sha256(const void* data, std::size_t size, Hash& out) {
 
 using RightsId = std::array<u8, NcaHeader::RightsIdSize>;
 
-bool SetTitleKey(NcaReader& reader, std::string& error) {
-    RightsId rights_id{};
-    reader.GetRightsId(rights_id.data(), rights_id.size());
-    if (rights_id == RightsId{}) {
-        return true;
-    }
-    auto& keys = Core::Crypto::KeyManager::Instance();
-    u128 rights_id_u128;
-    std::memcpy(rights_id_u128.data(), rights_id.data(), sizeof(rights_id));
-    auto titlekey =
-        keys.GetKey(Core::Crypto::S128KeyType::Titlekey, rights_id_u128[1], rights_id_u128[0]);
-    const u8 master_key_id = std::max<u8>(reader.GetKeyGeneration(), 1) - 1;
-    if (titlekey == Core::Crypto::Key128{}) {
-        error = "missing title key (ticket)";
-        return false;
-    }
-    if (!keys.HasKey(Core::Crypto::S128KeyType::Titlekek, master_key_id)) {
-        error = fmt::format("missing titlekek for key generation {}", reader.GetKeyGeneration());
-        return false;
-    }
-    const auto titlekek = keys.GetKey(Core::Crypto::S128KeyType::Titlekek, master_key_id);
-    Core::Crypto::AESCipher<Core::Crypto::Key128> cipher(titlekek, Core::Crypto::Mode::ECB);
-    cipher.Transcode(titlekey.data(), titlekey.size(), titlekey.data(), Core::Crypto::Op::Decrypt);
-    reader.SetExternalDecryptionKey(titlekey.data(), titlekey.size());
-    return true;
+bool SetTitleKey(NcaReader&, std::string& error) {
+    error = "Encrypted NCA content is not supported. Use a decrypted NUP or game directory.";
+    return false;
 }
 
 const void* CtrKey(const NcaReader& reader) {
@@ -610,12 +587,6 @@ VirtualFile OpenDecryptedPackage(VirtualFile package, std::string& error) {
         }
         files = secure->GetFiles();
     }
-    for (const auto& file : files) {
-        if (file->GetExtension() == "tik" &&
-            !Core::Crypto::KeyManager::Instance().AddTicket(Core::Crypto::Ticket::Read(file))) {
-            LOG_WARNING(Common_Filesystem, "Could not load ticket {}", file->GetName());
-        }
-    }
     for (auto& file : files) {
         const auto name = file->GetName();
         if (name.ends_with(".ncz")) {
@@ -668,14 +639,6 @@ VirtualFile OpenDecryptedGamecard(VirtualFile image, std::string& error) {
             return nullptr;
         }
         files.insert(files.end(), entries->begin(), entries->end());
-    }
-    // Tickets first: an NCA may come before its ticket.
-    for (const auto& entry : files) {
-        if (entry.name.ends_with(".tik") &&
-            !Core::Crypto::KeyManager::Instance().AddTicket(Core::Crypto::Ticket::Read(
-                std::make_shared<OffsetVfsFile>(image, entry.size, entry.offset)))) {
-            LOG_WARNING(Common_Filesystem, "Could not load ticket {}", entry.name);
-        }
     }
     for (const auto& entry : files) {
         if (entry.name.ends_with(".ncz")) {

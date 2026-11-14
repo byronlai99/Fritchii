@@ -13,7 +13,6 @@
 #include <ranges>
 #include "core/crypto/aes_util.h"
 #include "core/crypto/ctr_encryption_layer.h"
-#include "core/crypto/key_manager.h"
 #include "core/file_sys/content_archive.h"
 #include "core/file_sys/partition_filesystem.h"
 #include "core/file_sys/vfs/vfs_offset.h"
@@ -25,12 +24,8 @@
 
 namespace FileSys {
 
-static u8 MasterKeyIdForKeyGeneration(u8 key_generation) {
-    return std::max<u8>(key_generation, 1) - 1;
-}
-
 NCA::NCA(VirtualFile file_, const NCA* base_nca, bool allow_missing_base)
-    : file(std::move(file_)), keys{Core::Crypto::KeyManager::Instance()} {
+    : file(std::move(file_)) {
     if (file == nullptr) {
         status = Loader::ResultStatus::ErrorNullFile;
         return;
@@ -42,42 +37,13 @@ NCA::NCA(VirtualFile file_, const NCA* base_nca, bool allow_missing_base)
         return;
     }
 
-    // A decrypted NCA needs no keys.
+    // Fritchii-HDrum only accepts already-decrypted NCA content.
+    // Encrypted NCA headers and sections are deliberately unsupported.
     const bool decrypted = reader->GetMagic() == NcaHeader::MagicDecrypted;
-
-    // Ensure we have the proper key area keys to continue.
-    const u8 master_key_id = MasterKeyIdForKeyGeneration(reader->GetKeyGeneration());
-    if (!decrypted && !keys.HasKey(Core::Crypto::S128KeyType::KeyArea, master_key_id, reader->GetKeyIndex())) {
-        LOG_ERROR(Loader, "Cannot decrypt {}: keys for gen 0x{:02X}+ required.", file->GetName(), reader->GetKeyGeneration());
-        status = Loader::ResultStatus::ErrorMissingKeyAreaKey;
+    if (!decrypted) {
+        LOG_ERROR(Loader, "Encrypted NCA content is unsupported. Use a decrypted NUP or game directory.");
+        status = Loader::ResultStatus::ErrorNotImplemented;
         return;
-    }
-
-    RightsId rights_id{};
-    reader->GetRightsId(rights_id.data(), rights_id.size());
-    if (!decrypted && rights_id != RightsId{}) {
-        // External decryption key required; provide it here.
-        u128 rights_id_u128;
-        std::memcpy(rights_id_u128.data(), rights_id.data(), sizeof(rights_id));
-
-        auto titlekey =
-            keys.GetKey(Core::Crypto::S128KeyType::Titlekey, rights_id_u128[1], rights_id_u128[0]);
-        if (titlekey == Core::Crypto::Key128{}) {
-            status = Loader::ResultStatus::ErrorMissingTitlekey;
-            return;
-        }
-
-        if (!keys.HasKey(Core::Crypto::S128KeyType::Titlekek, master_key_id)) {
-            status = Loader::ResultStatus::ErrorMissingTitlekek;
-            return;
-        }
-
-        auto titlekek = keys.GetKey(Core::Crypto::S128KeyType::Titlekek, master_key_id);
-        Core::Crypto::AESCipher<Core::Crypto::Key128> cipher(titlekek, Core::Crypto::Mode::ECB);
-        cipher.Transcode(titlekey.data(), titlekey.size(), titlekey.data(),
-                         Core::Crypto::Op::Decrypt);
-
-        reader->SetExternalDecryptionKey(titlekey.data(), titlekey.size());
     }
 
     const s32 fs_count = reader->GetFsCount();
