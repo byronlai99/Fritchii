@@ -33,7 +33,7 @@ $rules = @(
     },
     @{
         Name = 'reference to removed path enumeration value'
-        Pattern = '\\bEdenPath::KeysDir\\b|\\bKeysDir\\b'
+        Pattern = '\\bKEYS_DIR\\b|\\bEdenPath::KeysDir\\b|\\bKeysDir\\b'
     },
     @{
         Name = 'obsolete key-file setup path'
@@ -133,4 +133,4 @@ if ($findings.Count -gt 0) {
     throw "Slim source audit failed with $($findings.Count) finding(s)."
 }
 
-Write-Host 'Slim source audit passed: no removed key-manager, partition-manager, legacy loader, or CMake references remain.'
+Write-Host 'Slim source audit passed: no removed key-manager, partition-manager, keys-directory, legacy loader, or CMake references remain.'

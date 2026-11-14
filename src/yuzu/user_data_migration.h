@@ -16,7 +16,7 @@
 /// "yuzu"...) and which parts to copy. Mods are off unless ticked.
 struct ProfileImportChoice {
     std::string folder;
-    bool saves = true;    ///< nand, sdmc, keys, play time, amiibo
+    bool saves = true;    ///< nand, sdmc, play time, amiibo
     bool settings = true; ///< config, nx2_switches.txt, post shaders, the DLSS/FSR 4 runtimes
     bool mods = false;    ///< load
 

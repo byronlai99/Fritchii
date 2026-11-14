@@ -362,7 +362,7 @@ struct ImportPlan {
     std::uintmax_t copy_bytes{};
 };
 
-/// Settings, keys, mods, saves and the small user folders are copied; caches, logs, dumps and
+/// Settings, mods, saves and the small user folders are copied; caches, logs, dumps and
 /// screenshots are not (shaders are prepared again on the first boot). nand and sdmc are linked
 /// instead when copying them would not fit.
 ImportPlan PlanImport(const OldProfile& old, const ProfileImportChoice& choice) {
@@ -388,7 +388,7 @@ ImportPlan PlanImport(const OldProfile& old, const ProfileImportChoice& choice) 
                                        LOSSLESS_DIR, STREAMLINE_DIR, FIDELITYFX_DIR});
     }
     if (choice.saves) {
-        folders.insert(folders.end(), {KEYS_DIR, AMIIBO_DIR, PLAY_TIME_DIR});
+        folders.insert(folders.end(), {AMIIBO_DIR, PLAY_TIME_DIR});
     }
     if (choice.mods) {
         folders.push_back(LOAD_DIR);
@@ -491,7 +491,7 @@ std::optional<ProfileImportChoice> UserDataMigrator::AskImport(QWidget* parent, 
         layout->addWidget(box);
         return box;
     };
-    auto* saves = check(QObject::tr("Saves and keys"), true);
+    auto* saves = check(QObject::tr("Saves"), true);
     auto* settings = check(QObject::tr("Settings"), true);
     auto* mods = check(QObject::tr("Mods"), false);
     auto* buttons = new QDialogButtonBox(&dialog);
@@ -635,7 +635,7 @@ void UserDataMigrator::AutoImport(QMainWindow* main_window,
         migrated = true;
         QStringList parts;
         if (choice->saves) {
-            parts << QObject::tr("saves and keys");
+            parts << QObject::tr("saves");
         }
         if (choice->settings) {
             parts << QObject::tr("settings");

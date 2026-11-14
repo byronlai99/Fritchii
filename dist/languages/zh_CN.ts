@@ -9814,8 +9814,8 @@ Fritchii 会重新启动，并将数据复制到自己的文件夹中。现有�
         <translation>%1（上次游玩：%2）</translation>
     </message>
     <message>
-        <source>Saves and keys</source>
-        <translation>存档与密钥</translation>
+        <source>Saves</source>
+        <translation>存档</translation>
     </message>
     <message>
         <source>Settings</source>
@@ -9846,8 +9846,8 @@ Fritchii 会重新启动，并将数据复制到自己的文件夹中。现有�
         <translation>正在将 %1 文件夹中的数据复制到 Fritchii 的独立文件夹（%2 GB）...</translation>
     </message>
     <message>
-        <source>saves and keys</source>
-        <translation>存档与密钥</translation>
+        <source>saves</source>
+        <translation>存档</translation>
     </message>
     <message>
         <source>settings</source>
