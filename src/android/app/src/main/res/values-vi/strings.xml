@@ -157,8 +157,6 @@
     <string name="welcome">Chào mừng!</string>
     <string name="welcome_description">Tìm hiểu cách cài đặt &lt;b>Eden&lt;/b> và bắt đầu giả lập.</string>
     <string name="get_started">Bắt đầu</string>
-    <string name="keys">Chìa khóa</string>
-    <string name="keys_description">Chọn file &lt;b>prod.keys&lt;/b> của bạn bằng nút bên dưới.</string>
     <string name="firmware">Firmware</string>
     <string name="games">Trò chơi</string>
     <string name="games_description">Chọn thư mục &lt;b>Games&lt;/b> của bạn bằng nút bên dưới.</string>
@@ -181,10 +179,6 @@
     <string name="add_games_warning">Bỏ qua lựa chọn thư mục trò chơi?</string>
     <string name="add_games_warning_description">Trò chơi sẽ không hiển thị trong danh sách nếu một thư mục không được chọn</string>
     <string name="home_search_games">Tìm kiếm games</string>
-    <string name="install_prod_keys">Cài prod.keys</string>
-    <string name="install_prod_keys_description">Yêu cầu để giải mã các game bán lẻ</string>
-    <string name="install_prod_keys_warning">Bỏ qua thêm chìa khóa?</string>
-    <string name="install_prod_keys_warning_description">Cần có chìa khóa hợp lệ để giả lập trò chơi. Chỉ có các ứng dụng homebrew có thể vận hành nếu bạn tiếp tục</string>
     <string name="install_firmware_warning">Bỏ qua thêm firmware?</string>
     <string name="install_firmware_warning_description">Nhiều trò chơi cần truy cập firmware để hoạt động bình thường.</string>
     <string name="notifications">Thông báo</string>
@@ -197,8 +191,6 @@
     <string name="warning">Cảnh báo</string>
     <string name="warning_skip">Bỏ qua</string>
     <string name="warning_cancel">Huỷ</string>
-    <string name="install_amiibo_keys">Cài đặt Amiibo</string>
-    <string name="install_amiibo_keys_description">Cần thiết để dùng Amiibo trong trò chơi</string>
     <string name="gpu_driver_fetcher">Trình tải trình điều khiển GPU</string>
     <string name="install_gpu_driver_description">Cài đặt driver thay thế để có thể có hiệu suất tốt và chính xác hơn</string>
     <string name="advanced_settings">Cài đặt nâng cao</string>
@@ -226,7 +218,6 @@
     <string name="install_game_content_description">Cài đặt cập nhật game hoặc DLC</string>
     <string name="installing_game_content">Đang cài đặt...</string>
     <string name="install_game_content_failure">Lỗi cài đặt</string>
-    <string name="install_game_content_failure_description">Đảm bảo nội dung hợp lệ và có prod.keys</string>
     <string name="install_game_content_failure_base">Không cho phép cài game gốc</string>
     <string name="install_game_content_failed_count">%1$d lỗi cài đặt</string>
     <string name="install_game_content_success">Cài đặt thành công</string>
@@ -234,7 +225,6 @@
     <string name="install_game_content_success_overwrite">%1$d ghi đè thành công</string>
     <string name="custom_driver_not_supported">Không hỗ trợ driver tùy chỉnh</string>
     <string name="manage_yuzu_data">Quản lý dữ liệu</string>
-    <string name="manage_yuzu_data_description">Nhập/xuất firmware, keys, dữ liệu</string>
     <string name="game_folders">Thư mục game</string>
     <string name="deep_scan">Quét sâu</string>
     <string name="add_game_folder">Thêm thư mục</string>
@@ -250,19 +240,12 @@
     <string name="verify_installed_content">Kiểm tra nội dung</string>
     <string name="verify_installed_content_description">Kiểm tra lỗi nội dung đã cài</string>
 
-    <string name="keys_missing">Thiếu keys mã hóa</string>
-    <string name="keys_missing_description">Không thể giải mã firmware và game</string>
     <string name="uninstall_firmware">Gỡ cài đặt firmware</string>
     <string name="uninstall_firmware_description">Gỡ cài đặt firmware sẽ xóa nó khỏi thiết bị và có thể ảnh hưởng đến khả năng tương thích trò chơi.</string>
     <string name="firmware_uninstalling">Đang gỡ cài đặt firmware...</string>
     <string name="firmware_uninstalled_success">Gỡ cài đặt firmware thành công</string>
 
 
-    <string name="keys_failed">Không thể cài đặt khóa</string>
-    <string name="keys_install_success">Đã cài đặt khóa thành công</string>
-    <string name="error_keys_copy_failed">Không thể sao chép một hoặc nhiều khóa.</string>
-    <string name="error_keys_invalid_filename">Đảm bảo tệp khóa của bạn có phần mở rộng .keys và thử lại.</string>
-    <string name="error_keys_failed_init">Không thể khởi tạo khóa. Kiểm tra xem công cụ dump của bạn đã cập nhật chưa và dump lại khóa.</string>
 
     <!-- Applet launcher strings -->
     <string name="qlaunch_applet">Qlaunch</string>
@@ -476,8 +459,6 @@
     <string name="verify_failure">Kiểm tra tính toàn vẹn thất bại!</string>
     <!-- ROM loading errors -->
     <string name="loader_error_encrypted">ROM của bạn đã bị mã hoá</string>
-    <string name="loader_error_encrypted_roms_description"><![CDATA[Vui lòng làm theo hướng dẫn để dump lại <a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-physical-titles-game-cards\">băng trò chơi</a> hoặc <a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-digital-titles-eshop\">tựa game kỹ thuật số</a> của bạn.]]></string>
-    <string name="loader_error_encrypted_keys_description"><![CDATA[Vui lòng đảm bảo file <a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-prodkeys-and-titlekeys\">prod.keys</a> đã được cài đặt để game có thể được giải mã.]]></string>
     <string name="loader_error_video_core">Đã xảy ra lỗi khi khởi tạo lõi video</string>
     <string name="loader_error_video_core_description">Việc này thường do driver GPU không tương thích. Cài đặt một driver GPU tùy chỉnh có thể giải quyết vấn đề này.</string>
     <string name="loader_error_file_not_found">Tệp ROM không tồn tại</string>

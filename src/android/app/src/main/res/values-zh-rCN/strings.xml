@@ -203,8 +203,6 @@
     <string name="welcome">欢迎！</string>
     <string name="welcome_description">了解如何设置 &lt;b>Eden&lt;/b> 并进行模拟。</string>
     <string name="get_started">开始</string>
-    <string name="keys">密钥文件</string>
-    <string name="keys_description">使用下方的按钮来选择你的 &lt;b>prod.keys&lt;/b> 文件。</string>
     <string name="firmware">固件</string>
     <string name="firmware_description">请使用下面的按钮选择您的 <b>firmware.zip</b> 文件。</string>
     <string name="games">游戏</string>
@@ -245,11 +243,6 @@
     <string name="add_games_warning_help">https://yuzu-mirror.github.io/help/quickstart/#dumping-games</string>
     <string name="home_search_games">搜索游戏</string>
     <string name="search_settings">搜索设置</string>
-    <string name="install_prod_keys">安装 prod.keys 文件</string>
-    <string name="install_prod_keys_description">需要密钥文件来解密游戏</string>
-    <string name="install_prod_keys_warning">跳过添加密钥文件？</string>
-    <string name="install_prod_keys_warning_description">模拟零售版游戏需要有效的密钥。如果选择继续，仅有自制软件可以正常运行。</string>
-    <string name="install_prod_keys_warning_help">https://yuzu-mirror.github.io/help/quickstart/#guide-introduction</string>
     <string name="install_firmware_warning">跳过添加固件？</string>
     <string name="emulator_data">设置模拟器数据</string>
     <string name="emulator_data_description">模拟器需要密钥才能运行建议使用固件,并且使用 QLaunch 小程序时需要固件</string>
@@ -286,8 +279,6 @@
     <string name="warning">警告</string>
     <string name="warning_skip">跳过</string>
     <string name="warning_cancel">取消</string>
-    <string name="install_amiibo_keys">安装 Amiibo 密钥文件</string>
-    <string name="install_amiibo_keys_description">在遊戏中使用 Amiibo 时需要</string>
     <string name="gpu_driver_fetcher">GPU驱动获取器</string>
     <string name="gpu_driver_manager">GPU 驱动管理器</string>
     <string name="install_gpu_driver_description">安装替代的驱动程序以获得更好的性能和精度</string>
@@ -433,9 +424,6 @@
     <string name="verify_installed_content">验证已安装内容的完整性</string>
     <string name="verify_installed_content_description">检查所有安装的内容是否有损坏</string>
 
-    <string name="keys_missing">密钥缺失</string>
-    <string name="keys_missing_description">无法解密固件和商业游戏</string>
-    <string name="keys_missing_help">https://yuzu-mirror.github.io/help/quickstart/#dumping-decryption-keys</string>
 
     <string name="uninstall_firmware">卸载固件</string>
     <string name="uninstall_firmware_description">卸载固件将从设备中删除它并可能影响游戏兼容性。</string>
@@ -443,11 +431,6 @@
     <string name="firmware_uninstalled_success">固件卸载成功</string>
 
 
-    <string name="keys_failed">密钥安装失败</string>
-    <string name="keys_install_success">密钥安装成功</string>
-    <string name="error_keys_copy_failed">一个或多个密钥复制失败。</string>
-    <string name="error_keys_invalid_filename">请确保密钥文件具有.keys扩展名后重试。</string>
-    <string name="error_keys_failed_init">密钥初始化失败。请检查您的转储工具是否为最新版本并重新转储密钥。</string>
 
     <!-- Applet launcher strings -->
     <string name="qlaunch_applet">Qlaunch</string>
@@ -918,7 +901,6 @@
     <!-- ROM loading errors -->
     <string name="loader_error_encrypted">您的 ROM 已加密</string>
     <string name="loader_error_encrypted_roms_description"><![CDATA[请按照指南重新转储您的<a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-physical-titles-game-cards\">游戏卡带</a>或<a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-digital-titles-eshop\">数字版游戏</a>。]]></string>
-    <string name="loader_error_encrypted_keys_description"><![CDATA[请确保 <a href=\"https://yuzu-mirror.github.io/help/quickstart/#dumping-prodkeys-and-titlekeys\">prod.keys</a> 文件已安装，使得游戏可以被解密。]]></string>
     <string name="loader_error_video_core">初始化视频核心时发生错误</string>
     <string name="loader_error_video_core_description">这通常由不兼容的 GPU 驱动程序造成，安装自定义 GPU 驱动程序可能解决此问题。</string>
     <string name="loader_error_file_not_found">ROM 文件不存在</string>
@@ -1250,4 +1232,5 @@
     <string name="add_folders">添加文件夹</string>
     <string name="percent">%1$d%%</string>
 
+    <string name="loader_error_decrypted_content_description">不支持加密的游戏内容。请使用已解密的 NUP 文件或游戏目录。</string>
 </resources>

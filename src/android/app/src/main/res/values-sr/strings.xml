@@ -155,8 +155,6 @@
     <string name="welcome">Добродошли!</string>
     <string name="welcome_description">Научите како се подесити и &lt;b>Еден&lt;/b> скочи у емулацију.</string>
     <string name="get_started">Започните</string>
-    <string name="keys">Тастери</string>
-    <string name="keys_description">Изаберите свој и лт; &lt;b>prod.keys&lt;/b> датотека са дугметом испод.</string>
     <string name="firmware">Фирмвер</string>
     <string name="games">Игре</string>
     <string name="games_description">Изаберите свој и игре и ЛТ; Б> мапу са дугметом испод.</string>
@@ -183,10 +181,6 @@
     <string name="add_games_warning_description">Игре побеђују \"т приказују се на листи игара ако је изабрана мапа н \" т.</string>
     <string name="home_search_games">Претражите игре</string>
     <string name="search_settings">Подешавања претраге</string>
-    <string name="install_prod_keys">Инсталирајте prod.keys</string>
-    <string name="install_prod_keys_description">Потребан за дешифровање малопродајних игара</string>
-    <string name="install_prod_keys_warning">Прескочите додавање тастера?</string>
-    <string name="install_prod_keys_warning_description">Потребни су важећи тастери за опонашање малопродајних игара. Само хомебрев апликације ће функционисати ако наставите.</string>
     <string name="install_firmware_warning">Прескочити додавање фирмвера?</string>
     <string name="install_firmware_warning_description">Многе игре захтевају приступ фирмверу за правилно функционисање.</string>
     <string name="notifications">Обавештења</string>
@@ -199,8 +193,6 @@
     <string name="warning">упозорење</string>
     <string name="warning_skip">Прескочити</string>
     <string name="warning_cancel">Отказати</string>
-    <string name="install_amiibo_keys">Инсталирајте Амиибо Кеис</string>
-    <string name="install_amiibo_keys_description">Потребно је користити Амиибо у игри</string>
     <string name="gpu_driver_fetcher">ГПУ возач фетцхер</string>
     <string name="gpu_driver_manager">ГПУ управљач возача</string>
     <string name="install_gpu_driver_description">Инсталирајте алтернативне управљачке програме за потенцијално боље перформансе или тачност</string>
@@ -235,7 +227,6 @@
     <string name="install_game_content_description">Инсталирајте исправке игре или ДЛЦ</string>
     <string name="installing_game_content">Инсталирање садржаја ...</string>
     <string name="install_game_content_failure">Грешка у инсталирању датотека (а) у НАНД</string>
-    <string name="install_game_content_failure_description">Молимо вас да осигурате да су садржаји валидни и да је инсталирана датотека prod.keys.</string>
     <string name="install_game_content_failure_base">Инсталација основних игара није дозвољено да се избегне могући сукоби.</string>
     <string name="install_game_content_failed_count">%1$d Грешка у инсталацији</string>
     <string name="install_game_content_success">Садржај игре (и) инсталирани су успешно</string>
@@ -243,7 +234,6 @@
     <string name="install_game_content_success_overwrite">%1$d преписано успешно</string>
     <string name="custom_driver_not_supported">Прилагођени управљачки програми нису подржани</string>
     <string name="manage_yuzu_data">Управљајте подацима ЕДЕН-а</string>
-    <string name="manage_yuzu_data_description">Увоз / извозни софтвер, кључеви, кориснички подаци и још много тога!</string>
     <string name="game_folders">Мапе игре</string>
     <string name="deep_scan">Дубоко скенирање</string>
     <string name="add_game_folder">Додајте мапу игара</string>
@@ -263,19 +253,12 @@
     <string name="verify_installed_content">Проверите инсталирани садржај</string>
     <string name="verify_installed_content_description">Проверава све инсталиране садржаје за корупцију</string>
 
-    <string name="keys_missing">Шифра о шифрирањима недостају</string>
-    <string name="keys_missing_description">Фирмваре и малопродајне игре не могу се дешифровати</string>
     <string name="uninstall_firmware">Деинсталирајте фирмвер</string>
     <string name="uninstall_firmware_description">Деинсталирање фирмвера ће га уклонити са уређаја и може утицати на компатибилност игара.</string>
     <string name="firmware_uninstalling">Деинсталирање фирмвера</string>
     <string name="firmware_uninstalled_success">Фирмваре је успешно деинсталирано</string>
 
 
-    <string name="keys_failed">Неуспела инсталација кључева</string>
-    <string name="keys_install_success">Кључеви успешно инсталирани</string>
-    <string name="error_keys_copy_failed">Један или више кључева није успело да се копира.</string>
-    <string name="error_keys_invalid_filename">Проверите да ли ваш фајл са кључевима има .keys екстензију и покушајте поново.</string>
-    <string name="error_keys_failed_init">Неуспела иницијализација кључева. Проверите да ли су вам алати за прављење дампа ажурни и поново направите дамп кључева.</string>
 
     <!-- Applet launcher strings -->
     <string name="qlaunch_applet">Клаунцх</string>
@@ -599,8 +582,6 @@
     <string name="verify_no_result_description">Садржај датотеке није проверен за валидност</string>
     <!-- ROM loading errors -->
     <string name="loader_error_encrypted">Ваш РОМ је шифровани</string>
-    <string name="loader_error_encrypted_roms_description">Игра ЦартиДгес</string>
-    <string name="loader_error_encrypted_keys_description">prod.keys</string>
     <string name="loader_error_video_core">Дошло је до грешке приликом иницијализације видео језгра</string>
     <string name="loader_error_video_core_description">То обично узрокује некомпатибилни ГПУ драјвер. Инсталирање прилагођеног ГПУ управљачког програма може решити овај проблем.</string>
     <string name="loader_error_file_not_found">РОМ датотека не постоји</string>
