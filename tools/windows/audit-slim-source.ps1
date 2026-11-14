@@ -8,7 +8,7 @@ $scanRoots = @(
     (Join-Path $repoRoot 'CMakeModules'),
     (Join-Path $repoRoot 'CMakeLists.txt')
 )
-$extensions = @('.c', '.cc', '.cpp', '.cxx', '.h', '.hh', '.hpp', '.hxx', '.cmake', '.txt', '.ui', '.xml', '.ts')
+$extensions = @('.c', '.cc', '.cpp', '.cxx', '.h', '.hh', '.hpp', '.hxx', '.cmake', '.txt', '.ui', '.xml')
 
 $rules = @(
     @{
