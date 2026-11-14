@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feature/v5.8.4-renhdrum-zh-cn
+      - Fritchii-hdr-slim
     paths:
       - "src/**"
       - "CMakeLists.txt"
@@ -107,7 +108,7 @@ jobs:
           -DENABLE_RENHDRUM=ON
           -DRENHDRUM_SDL_PATCHES=ON
           -DENABLE_UPDATE_CHECKER=ON
-          -DLICHII_BUILD_TAG=feature-v5.8.4-renhdrum-zh-cn
+          -DLICHII_BUILD_TAG=$([ "$GITHUB_REF_NAME" = "Fritchii-hdr-slim" ] && echo "fritchii-hdr-slim" || echo "feature-v5.8.4-renhdrum-zh-cn")
           -DLICHII_BUILD_PLATFORM=windows-x86_64
           -DUSE_DISCORD_PRESENCE=OFF
           -DCMAKE_C_COMPILER_LAUNCHER=sccache
@@ -237,7 +238,7 @@ jobs:
           $bin = (Resolve-Path 'build/release/bin').Path
           $packageDir = Join-Path $env:GITHUB_WORKSPACE 'build/release/packages'
           New-Item -ItemType Directory -Force -Path $packageDir | Out-Null
-          $base = 'Fritchii-HDrum-v5.8.4-Windows-x64'
+          $base = if ($env:GITHUB_REF_NAME -eq 'Fritchii-hdr-slim') { 'Fritchii-HDrum-Slim-Windows-x64' } else { 'Fritchii-HDrum-v5.8.4-Windows-x64' }
           $zip = Join-Path $packageDir "$base.zip"
           $archive7z = Join-Path $packageDir "$base.7z"
 
@@ -264,7 +265,7 @@ jobs:
       - name: Upload ZIP and 7z test artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: Fritchii-HDrum-v5.8.4-Windows-x64-${{ github.sha }}
+          name: Fritchii-HDrum-Windows-x64-${{ github.ref_name }}-${{ github.sha }}
           path: build/release/packages/
           if-no-files-found: error
           retention-days: 7
