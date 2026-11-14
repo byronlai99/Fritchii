@@ -7,6 +7,7 @@ on:
       - Fritchii-hdr-slim
     paths:
       - "src/**"
+      - "tools/windows/**"
       - "CMakeLists.txt"
       - "CMakeModules/**"
       - "externals/**"
