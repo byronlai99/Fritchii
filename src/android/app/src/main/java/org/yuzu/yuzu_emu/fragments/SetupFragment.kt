@@ -27,7 +27,6 @@ import androidx.preference.PreferenceManager
 import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
 import com.google.android.material.transition.MaterialFadeThrough
 import org.yuzu.yuzu_emu.NativeLibrary
-import java.io.File
 import org.yuzu.yuzu_emu.R
 import org.yuzu.yuzu_emu.YuzuApplication
 import org.yuzu.yuzu_emu.adapters.SetupAdapter
@@ -156,32 +155,6 @@ class SetupFragment : Fragment() {
                     mutableListOf<PageButton>().apply {
                         add(
                             PageButton(
-                                R.drawable.ic_key,
-                                R.string.keys,
-                                R.string.keys_description,
-                                {
-                                    pageButtonCallback = it
-                                    getProdKey.launch(arrayOf("*/*"))
-                                },
-                                {
-                                    val file = File(
-                                        DirectoryInitialization.userDirectory + "/keys/prod.keys"
-                                    )
-                                    if (file.exists() && NativeLibrary.areKeysPresent()) {
-                                        ButtonState.BUTTON_ACTION_COMPLETE
-                                    } else {
-                                        ButtonState.BUTTON_ACTION_INCOMPLETE
-                                    }
-                                },
-                                false,
-                                true,
-                                R.string.install_prod_keys_warning,
-                                R.string.install_prod_keys_warning_description,
-                                R.string.install_prod_keys_warning_help,
-                            )
-                        )
-                        add(
-                            PageButton(
                                 R.drawable.ic_firmware,
                                 R.string.firmware,
                                 R.string.firmware_description,
@@ -246,12 +219,8 @@ class SetupFragment : Fragment() {
                         )
                     },
                     {
-                        val file = File(
-                            DirectoryInitialization.userDirectory + "/keys/prod.keys"
-                        )
-                        if (file.exists() && NativeLibrary.areKeysPresent() &&
-                            NativeLibrary.isFirmwareAvailable() && NativeConfig.getGameDirs()
-                                .isNotEmpty()
+                        if (NativeLibrary.isFirmwareAvailable() &&
+                            NativeConfig.getGameDirs().isNotEmpty()
                         ) {
                             PageState.COMPLETE
                         } else {
@@ -443,16 +412,6 @@ class SetupFragment : Fragment() {
             }
         }
 
-
-    val getProdKey =
-        registerForActivityResult(ActivityResultContracts.OpenDocument()) { result ->
-            if (result != null) {
-                mainActivity.processKey(result, "keys")
-                if (NativeLibrary.areKeysPresent()) {
-                    checkForButtonState.invoke()
-                }
-            }
-        }
 
     val getFirmware =
         registerForActivityResult(ActivityResultContracts.OpenDocument()) { result ->

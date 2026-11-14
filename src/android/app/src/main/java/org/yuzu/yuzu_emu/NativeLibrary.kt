@@ -154,8 +154,6 @@ object NativeLibrary {
         fileRedirectDir: String?
     )
 
-    external fun reloadKeys(): Boolean
-
     external fun initializeSystem(reload: Boolean)
 
     /**
@@ -395,10 +393,7 @@ object NativeLibrary {
 
             else -> {
                 captionId = R.string.loader_error_encrypted
-                descriptionId = R.string.loader_error_encrypted_roms_description
-                if (!reloadKeys()) {
-                    descriptionId = R.string.loader_error_encrypted_keys_description
-                }
+                descriptionId = R.string.loader_error_decrypted_content_description
             }
         }
 
@@ -535,15 +530,6 @@ object NativeLibrary {
     external fun gameRequiresFirmware(programId: String): Boolean
 
     /**
-     * Installs keys from the specified path.
-     *
-     * @param path The path to install keys from.
-     * @param ext What extension the keys should have.
-     * @return The result code.
-     */
-    external fun installKeys(path: String, ext: String): Int
-
-    /**
      * @return Whether this GPU can run the Lossless Scaling frame generation shaders,
      *         which are built against the Vulkan memory model.
      */
@@ -675,11 +661,6 @@ object NativeLibrary {
      * @return Native enum value representing the load result.
      */
     external fun loadAmiibo(data: ByteArray): Int
-
-    /**
-     * Checks if all necessary keys are present for decryption
-     */
-    external fun areKeysPresent(): Boolean
 
     /**
      * Updates the device power state to global variables

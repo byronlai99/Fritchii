@@ -56,7 +56,6 @@ extern "C" {
 #include "core/constants.h"
 #include "core/core.h"
 #include "core/cpu_manager.h"
-#include "core/crypto/key_manager.h"
 #include "core/file_sys/card_image.h"
 #include "core/file_sys/content_archive.h"
 #include "core/file_sys/control_metadata.h"
@@ -921,11 +920,6 @@ jstring Java_org_yuzu_yuzu_1emu_utils_GpuDriverHelper_getGpuModel(JNIEnv *env, j
 #endif
 }
 
-jboolean Java_org_yuzu_yuzu_1emu_NativeLibrary_reloadKeys(JNIEnv* env, jclass clazz) {
-    Core::Crypto::KeyManager::Instance().ReloadKeys();
-    return static_cast<jboolean>(Core::Crypto::KeyManager::Instance().AreKeysLoaded());
-}
-
 void Java_org_yuzu_yuzu_1emu_NativeLibrary_unpauseEmulation(JNIEnv* env, jclass clazz) {
     EmulationSession::GetInstance().UnPauseEmulation();
 }
@@ -1500,13 +1494,6 @@ jboolean Java_org_yuzu_yuzu_1emu_NativeLibrary_gameRequiresFirmware(JNIEnv* env,
     return FirmwareManager::GameRequiresFirmware(program_id);
 }
 
-jint Java_org_yuzu_yuzu_1emu_NativeLibrary_installKeys(JNIEnv* env, jclass clazz, jstring jpath, jstring jext) {
-    const auto path = Common::Android::GetJString(env, jpath);
-    const auto ext = Common::Android::GetJString(env, jext);
-
-    return static_cast<int>(FirmwareManager::InstallKeys(path, ext));
-}
-
 jstring Java_org_yuzu_yuzu_1emu_NativeLibrary_getLosslessDllPath(JNIEnv* env, jclass clazz) {
 #ifdef HAS_LSFG
     const auto path = VideoCore::FrameGen::GetLosslessDllPath();
@@ -1688,12 +1675,6 @@ void Java_org_yuzu_yuzu_1emu_NativeLibrary_addGameFolderFileToFilesystemProvider
 
 void Java_org_yuzu_yuzu_1emu_NativeLibrary_clearFilesystemProvider(JNIEnv* env, jobject jobj) {
     EmulationSession::GetInstance().GetContentProvider()->ClearAllEntries();
-}
-
-jboolean Java_org_yuzu_yuzu_1emu_NativeLibrary_areKeysPresent(JNIEnv* env, jobject jobj) {
-    auto& system = EmulationSession::GetInstance().System();
-    system.GetFileSystemController().CreateFactories(*system.GetFilesystem());
-    return ContentManager::AreKeysPresent();
 }
 
 jint Java_org_yuzu_yuzu_1emu_NativeLibrary_getVirtualAmiiboState(JNIEnv* env, jobject jobj) {
