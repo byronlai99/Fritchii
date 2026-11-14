@@ -3,7 +3,6 @@
 
 package org.yuzu.yuzu_emu.utils
 
-import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
@@ -15,7 +14,6 @@ import org.yuzu.yuzu_emu.fragments.ProgressDialogFragment
 import org.yuzu.yuzu_emu.model.AddonViewModel
 import org.yuzu.yuzu_emu.model.DriverViewModel
 import org.yuzu.yuzu_emu.model.GamesViewModel
-import org.yuzu.yuzu_emu.model.HomeViewModel
 import org.yuzu.yuzu_emu.model.InstallResult
 import org.yuzu.yuzu_emu.model.TaskState
 import java.io.BufferedInputStream
