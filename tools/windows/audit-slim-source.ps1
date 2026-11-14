@@ -29,7 +29,7 @@ $rules = @(
     },
     @{
         Name = 'reference to a removed key-derivation/ticket API'
-        Pattern = '\b(?:GetSignatureTypeDataSize|GetSignatureTypePaddingSize|GenerateKeyEncryptionKey|DeriveKeyblobKey|DeriveKeyblobMACKey|DeriveMasterKey|DecryptKeyblob|DeriveSDSeed|DeriveSDKeys|GetTicketblob|GetBISKey|KeyFileExists|DeriveSDSeedLazy|BaseDeriveNecessary|DeriveBase|DeriveETicket|PopulateTickets|SynthesizeTickets|PopulateFromPartitionData|GetCommonTickets|GetPersonalizedTickets|AddTicket|ReloadKeys|AreKeysLoaded|LoadFromFile|WriteKeyToFile|DeriveGeneralPurposeKeys|DeriveETicketRSAKey|SetKeyWrapped|ParseTicketTitleKey|GetPackage2FSDecompressed|GetPackage2SPLDecompressed|DecryptPackage2|GetDecryptedProdInfo|GetETicketExtendedKek)\b'
+        Pattern = '\b(?:GetSignatureTypeDataSize|GetSignatureTypePaddingSize|GenerateKeyEncryptionKey|DeriveKeyblobKey|DeriveKeyblobMACKey|DeriveMasterKey|DecryptKeyblob|DeriveSDSeed|DeriveSDKeys|GetTicketblob|GetBISKey|KeyFileExists|DeriveSDSeedLazy|BaseDeriveNecessary|DeriveBase|DeriveETicket|PopulateTickets|SynthesizeTickets|PopulateFromPartitionData|GetCommonTickets|GetPersonalizedTickets|AddTicket|ReloadKeys|AreKeysLoaded|WriteKeyToFile|DeriveGeneralPurposeKeys|DeriveETicketRSAKey|SetKeyWrapped|ParseTicketTitleKey|GetPackage2FSDecompressed|GetPackage2SPLDecompressed|DecryptPackage2|GetDecryptedProdInfo|GetETicketExtendedKek)\b'
     },
     @{
         Name = 'obsolete key-file setup path'
